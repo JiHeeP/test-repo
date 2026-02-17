@@ -45,3 +45,4 @@ description: Coach the 0:00-1:10 evidence sprint: turn one reading subsection in
 # 3회 시도 규칙
 - 같은 요청이 3회 반복되면, **모범 답안 1개만**(근거 문장 1개 + 설계 규칙 1줄) 제공하고 나머지는 사용자가 채우게 한다.
 
+
