@@ -1,0 +1,18 @@
+source: 학습도구 56학년.xlsx
+total_words_no_header: 140
+unique_words: 127
+duplicate_extra_count: 13
+
+duplicates:
+- 환경: 3
+- 결과: 2
+- 구성: 2
+- 나누다: 2
+- 도구: 2
+- 반면: 2
+- 실행: 2
+- 자료: 2
+- 작품: 2
+- 정확히: 2
+- 주제: 2
+- 특징: 2
