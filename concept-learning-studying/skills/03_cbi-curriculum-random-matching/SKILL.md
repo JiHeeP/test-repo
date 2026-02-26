@@ -13,17 +13,17 @@ description: Extract and match curriculum structure (content system table + achi
 아래 경로에 국어·과학·수학·사회 교육과정이 이미 추출되어 있다.
 PDF/hwpx 업로드 불필요 — 이 파일들에서 바로 출발한다.
 
-- 마스터 인덱스: `0216_test/cbi_logs/curriculum_index/index.json`
+- 마스터 인덱스: `0218_studying/cbi_logs/curriculum_index/index.json`
 - 과목별 구조화 JSON (단원 목록 + 성취기준):
-  - 국어: `0216_test/cbi_logs/curriculum_index/korean.json`
-  - 과학: `0216_test/cbi_logs/curriculum_index/science.json`
-  - 수학: `0216_test/cbi_logs/curriculum_index/math.json`
-  - 사회: `0216_test/cbi_logs/curriculum_index/society.json`
+  - 국어: `0218_studying/cbi_logs/curriculum_index/korean.json`
+  - 과학: `0218_studying/cbi_logs/curriculum_index/science.json`
+  - 수학: `0218_studying/cbi_logs/curriculum_index/math.json`
+  - 사회: `0218_studying/cbi_logs/curriculum_index/society.json`
 - 과목별 원문 TXT (내용체계·핵심아이디어·성취기준 해설 포함):
-  - 국어: `0216_test/cbi_logs/curriculum_raw/korean.txt`
-  - 과학: `0216_test/cbi_logs/curriculum_raw/science.txt`
-  - 수학: `0216_test/cbi_logs/curriculum_raw/math.txt`
-  - 사회: `0216_test/cbi_logs/curriculum_raw/society.txt`
+  - 국어: `0218_studying/cbi_logs/curriculum_raw/korean.txt`
+  - 과학: `0218_studying/cbi_logs/curriculum_raw/science.txt`
+  - 수학: `0218_studying/cbi_logs/curriculum_raw/math.txt`
+  - 사회: `0218_studying/cbi_logs/curriculum_raw/society.txt`
 
 ## JSON 구조 요약
 ```
