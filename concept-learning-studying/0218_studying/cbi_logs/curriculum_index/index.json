@@ -1,0 +1,54 @@
+{
+  "generated_at_utc": "2026-02-22T12:38:37.178874+00:00",
+  "document_count": 6,
+  "documents": [
+    {
+      "source_file": "2025년 경기도교육청 수업혁신사례연구대회 운영 계획(안)(발송용).hwpx",
+      "subject_guess": "2025년 경기도교육청 수업혁신사례연구대회 운영 계획(안)(발송용)",
+      "raw_text": "cbi_logs/curriculum_raw/2025년 경기도교육청 수업혁신사례연구대회 운영 계획(안)(발송용).txt",
+      "index_json": "cbi_logs/curriculum_index/2025년 경기도교육청 수업혁신사례연구대회 운영 계획(안)(발송용).json",
+      "unit_count": 12,
+      "standard_count": 0
+    },
+    {
+      "source_file": "korean.hwpx",
+      "subject_guess": "국어",
+      "raw_text": "cbi_logs/curriculum_raw/korean.txt",
+      "index_json": "cbi_logs/curriculum_index/korean.json",
+      "unit_count": 11,
+      "standard_count": 88
+    },
+    {
+      "source_file": "math.hwpx",
+      "subject_guess": "수학",
+      "raw_text": "cbi_logs/curriculum_raw/math.txt",
+      "index_json": "cbi_logs/curriculum_index/math.json",
+      "unit_count": 9,
+      "standard_count": 121
+    },
+    {
+      "source_file": "science.hwpx",
+      "subject_guess": "과학",
+      "raw_text": "cbi_logs/curriculum_raw/science.txt",
+      "index_json": "cbi_logs/curriculum_index/science.json",
+      "unit_count": 41,
+      "standard_count": 102
+    },
+    {
+      "source_file": "society.hwpx",
+      "subject_guess": "사회",
+      "raw_text": "cbi_logs/curriculum_raw/society.txt",
+      "index_json": "cbi_logs/curriculum_index/society.json",
+      "unit_count": 39,
+      "standard_count": 49
+    },
+    {
+      "source_file": "경기도교육청 디지털교육정책과 붙임1. 제19회 디지털교육연구 (1).hwpx",
+      "subject_guess": "경기도교육청 디지털교육정책과 붙임1. 제19회 디지털교육연구 (1)",
+      "raw_text": "cbi_logs/curriculum_raw/경기도교육청 디지털교육정책과 붙임1. 제19회 디지털교육연구 (1).txt",
+      "index_json": "cbi_logs/curriculum_index/경기도교육청 디지털교육정책과 붙임1. 제19회 디지털교육연구 (1).json",
+      "unit_count": 16,
+      "standard_count": 0
+    }
+  ]
+}
