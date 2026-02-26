@@ -8,7 +8,7 @@ description: Orchestrate Concept-Based Inquiry (CBI) coaching end-to-end. Use wh
 
 # 입력(대화 시작 시 확인)
 - 학년, 과목 (이미 받았으면 재질문 금지)
-- 교육과정 데이터는 `0216_test/cbi_logs/curriculum_index/` 및 `0216_test/cbi_logs/curriculum_raw/`에 사전 추출되어 있다.
+- 교육과정 데이터는 `0218_studying/cbi_logs/curriculum_index/` 및 `0218_studying/cbi_logs/curriculum_raw/`에 사전 추출되어 있다.
   - 지원 과목: 국어, 과학, 수학, 사회
   - 파일 업로드 불필요. 학년+과목만 확인하면 바로 진행한다.
 

@@ -46,8 +46,9 @@ edu-text-summarizer로 만든 `.md` 요약 파일을 제공하면,
 아래 경로의 JSON 인덱스 파일을 참조한다.
 
 ```
-0216_test/cbi_logs/curriculum_index/
+0218_studying/cbi_logs/curriculum_index/
 ├── index.json       # 전체 목록
+├── korean.json      # 국어 성취기준 (88개)
 ├── math.json        # 수학 성취기준 (121개)
 ├── science.json     # 과학 성취기준 (102개)
 └── society.json     # 사회 성취기준 (49개)
