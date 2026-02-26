@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5학년 1학기 수학 연습</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: #F0F4FF;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    /* ===== 메인 화면 ===== */
+    #main-screen { max-width: 680px; margin: 0 auto; padding: 40px 20px; }
+
+    .main-header { text-align: center; margin-bottom: 40px; }
+    .main-header h1 { font-size: 26px; color: #2C3E50; margin-bottom: 8px; }
+    .main-header p { color: #888; font-size: 15px; }
+
+    .unit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .unit-card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-align: center;
+    }
+    .unit-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.14); }
+    .unit-icon { font-size: 36px; margin-bottom: 10px; }
+    .unit-num { font-size: 12px; color: #aaa; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.5px; }
+    .unit-name { font-size: 15px; font-weight: 700; color: #2C3E50; line-height: 1.4; }
+
+    /* ===== 단원 화면 ===== */
+    #unit-screen { max-width: 680px; margin: 0 auto; padding: 24px 20px; }
+
+    .unit-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+    #back-btn {
+      background: white; border: 1px solid #ddd; border-radius: 8px;
+      padding: 8px 14px; cursor: pointer; font-size: 14px; color: #555;
+      transition: background 0.2s; white-space: nowrap;
+    }
+    #back-btn:hover { background: #f5f5f5; }
+    #unit-title { font-size: 20px; font-weight: 700; color: #2C3E50; }
+
+    .tabs { display: flex; background: white; border-radius: 12px; padding: 6px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .tab { flex: 1; padding: 10px; border: none; border-radius: 8px; background: transparent; cursor: pointer; font-size: 14px; color: #888; font-weight: 600; transition: all 0.2s; }
+    .tab.active { background: var(--unit-color, #4ECDC4); color: white; }
+
+    .score-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      background: white; border-radius: 10px; padding: 10px 16px;
+      margin-bottom: 16px; font-size: 14px; color: #555;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .score-bar button {
+      background: none; border: 1px solid #ddd; border-radius: 6px;
+      padding: 4px 10px; cursor: pointer; font-size: 12px; color: #888;
+    }
+
+    /* ===== 문제 카드 ===== */
+    .problem-card {
+      background: white; border-radius: 20px;
+      padding: 30px 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .problem-hint {
+      font-size: 13px; color: #777;
+      background: #F8F9FA; border-radius: 8px;
+      padding: 7px 12px; margin-bottom: 20px; display: inline-block;
+    }
+
+    .problem-q {
+      font-size: 26px; font-weight: 700; color: #2C3E50;
+      margin-bottom: 28px; line-height: 1.5;
+    }
+
+    .answer-area { margin-bottom: 20px; }
+
+    /* 숫자 입력 */
+    .num-input {
+      font-size: 22px; border: 2px solid #E0E0E0; border-radius: 10px;
+      padding: 10px 14px; width: 150px; text-align: center; outline: none;
+      transition: border-color 0.2s;
+    }
+    .num-input:focus { border-color: var(--unit-color, #4ECDC4); }
+    .unit-label { font-size: 20px; margin-left: 8px; color: #555; }
+
+    /* 분수 입력 (세로) */
+    .frac-input-wrap {
+      display: inline-flex; flex-direction: column;
+      align-items: center; gap: 4px;
+    }
+    .frac-field {
+      width: 80px; font-size: 20px; text-align: center;
+      border: 2px solid #E0E0E0; border-radius: 8px; padding: 8px 6px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .frac-field:focus { border-color: var(--unit-color, #4ECDC4); }
+    .frac-divider { width: 88px; height: 3px; background: #444; border-radius: 2px; }
+
+    /* 대분수 입력 */
+    .mixed-input-wrap { display: inline-flex; align-items: center; gap: 10px; }
+    .whole-field {
+      width: 72px; font-size: 20px; text-align: center;
+      border: 2px solid #E0E0E0; border-radius: 8px; padding: 8px 6px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .whole-field:focus { border-color: var(--unit-color, #4ECDC4); }
+    .and-text { font-size: 18px; color: #555; }
+
+    /* 선택지 */
+    .choice-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+    .choice-btn {
+      font-size: 20px; padding: 14px 26px;
+      border: 2px solid #E0E0E0; border-radius: 12px;
+      background: white; cursor: pointer; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .choice-btn:hover:not(:disabled) { border-color: var(--unit-color, #4ECDC4); background: #F0FFFE; }
+    .correct-choice { background: #D5F5E3 !important; border-color: #27AE60 !important; color: #1a7a42 !important; }
+    .wrong-choice   { background: #FADBD8 !important; border-color: #E74C3C !important; color: #c0392b !important; }
+
+    /* ===== 결과 ===== */
+    .result {
+      padding: 14px 18px; border-radius: 12px;
+      font-size: 20px; font-weight: 700; margin-bottom: 16px;
+    }
+    .result.correct { background: #D5F5E3; color: #1e8449; }
+    .result.wrong   { background: #FADBD8; color: #c0392b; }
+
+    /* ===== 버튼 ===== */
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .check-btn {
+      background: var(--unit-color, #4ECDC4); color: white;
+      border: none; border-radius: 12px;
+      padding: 14px 32px; font-size: 17px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .check-btn:hover:not(:disabled) { opacity: 0.85; }
+    .check-btn:disabled { opacity: 0.45; cursor: default; }
+
+    .next-btn {
+      background: #2C3E50; color: white;
+      border: none; border-radius: 12px;
+      padding: 14px 26px; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .next-btn:hover { opacity: 0.85; }
+
+    /* ===== 반응형 ===== */
+    @media (max-width: 480px) {
+      .problem-q { font-size: 22px; }
+      .problem-card { padding: 22px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 메인 화면 -->
+<div id="main-screen">
+  <div class="main-header">
+    <h1>📚 5학년 1학기 수학 연습</h1>
+    <p>단원을 선택하세요</p>
+  </div>
+  <div class="unit-grid" id="unit-grid"></div>
+</div>
+
+<!-- 단원 화면 -->
+<div id="unit-screen" style="display:none">
+  <div class="unit-header">
+    <button id="back-btn" onclick="showMain()">← 목록으로</button>
+    <h2 id="unit-title"></h2>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-prereq" onclick="showTab('prereq')">📚 선수 학습 점검</button>
+    <button class="tab" id="tab-main"   onclick="showTab('main')">✏️ 이번 단원 연습</button>
+  </div>
+
+  <div class="score-bar">
+    <span id="score-display">맞은 문제: 0 / 0</span>
+    <button onclick="resetScore()">초기화</button>
+  </div>
+
+  <div id="problem-area"></div>
+</div>
+
+<script>
+// ===== 유틸리티 =====
+function gcd(a, b) { return b === 0 ? Math.abs(a) : gcd(b, a % b); }
+function lcm(a, b) { return Math.abs(a * b) / gcd(a, b); }
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function simplify(num, den) {
+  if (den === 0) return [num, 1];
+  const g = gcd(Math.abs(num), Math.abs(den));
+  return [num / g, den / g];
+}
+
+// ===== 1단원: 자연수의 혼합 계산 =====
+function gen1Prereq() {
+  const type = rand(1, 4);
+  if (type === 1) {
+    const a = rand(100, 499), b = rand(100, 400);
+    return { q: `${a} + ${b} = ?`, type: 'number', ans: a + b, hint: '세 자리 수 덧셈' };
+  }
+  if (type === 2) {
+    const b = rand(100, 400), a = b + rand(10, 300);
+    return { q: `${a} − ${b} = ?`, type: 'number', ans: a - b, hint: '세 자리 수 뺄셈' };
+  }
+  if (type === 3) {
+    const a = rand(12, 40), b = rand(11, 25);
+    return { q: `${a} × ${b} = ?`, type: 'number', ans: a * b, hint: '두 자리 수 곱셈' };
+  }
+  // type 4: 나눗셈 (나누어 떨어짐)
+  const b = rand(11, 25), q = rand(10, 30), a = b * q;
+  return { q: `${a} ÷ ${b} = ?`, type: 'number', ans: q, hint: '두 자리 수 나눗셈' };
+}
+
+function gen1Main() {
+  const type = rand(1, 4);
+  if (type === 1) {
+    const a = rand(20, 80), b = rand(20, 80), c = rand(10, 50);
+    return { q: `${a} + ${b} − ${c} = ?`, type: 'number', ans: a + b - c, hint: '덧셈·뺄셈 혼합: 왼쪽부터 계산' };
+  }
+  if (type === 2) {
+    // a × (c×k) ÷ c = a×k
+    const a = rand(2, 9), c = rand(2, 6), k = rand(2, 5), b = c * k;
+    return { q: `${a} × ${b} ÷ ${c} = ?`, type: 'number', ans: a * k, hint: '곱셈·나눗셈 혼합: 왼쪽부터 계산' };
+  }
+  if (type === 3) {
+    const a = rand(10, 50), b = rand(2, 9), c = rand(2, 9);
+    return { q: `${a} + ${b} × ${c} = ?`, type: 'number', ans: a + b * c, hint: '× 먼저, 그 다음 + (곱셈 우선!)' };
+  }
+  const a = rand(5, 20), b = rand(5, 20), c = rand(2, 6);
+  return { q: `(${a} + ${b}) × ${c} = ?`, type: 'number', ans: (a + b) * c, hint: '괄호 안을 먼저 계산' };
+}
+
+// ===== 2단원: 약수와 배수 =====
+function gen2Prereq() {
+  if (rand(1, 2) === 1) {
+    const a = rand(2, 9), b = rand(2, 9);
+    return { q: `${a} × ${b} = ?`, type: 'number', ans: a * b, hint: '곱셈구구' };
+  }
+  const b = rand(2, 9), q = rand(2, 9), a = b * q;
+  return { q: `${a} ÷ ${b} = ?`, type: 'number', ans: q, hint: '나눗셈 (나누어 떨어짐)' };
+}
+
+function gen2Main() {
+  if (rand(1, 2) === 1) {
+    // 최대공약수: g를 먼저 잡아 a=g*p, b=g*q 생성
+    const g = rand(2, 6), p = rand(2, 7), q = rand(2, 7);
+    const a = g * p, b = g * q;
+    return { q: `${a}과 ${b}의 최대공약수는?`, type: 'number', ans: gcd(a, b), hint: '두 수를 모두 나누어 떨어지게 하는 가장 큰 수' };
+  }
+  const a = rand(2, 8), b = rand(2, 8);
+  return { q: `${a}과 ${b}의 최소공배수는?`, type: 'number', ans: lcm(a, b), hint: '두 수의 공통 배수 중 가장 작은 수' };
+}
+
+// ===== 4단원: 약분과 통분 =====
+function gen4Prereq() {
+  if (rand(1, 2) === 1) {
+    // 분모 같은 분수 크기 비교
+    let den, a, b;
+    do { den = rand(5, 12); a = rand(1, den - 1); b = rand(1, den - 1); } while (a === b);
+    const bigger = a > b ? `${a}/${den}` : `${b}/${den}`;
+    return {
+      q: `${a}/${den} 과 ${b}/${den} 중 더 큰 분수는?`,
+      type: 'choice',
+      choices: [`${a}/${den}`, `${b}/${den}`],
+      ans: bigger,
+      hint: '분모가 같으면 분자가 클수록 큰 분수'
+    };
+  }
+  // 가분수 → 대분수 변환
+  const den = rand(2, 7), whole = rand(1, 3), num = rand(1, den - 1);
+  const improperNum = whole * den + num;
+  return {
+    q: `${improperNum}/${den} 을 대분수로 나타내면?`,
+    type: 'mixed', ans: { whole, num, den },
+    hint: `${improperNum} ÷ ${den} = ${whole} 나머지 ${num}`
+  };
+}
+
+function gen4Main() {
+  if (rand(1, 2) === 1) {
+    // 약분: g*(num/den) → num/den (단, gcd(num,den)=1 보장)
+    let num, den, g;
+    do { g = rand(2, 6); num = rand(1, 7); den = rand(num + 1, 9); } while (gcd(num, den) > 1);
+    const bigNum = num * g, bigDen = den * g;
+    return {
+      q: `${bigNum}/${bigDen} 을 기약분수로 나타내면?`,
+      type: 'fraction', ans: { num, den }, requireSimplified: true,
+      hint: `분자·분모를 공약수 ${g}로 나누기`
+    };
+  }
+  // 통분: 공통분모 구하기
+  let a, b;
+  do { a = rand(2, 6); b = rand(2, 6); } while (a === b);
+  return {
+    q: `분모가 ${a}인 분수와 분모가 ${b}인 분수를\n통분하면 공통분모(최소공배수)는?`,
+    type: 'number', ans: lcm(a, b),
+    hint: `${a}와 ${b}의 최소공배수 구하기`
+  };
+}
+
+// ===== 5단원: 분수의 덧셈과 뺄셈 =====
+function gen5Prereq() {
+  const den = rand(5, 12);
+  if (rand(1, 2) === 1) {
+    // 분모 같은 덧셈 (합이 den 미만이 되도록)
+    const a = rand(1, Math.floor(den / 2));
+    const b = rand(1, den - a - 1);
+    const [sNum, sDen] = simplify(a + b, den);
+    return { q: `${a}/${den} + ${b}/${den} = ?`, type: 'fraction', ans: { num: sNum, den: sDen }, hint: '분모가 같을 때: 분자끼리 더하기' };
+  }
+  // 분모 같은 뺄셈
+  const b = rand(1, den - 2), a = rand(b + 1, den - 1);
+  const [sNum, sDen] = simplify(a - b, den);
+  return { q: `${a}/${den} − ${b}/${den} = ?`, type: 'fraction', ans: { num: sNum, den: sDen }, hint: '분모가 같을 때: 분자끼리 빼기' };
+}
+
+function gen5Main() {
+  const type = rand(1, 3);
+
+  if (type === 1) {
+    // 분모 다른 진분수 덧셈
+    let den1, den2;
+    do { den1 = rand(2, 6); den2 = rand(2, 6); } while (den1 === den2);
+    const num1 = rand(1, den1 - 1), num2 = rand(1, den2 - 1);
+    const l = lcm(den1, den2);
+    const totalNum = num1 * (l / den1) + num2 * (l / den2);
+    const [sNum, sDen] = simplify(totalNum, l);
+    if (sNum >= sDen) {
+      const w = Math.floor(sNum / sDen), r = sNum % sDen;
+      if (r === 0) return { q: `${num1}/${den1} + ${num2}/${den2} = ?`, type: 'number', ans: w, hint: `공통분모 ${l}로 통분` };
+      return { q: `${num1}/${den1} + ${num2}/${den2} = ?`, type: 'mixed', ans: { whole: w, num: r, den: sDen }, hint: `공통분모 ${l}로 통분` };
+    }
+    return { q: `${num1}/${den1} + ${num2}/${den2} = ?`, type: 'fraction', ans: { num: sNum, den: sDen }, hint: `공통분모 ${l}로 통분` };
+  }
+
+  if (type === 2) {
+    // 분모 다른 진분수 뺄셈 (결과 > 0 보장)
+    let den1, den2, num1, num2, diffNum, l, tries = 0;
+    do {
+      den1 = rand(3, 8); den2 = rand(2, den1 - 1);
+      num1 = rand(1, den1 - 1); num2 = rand(1, den2 - 1);
+      l = lcm(den1, den2);
+      diffNum = num1 * (l / den1) - num2 * (l / den2);
+      tries++;
+    } while (diffNum <= 0 && tries < 30);
+    if (diffNum <= 0) return gen5Main();
+    const [sNum, sDen] = simplify(diffNum, l);
+    return { q: `${num1}/${den1} − ${num2}/${den2} = ?`, type: 'fraction', ans: { num: sNum, den: sDen }, hint: `공통분모 ${l}로 통분` };
+  }
+
+  // type 3: 대분수 덧셈
+  let den1, den2;
+  do { den1 = rand(2, 5); den2 = rand(2, 5); } while (den1 === den2);
+  const l = lcm(den1, den2);
+  const w1 = rand(1, 3), n1 = rand(1, den1 - 1);
+  const w2 = rand(1, 3), n2 = rand(1, den2 - 1);
+  const fracNum = n1 * (l / den1) + n2 * (l / den2);
+  const extraW = Math.floor(fracNum / l), remNum = fracNum % l;
+  const totalW = w1 + w2 + extraW;
+  if (remNum === 0) return { q: `${w1}과 ${n1}/${den1} + ${w2}과 ${n2}/${den2} = ?`, type: 'number', ans: totalW, hint: `공통분모 ${l}로 통분` };
+  const [sNum, sDen] = simplify(remNum, l);
+  return { q: `${w1}과 ${n1}/${den1} + ${w2}과 ${n2}/${den2} = ?`, type: 'mixed', ans: { whole: totalW, num: sNum, den: sDen }, hint: `공통분모 ${l}로 통분` };
+}
+
+// ===== 6단원: 다각형의 둘레와 넓이 =====
+function gen6Prereq() {
+  const type = rand(1, 3);
+  if (type === 1) {
+    const m = rand(1, 9);
+    return { q: `${m} m = ? cm`, type: 'number', ans: m * 100, hint: '1 m = 100 cm', unit: 'cm' };
+  }
+  if (type === 2) {
+    const km = rand(1, 5);
+    return { q: `${km} km = ? m`, type: 'number', ans: km * 1000, hint: '1 km = 1000 m', unit: 'm' };
+  }
+  const a = rand(10, 90), b = rand(10, 90);
+  return { q: `${a} cm + ${b} cm = ?`, type: 'number', ans: a + b, hint: '길이의 합', unit: 'cm' };
+}
+
+function gen6Main() {
+  const type = rand(1, 5);
+  if (type === 1) {
+    const w = rand(3, 15), h = rand(3, 12);
+    return { q: `가로 ${w} cm, 세로 ${h} cm\n직사각형의 넓이는?`, type: 'number', ans: w * h, hint: '넓이 = 가로 × 세로', unit: 'cm²' };
+  }
+  if (type === 2) {
+    const s = rand(3, 15);
+    return { q: `한 변이 ${s} cm인\n정사각형의 넓이는?`, type: 'number', ans: s * s, hint: '넓이 = 한 변 × 한 변', unit: 'cm²' };
+  }
+  if (type === 3) {
+    const b = rand(2, 14) * 2, h = rand(2, 10); // b 짝수 → 나누어 떨어짐
+    return { q: `밑변 ${b} cm, 높이 ${h} cm\n삼각형의 넓이는?`, type: 'number', ans: b * h / 2, hint: '넓이 = 밑변 × 높이 ÷ 2', unit: 'cm²' };
+  }
+  if (type === 4) {
+    const b = rand(3, 12), h = rand(3, 10);
+    return { q: `밑변 ${b} cm, 높이 ${h} cm\n평행사변형의 넓이는?`, type: 'number', ans: b * h, hint: '넓이 = 밑변 × 높이', unit: 'cm²' };
+  }
+  // type 5: 사다리꼴
+  const a = rand(3, 10), b = rand(3, 10), h = rand(2, 8) * 2; // h 짝수
+  return { q: `윗변 ${a} cm, 아랫변 ${b} cm, 높이 ${h} cm\n사다리꼴의 넓이는?`, type: 'number', ans: (a + b) * h / 2, hint: '넓이 = (윗변 + 아랫변) × 높이 ÷ 2', unit: 'cm²' };
+}
+
+// ===== 단원 데이터 =====
+const UNITS = [
+  { id: 1, name: '자연수의 혼합 계산', color: '#FF6B6B', icon: '🔢', prereq: gen1Prereq, main: gen1Main },
+  { id: 2, name: '약수와 배수',         color: '#4ECDC4', icon: '✂️', prereq: gen2Prereq, main: gen2Main },
+  { id: 4, name: '약분과 통분',         color: '#45B7D1', icon: '⚖️', prereq: gen4Prereq, main: gen4Main },
+  { id: 5, name: '분수의 덧셈과 뺄셈', color: '#96CEB4', icon: '➕', prereq: gen5Prereq, main: gen5Main },
+  { id: 6, name: '다각형의 둘레와 넓이',color: '#F7B731', icon: '📐', prereq: gen6Prereq, main: gen6Main },
+];
+
+// ===== 상태 =====
+let currentUnit = null, currentTab = 'prereq', currentProblem = null, answered = false;
+let score = { correct: 0, total: 0 };
+
+// ===== UI =====
+function showMain() {
+  document.getElementById('main-screen').style.display = 'block';
+  document.getElementById('unit-screen').style.display = 'none';
+}
+
+function showUnit(unitId) {
+  currentUnit = UNITS.find(u => u.id === unitId);
+  document.getElementById('main-screen').style.display = 'none';
+  document.getElementById('unit-screen').style.display = 'block';
+  document.getElementById('unit-title').textContent = `${currentUnit.id}단원: ${currentUnit.name}`;
+  document.getElementById('unit-screen').style.setProperty('--unit-color', currentUnit.color);
+  setTab('prereq');
+}
+
+function showTab(tab) { setTab(tab); }
+
+function setTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-prereq').classList.toggle('active', tab === 'prereq');
+  document.getElementById('tab-main').classList.toggle('active', tab === 'main');
+  score = { correct: 0, total: 0 };
+  updateScore();
+  generateProblem();
+}
+
+function updateScore() {
+  document.getElementById('score-display').textContent = `맞은 문제: ${score.correct} / ${score.total}`;
+}
+
+function resetScore() {
+  score = { correct: 0, total: 0 };
+  updateScore();
+  generateProblem();
+}
+
+function generateProblem() {
+  answered = false;
+  const gen = currentTab === 'prereq' ? currentUnit.prereq : currentUnit.main;
+  currentProblem = gen();
+  renderProblem();
+}
+
+function renderProblem() {
+  const p = currentProblem;
+  let inputHtml = '';
+
+  if (p.type === 'number') {
+    inputHtml = `
+      <input type="number" id="ans-input" class="num-input" placeholder="답">
+      ${p.unit ? `<span class="unit-label">${p.unit}</span>` : ''}`;
+
+  } else if (p.type === 'fraction') {
+    inputHtml = `
+      <div class="frac-input-wrap">
+        <input type="number" id="ans-num" class="frac-field" placeholder="분자">
+        <div class="frac-divider"></div>
+        <input type="number" id="ans-den" class="frac-field" placeholder="분모">
+      </div>`;
+
+  } else if (p.type === 'mixed') {
+    inputHtml = `
+      <div class="mixed-input-wrap">
+        <input type="number" id="ans-whole" class="whole-field" placeholder="정수">
+        <span class="and-text">과</span>
+        <div class="frac-input-wrap">
+          <input type="number" id="ans-num" class="frac-field" placeholder="분자">
+          <div class="frac-divider"></div>
+          <input type="number" id="ans-den" class="frac-field" placeholder="분모">
+        </div>
+      </div>`;
+
+  } else if (p.type === 'choice') {
+    inputHtml = `
+      <div class="choice-btns">
+        ${p.choices.map(c => `<button class="choice-btn" onclick="selectChoice('${c}')">${c}</button>`).join('')}
+      </div>`;
+  }
+
+  document.getElementById('problem-area').innerHTML = `
+    <div class="problem-card">
+      <div class="problem-hint">💡 ${p.hint}</div>
+      <div class="problem-q">${p.q.replace(/\n/g, '<br>')}</div>
+      <div class="answer-area">${inputHtml}</div>
+      <div id="result-area"></div>
+      <div class="btn-row">
+        ${p.type !== 'choice' ? `<button class="check-btn" id="check-btn" onclick="checkAnswer()">확인 ✓</button>` : ''}
+        <button class="next-btn" id="next-btn" onclick="generateProblem()" style="display:none">다음 문제 →</button>
+      </div>
+    </div>
+  `;
+
+  // 포커스 + Enter 키 지원
+  setTimeout(() => {
+    const firstInput = document.getElementById('ans-input') ||
+                       document.getElementById('ans-whole') ||
+                       document.getElementById('ans-num');
+    if (firstInput) firstInput.focus();
+    document.querySelectorAll('#problem-area input').forEach(inp =>
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer(); })
+    );
+  }, 50);
+}
+
+function selectChoice(choice) {
+  if (answered) return;
+  answered = true;
+  score.total++;
+  const correct = choice === currentProblem.ans;
+  if (correct) score.correct++;
+  updateScore();
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.disabled = true;
+    if (btn.textContent === currentProblem.ans) btn.classList.add('correct-choice');
+    else if (btn.textContent === choice && !correct) btn.classList.add('wrong-choice');
+  });
+  showResult(correct);
+}
+
+function checkAnswer() {
+  if (answered) return;
+  const p = currentProblem;
+  let correct = false;
+
+  if (p.type === 'number') {
+    const val = parseFloat(document.getElementById('ans-input').value);
+    if (isNaN(val)) return;
+    correct = val === p.ans;
+
+  } else if (p.type === 'fraction') {
+    const num = parseInt(document.getElementById('ans-num').value);
+    const den = parseInt(document.getElementById('ans-den').value);
+    if (isNaN(num) || isNaN(den) || den === 0) return;
+    // 동치 확인 (교차 곱)
+    const equiv = num * p.ans.den === p.ans.num * den;
+    // 기약분수 요구 시 추가 확인
+    const simplified = !p.requireSimplified || gcd(Math.abs(num), Math.abs(den)) === 1;
+    correct = equiv && simplified;
+
+  } else if (p.type === 'mixed') {
+    const whole = parseInt(document.getElementById('ans-whole').value) || 0;
+    const num   = parseInt(document.getElementById('ans-num').value);
+    const den   = parseInt(document.getElementById('ans-den').value);
+    if (isNaN(num) || isNaN(den) || den === 0) return;
+    // 대분수 전체를 분수로 변환해 동치 확인
+    const userTotal = whole * den + num;
+    const ansTotal  = p.ans.whole * p.ans.den + p.ans.num;
+    correct = userTotal * p.ans.den === ansTotal * den;
+  }
+
+  answered = true;
+  score.total++;
+  if (correct) score.correct++;
+  updateScore();
+  showResult(correct);
+}
+
+function getAnswerText(p) {
+  if (p.type === 'number')   return `${p.ans}${p.unit || ''}`;
+  if (p.type === 'fraction') return `${p.ans.num}/${p.ans.den}`;
+  if (p.type === 'mixed')    return `${p.ans.whole}과 ${p.ans.num}/${p.ans.den}`;
+  return p.ans;
+}
+
+function showResult(correct) {
+  document.getElementById('result-area').innerHTML = `
+    <div class="result ${correct ? 'correct' : 'wrong'}">
+      ${correct ? '⭕ 정답입니다!' : `❌ 틀렸어요. 정답: <strong>${getAnswerText(currentProblem)}</strong>`}
+    </div>
+  `;
+  document.getElementById('next-btn').style.display = 'inline-block';
+  document.querySelectorAll('#problem-area input').forEach(i => i.disabled = true);
+  const checkBtn = document.getElementById('check-btn');
+  if (checkBtn) checkBtn.disabled = true;
+}
+
+// ===== 메인 화면 초기화 =====
+const grid = document.getElementById('unit-grid');
+UNITS.forEach(u => {
+  const card = document.createElement('div');
+  card.className = 'unit-card';
+  card.style.borderTop = `6px solid ${u.color}`;
+  card.onclick = () => showUnit(u.id);
+  card.innerHTML = `
+    <div class="unit-icon">${u.icon}</div>
+    <div class="unit-num">${u.id}단원</div>
+    <div class="unit-name">${u.name}</div>
+  `;
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>

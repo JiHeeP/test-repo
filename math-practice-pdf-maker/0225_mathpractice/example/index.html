@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수학 연산 문제 생성기 (순서 정렬 완료)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@700&display=swap'); 
+
+        :root {
+            --primary-color: #4a90e2;
+            --text-color: #333;
+            --paper-width: 210mm;
+            --paper-height: 297mm;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        /* 컨트롤 패널 */
+        .controls {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1100px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Noto Sans KR', sans-serif;
+            min-width: 360px;
+        }
+
+        input[type="number"] {
+            width: 50px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            text-align: center;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            font-family: 'Noto Sans KR', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        .btn-refresh { background-color: #2ecc71; color: white; }
+        .btn-refresh:hover { background-color: #27ae60; }
+
+        .btn-add { background-color: #f39c12; color: white; }
+        .btn-add:hover { background-color: #e67e22; }
+
+        .btn-print { background-color: #3498db; color: white; }
+        .btn-print:hover { background-color: #2980b9; }
+
+        .btn-answer { background-color: #9b59b6; color: white; }
+        .btn-answer:hover { background-color: #8e44ad; }
+
+        /* 구구단 설정 버튼 (평소엔 숨김) */
+        #btn-gugudan-setting {
+            background-color: #95a5a6;
+            color: white;
+            display: none; /* 기본 숨김 */
+        }
+        #btn-gugudan-setting:hover { background-color: #7f8c8d; }
+
+        /* 팝업(모달) 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .modal-overlay.show { display: flex; }
+        
+        .modal-window {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .gugudan-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .gugudan-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .gugudan-checkbox-label input {
+            width: 18px;
+            height: 18px;
+        }
+        .modal-footer button {
+            width: 100%;
+            justify-content: center;
+            background-color: #3498db;
+            color: white;
+        }
+
+        /* A4 용지 */
+        .sheet {
+            width: var(--paper-width);
+            height: var(--paper-height);
+            background: white;
+            padding: 20mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 30px;
+            page-break-after: always;
+        }
+        .sheet:last-child { margin-bottom: 0; }
+
+        h1 {
+            font-size: 16px; 
+            margin: 0 0 30px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+            text-align: left;
+            white-space: nowrap; 
+            letter-spacing: -0.5px; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 그리드 시스템 */
+        .problem-grid {
+            display: grid;
+            flex-grow: 1;
+            gap: 15px 10px;
+        }
+        
+        .problem-grid.standard {
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(5, 1fr); /* 20문제 */
+        }
+
+        .problem-grid.practice {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(5, 1fr); /* 15문제 */
+        }
+
+        .problem-grid.dense {
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(9, 1fr); /* 36문제 */
+            gap: 15px 5px;
+        }
+
+        /* 가로셈 연습용 (공간 확보) */
+        .problem-grid.horiz-practice {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(5, 1fr); /* 15문제 */
+            gap: 20px 30px; /* 간격 충분히 */
+        }
+
+        .problem-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 10px;
+            position: relative;
+        }
+
+        .problem-num {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border: 1.5px solid #555;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: #555;
+            z-index: 10;
+        }
+
+        /* ========================================
+           ★ [연습(가로셈)] 전용 스타일 (최적화 버전) ★
+           ======================================== 
+        */
+        .equation-row {
+            display: flex; 
+            align-items: flex-start; 
+            gap: 8px; 
+            font-size: 26px; /* 폰트 26 */
+            font-weight: normal; /* 굵기 제거 */
+            color: #333;
+            line-height: 1; 
+            margin-top: 35px; /* 번호와 간격 */
+        }
+
+        /* 일반 텍스트(+ , = , 숫자) */
+        .text-part { 
+            padding-top: 0; 
+            display: flex;
+            align-items: flex-start;
+            height: 26px; 
+        }
+
+        /* 가르기 전체 컨테이너 */
+        .split-container {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            margin-top: 0;
+        }
+        
+        /* 가르기 대상 숫자 (맨 위 숫자) */
+        .split-target-num {
+            line-height: 1;
+            height: 26px; 
+            display: flex;
+            align-items: flex-start;
+        }
+
+        /* SVG 가지: 너비 76px, 높이 20px */
+        .split-line-svg { width: 76px; height: 20px; }
+        .split-line-svg line { stroke: #333; stroke-width: 1.5; stroke-linecap: round; } 
+        
+        /* 박스 컨테이너: 너비 76px */
+        .bottom-boxes {
+            display: flex; justify-content: space-between; width: 76px; margin-top: -2px;
+        }
+        
+        /* 작은 네모 박스: 30px (80% 축소) */
+        .small-box {
+            width: 30px; height: 30px; 
+            border: 1.5px solid #555; 
+            border-radius: 5px; 
+            display: flex; justify-content: center; align-items: center;
+            font-size: 15px; /* 폰트 축소 */
+            background: white; color: transparent;
+        }
+        .small-box .small-box-answer.show { color: #e74c3c; }
+
+        /* 정답 입력 박스: 50px */
+        .answer-box {
+            width: 50px; height: 50px; 
+            border: 2px solid #666; 
+            border-radius: 8px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 26px; 
+            color: transparent; 
+            margin-top: -10px; 
+        }
+        .answer-box.show { color: #e74c3c; }
+
+
+        /* ========================================
+           [연습 2] 세로셈 전용 스타일
+           ======================================== 
+        */
+        .calc-layout-v2 {
+            display: grid;
+            grid-template-columns: 25px 35px 35px 5px 15px; 
+            grid-template-rows: 30px 30px 30px 4px 30px;
+            margin-top: 10px;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .cell-v2 {
+            display: flex; justify-content: center; align-items: center;
+            font-size: 26px; font-weight: 500; color: #333; line-height: 1;
+        }
+
+        .borrow-box-v2 {
+            width: 24px; height: 24px; border: 1.5px solid black; background-color: white;
+            box-sizing: border-box; display: flex; justify-content: center; align-items: center;
+            font-size: 14px; color: transparent; font-family: inherit;
+        }
+        .borrow-box-v2.show { color: #ff0000; }
+
+        .operator-v2 {
+            grid-column: 1 / 2; grid-row: 3 / 4; justify-content: flex-start; padding-left: 5px; font-size: 26px;
+        }
+
+        .calc-line-v2 {
+            grid-column: 1 / 4; grid-row: 4 / 5; background-color: black; height: 2px; border-radius: 1px; align-self: center;
+        }
+
+        .red-bracket-v2 {
+            grid-column: 4 / 6; grid-row: 1 / 4;    
+            border-top: 2px solid #ff4d4d; border-right: 2px solid #ff4d4d; border-bottom: 2px solid #ff4d4d;
+            margin-top: 15px; margin-bottom: 15px; margin-left: -5px; width: 100%; box-sizing: border-box;
+            border-top-right-radius: 5px; border-bottom-right-radius: 5px;
+        }
+
+        .answer-row-v2 {
+            font-size: 26px; font-weight: 700; color: #e74c3c; visibility: hidden;
+        }
+        .answer-row-v2.show { visibility: visible; }
+
+
+        /* ========================================
+           세로셈 일반 스타일
+           ======================================== 
+        */
+        .calc-wrapper { display: flex; align-items: center; margin-top: 15px; }
+        .calc-box {
+            display: flex; flex-direction: column; align-items: flex-end; font-size: 26px; font-family: 'Noto Sans KR', sans-serif;
+            letter-spacing: 2px; width: 80px; padding: 5px 10px; position: relative; background: white;
+        }
+        .calc-box.has-diagram { margin-right: 5px; }
+        .row { width: 100%; text-align: right; line-height: 1.4; }
+        .operator-row {
+            display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 2px solid #333; margin-bottom: 8px;
+        }
+        .operator { margin-left: -5px; }
+        .answer-row {
+            height: 30px; color: #e74c3c; font-weight: 700; text-align: right; width: 100%; visibility: hidden;
+        }
+        .answer-row.show { visibility: visible; }
+
+        /* 가로셈(일반) 스타일 */
+        .horizontal-box {
+            display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 500;
+            margin-top: 25px; gap: 8px; width: 100%; padding: 0 5px;
+        }
+        .dense .horizontal-box { margin-top: 25px; }
+        
+        .blank-box {
+            width: 40px; height: 40px; border: 2px solid #555; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; background: #fff;
+        }
+        .blank-box .answer-row { width: auto; height: auto; text-align: center; margin: 0; padding: 0; font-size: 22px; color: #e74c3c; visibility: hidden; }
+        .blank-box .answer-row.show { visibility: visible; }
+
+        /* 다이어그램 (세로셈용) */
+        .diagram-box {
+            display: flex; flex-direction: column; justify-content: center; height: 100%; padding-left: 0; position: relative;
+        }
+        .cherry-inputs {
+            display: flex; flex-direction: column; gap: 8px; justify-content: center;
+        }
+        .input-circle {
+            width: 28px; height: 20px; border: 1.5px solid #333; border-radius: 8px; background: white;
+        }
+        .branch-lines {
+            position: absolute; left: -15px; top: 38px; width: 20px; height: 40px; pointer-events: none; overflow: visible;
+        }
+
+        /* 인쇄 설정 */
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { display: block; background: none; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .controls, .modal-overlay { display: none !important; }
+            #sheets-container { width: 100%; }
+            .sheet { box-shadow: none; margin: 0; width: 210mm; height: 297mm; page-break-after: always; break-inside: avoid; overflow: hidden; }
+            .sheet:last-child { page-break-after: auto; }
+        }
+
+        @media screen and (max-width: 850px) {
+            .controls { flex-direction: column; align-items: stretch; }
+            .sheet { transform: scale(0.6); transform-origin: top center; margin-bottom: -400px; }
+            .sheet:last-child { margin-bottom: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 구구단 선택 모달 -->
+    <div class="modal-overlay" id="gugudanModal">
+        <div class="modal-window">
+            <div class="modal-title">출제할 단 선택</div>
+            <div class="gugudan-grid">
+                <label class="gugudan-checkbox-label"><input type="checkbox" value="0" class="gugudan-chk"> 0단</label>
+                <label class="gugudan-checkbox-label"><input type="checkbox" value="1" class="gugudan-chk"> 1단</label>
+                <label class="gugudan-checkbox-label"><input type="checkbox" value="2" class="gugudan-chk" checked> 2단</label>
+                <label class="gugudan-checkbox-label"><input type="checkbox" value="3" class="gugudan-chk" checked> 3단</label>
+                <label class="gugudan-checkbox-label"><input type="checkbox" value="4" class="gugudan-chk" checked> 4단</label>
+                <label class="gugudan-checkbox-label"><input type="checkbox" value="5" class="gugudan-chk" checked> 5단</label>
+                <label class="gugudan-checkbox-label"><input type="checkbox" value="6" class="gugudan-chk" checked> 6단</label>
+                <label class="gugudan-checkbox-label"><input type="checkbox" value="7" class="gugudan-chk" checked> 7단</label>
+                <label class="gugudan-checkbox-label"><input type="checkbox" value="8" class="gugudan-chk" checked> 8단</label>
+                <label class="gugudan-checkbox-label"><input type="checkbox" value="9" class="gugudan-chk" checked> 9단</label>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="input-group">
+            <select id="problemType" onchange="handleTypeChange()">
+                <!-- 1. 10의 보수 -->
+                <option value="make_ten">10의 보수 (가로셈 빈칸)</option>
+                
+                <!-- 2. 한 자리 수 덧셈 (받아올림) -->
+                <option value="1d1d_carry_horiz_prac" selected>한 자리 수 + 한 자리 수(받아올림) - 가로 연습</option>
+                <option value="1d1d_carry_prac">한 자리 수 + 한 자리 수(받아올림) - 연습</option>
+                <option value="1d1d_carry_horiz">한 자리 수 + 한 자리 수(받아올림) - 가로</option>
+                <option value="1d1d_carry">한 자리 수 + 한 자리 수(받아올림)</option>
+                
+                <!-- 3. 십몇 - 몇 (받아내림) -->
+                <option value="teen_borrow_horiz_prac">십몇 - 몇(받아내림) - 가로 연습</option>
+                <option value="teen_borrow_prac">십몇 - 몇(받아내림) - 연습</option>
+                <option value="teen_borrow_horiz">십몇 - 몇(받아내림) - 가로</option>
+                <option value="teen_borrow">십몇 - 몇(받아내림)</option>
+
+                <!-- 4. 혼합 1단계 -->
+                <option value="mix_1d_2d">한 자리 수 + 한 자리 수(받아올림), 십몇 - 몇(받아내림) 혼합</option>
+
+                <!-- 5. 두 자리 수 + 한 자리 수 (받아올림) -->
+                <option value="2d1d_carry_horiz_prac">두 자리 수 + 한 자리 수(받아올림) - 가로 연습</option>
+                <option value="2d1d_carry_prac">두 자리 수 + 한 자리 수(받아올림) - 연습</option>
+                <option value="2d1d_carry">두 자리 수 + 한 자리 수(받아올림)</option>
+
+                <!-- 6. 두 자리 수 - 한 자리 수 (받아내림) -->
+                <option value="2d1d_borrow_prac">두 자리 수 - 한 자리 수(받아내림) - 연습</option>
+                <option value="2d1d_sub_opt2">두 자리 수 - 한 자리 수(받아내림) - 연습 2</option>
+                <option value="2d1d_borrow">두 자리 수 - 한 자리 수(받아내림)</option>
+                
+                <!-- 7. 두 자리 덧셈 -->
+                <option value="2d2d_carry_prac">두 자리 수 + 두 자리 수(받아올림) - 연습</option>
+                <option value="2d2d_carry">두 자리 수 + 두 자리 수(받아올림)</option>
+                <option value="2d2d_double_carry">두 자리 수 + 두 자리 수(받아올림 2번)</option>
+                <option value="2d2d_add_mix">두 자리 수 + 두 자리 수(혼합)</option>
+                
+                <!-- 8. 두 자리 뺄셈 -->
+                <option value="2d2d_borrow_prac">두 자리 수 - 두 자리 수(받아내림) - 연습</option>
+                <option value="2d2d_sub_opt2">두 자리 수 - 두 자리 수(받아내림) - 연습 2</option>
+                <option value="2d2d_borrow">두 자리 수 - 두 자리 수(받아내림)</option>
+                <option value="2d2d_sub_mix">두 자리 수 - 두 자리 수(혼합)</option>
+                
+                <!-- 9. 혼합 2단계 -->
+                <option value="mix_2d_all">두 자리 수 덧셈과 뺄셈 혼합</option>
+
+                <!-- 10. 구구단 -->
+                <option value="gugudan_basic">곱셈구구 (기본)</option>
+                <option value="gugudan_blank">곱셈구구 (빈칸)</option>
+            </select>
+        </div>
+        
+        <button id="btn-gugudan-setting" onclick="openModal()">
+            ⚙️ 단 선택
+        </button>
+
+        <div class="input-group">
+            <label for="pageCount">장 수:</label>
+            <input type="number" id="pageCount" value="1" min="1" max="50">
+        </div>
+        
+        <button class="btn-refresh" onclick="generateWorksheets('replace')">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            새로 만들기
+        </button>
+
+        <button class="btn-add" onclick="generateWorksheets('append')">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            추가하기
+        </button>
+
+        <button class="btn-answer" onclick="toggleAnswers()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+            정답
+        </button>
+        <button class="btn-print" onclick="window.print()">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M7 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2M7 9h10V4H7v5zm10 8H7v5h10v-5z"/></svg>
+            인쇄
+        </button>
+    </div>
+
+    <div id="sheets-container"></div>
+
+    <script>
+        // 전역변수: 선택된 구구단 단수 목록
+        let selectedDans = [2, 3, 4, 5, 6, 7, 8, 9]; // 기본값
+
+        function openModal() {
+            document.getElementById('gugudanModal').classList.add('show');
+        }
+
+        function closeModal() {
+            // 체크된 단 수집
+            const checkboxes = document.querySelectorAll('.gugudan-chk');
+            const checkedValues = [];
+            checkboxes.forEach(cb => {
+                if (cb.checked) checkedValues.push(parseInt(cb.value));
+            });
+            
+            if (checkedValues.length === 0) {
+                alert("최소 한 개 이상의 단을 선택해주세요.");
+                return;
+            }
+            
+            selectedDans = checkedValues;
+            document.getElementById('gugudanModal').classList.remove('show');
+            
+            // 모달 닫을 때 바로 문제 새로고침 (사용자 편의)
+            generateWorksheets('replace');
+        }
+
+        function handleTypeChange() {
+            const type = document.getElementById('problemType').value;
+            const btn = document.getElementById('btn-gugudan-setting');
+            
+            if (type.startsWith('gugudan')) {
+                btn.style.display = 'flex';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // --- 1. 10의 보수 ---
+        function generateMakeTen(index, totalProblems) {
+            const halfPoint = Math.floor(totalProblems / 2);
+            const isAddition = index <= halfPoint;
+            let parts = [], blankIndex;
+
+            if (isAddition) {
+                let n = getRandomInt(1, 9);
+                let m = 10 - n;
+                parts = [n, '+', m, '=', 10];
+                let r = getRandomInt(0, 2);
+                if (r === 0) blankIndex = 0;      
+                else if (r === 1) blankIndex = 2; 
+                else blankIndex = 4;              
+            } else {
+                let n = getRandomInt(1, 9);
+                let m = 10 - n;
+                parts = [10, '-', n, '=', m];
+                let r = getRandomInt(0, 2);
+                if (r === 0) blankIndex = 0;      
+                else if (r === 1) blankIndex = 2; 
+                else blankIndex = 4;              
+            }
+            return { isHorizontal: true, parts: parts, blankIndex: blankIndex };
+        }
+
+        // --- 구구단 (선택된 단 반영) ---
+        function generateGugudanBasic() {
+            // selectedDans 배열에서 랜덤하게 하나 선택
+            let n = selectedDans[Math.floor(Math.random() * selectedDans.length)];
+            let m = getRandomInt(1, 9);
+            return { isHorizontal: true, parts: [n, '×', m, '=', n * m], blankIndex: 4 };
+        }
+        function generateGugudanBlank() {
+            let n = selectedDans[Math.floor(Math.random() * selectedDans.length)];
+            let m = getRandomInt(1, 9);
+            let blankIndex = (Math.random() < 0.5) ? 0 : 2;
+            return { isHorizontal: true, parts: [n, '×', m, '=', n * m], blankIndex: blankIndex };
+        }
+
+        // --- 세로셈 로직 ---
+        function generate1d1dCarry() {
+            while (true) {
+                let a = getRandomInt(2, 9);
+                let b = getRandomInt(2, 9);
+                if (a + b >= 10) return { num1: a, num2: b, op: '+', ans: a + b };
+            }
+        }
+
+        // ★ New: 2자리 + 1자리 (받아올림) ★
+        function generate2d1dCarry() {
+            while (true) {
+                let a = getRandomInt(10, 89);
+                let b = getRandomInt(2, 9);
+                // 일의 자리 합이 10 이상이어야 함
+                if ((a % 10) + b >= 10) return { num1: a, num2: b, op: '+', ans: a + b };
+            }
+        }
+        
+        // 십몇 - 몇 (받아내림)
+        function generateTeenBorrow() {
+            while (true) {
+                let a = getRandomInt(11, 18);
+                let b = getRandomInt(2, 9);
+                // 일의 자리가 작아야 받아내림 발생
+                if (a % 10 < b) return { num1: a, num2: b, op: '-', ans: a - b };
+            }
+        }
+
+        // 두 자리 - 한 자리 (받아내림) [수정: 첫 수가 20 이상]
+        function generate2d1dBorrow() {
+            while (true) {
+                let a = getRandomInt(20, 98); // 20 이상으로 수정
+                let b = getRandomInt(2, 9);
+                if (a % 10 < b) return { num1: a, num2: b, op: '-', ans: a - b };
+            }
+        }
+
+        function generate2d2dAdd(forceMode) {
+            while (true) {
+                let a = getRandomInt(10, 99);
+                let b = getRandomInt(10, 99);
+                
+                const unitSum = (a % 10) + (b % 10);
+                const totalSum = a + b;
+                const hasUnitCarry = unitSum >= 10;
+                const isDoubleCarry = hasUnitCarry && (totalSum >= 100);
+                
+                if (forceMode === 'none') {
+                     if (!hasUnitCarry && totalSum < 100) return { num1: a, num2: b, op: '+', ans: totalSum };
+                } 
+                else if (forceMode === 'single') {
+                    if (hasUnitCarry && totalSum < 100) return { num1: a, num2: b, op: '+', ans: totalSum };
+                }
+                else if (forceMode === 'double') {
+                    if (isDoubleCarry) return { num1: a, num2: b, op: '+', ans: totalSum };
+                }
+                else if (forceMode === 'any') {
+                    return { num1: a, num2: b, op: '+', ans: totalSum };
+                }
+            }
+        }
+
+        function generate2d2dSub(forceBorrow) {
+            while (true) {
+                let a = getRandomInt(11, 99);
+                let b = getRandomInt(10, 89);
+                if (a <= b) continue;
+                const hasBorrow = (a % 10) < (b % 10);
+                if (forceBorrow === true && !hasBorrow) continue;
+                if (forceBorrow === false && hasBorrow) continue;
+                return { num1: a, num2: b, op: '-', ans: a - b };
+            }
+        }
+
+        function getProblem(type, index, totalProblems) {
+            const halfPoint = Math.floor(totalProblems / 2);
+            const baseType = type.replace('_prac', '');
+
+            switch (baseType) {
+                case 'make_ten': return generateMakeTen(index, totalProblems);
+                case 'gugudan_basic': return generateGugudanBasic();
+                case 'gugudan_blank': return generateGugudanBlank();
+                
+                // 가로셈 (1자리+1자리, 십몇-몇)
+                case '1d1d_carry_horiz': {
+                    let p = generate1d1dCarry();
+                    // isHorizPrac가 있으면 가르기 연습 모드로 진입
+                    if (type.endsWith('horiz_prac')) {
+                        return { isHorizontal: true, parts: [p.num1, '+', p.num2, '=', p.ans], blankIndex: 4, isHorizPrac: true, op: '+', num1: p.num1, num2: p.num2, ans: p.ans };
+                    }
+                    return { isHorizontal: true, parts: [p.num1, '+', p.num2, '=', p.ans], blankIndex: 4 };
+                }
+
+                // ★ New: 2자리 + 1자리 ★
+                case '2d1d_carry': return generate2d1dCarry();
+                case '2d1d_carry_prac': return generate2d1dCarry(); // suffix handled implicitly by creating p
+                case '2d1d_carry_horiz': {
+                    let p = generate2d1dCarry();
+                    if (type.endsWith('horiz_prac')) {
+                        return { isHorizontal: true, parts: [p.num1, '+', p.num2, '=', p.ans], blankIndex: 4, isHorizPrac: true, op: '+', num1: p.num1, num2: p.num2, ans: p.ans };
+                    }
+                    return { isHorizontal: true, parts: [p.num1, '+', p.num2, '=', p.ans], blankIndex: 4 };
+                }
+                
+                case 'teen_borrow_horiz': {
+                    let p = generateTeenBorrow();
+                    if (type.endsWith('horiz_prac')) {
+                        return { isHorizontal: true, parts: [p.num1, '-', p.num2, '=', p.ans], blankIndex: 4, isHorizPrac: true, op: '-', num1: p.num1, num2: p.num2, ans: p.ans };
+                    }
+                    return { isHorizontal: true, parts: [p.num1, '-', p.num2, '=', p.ans], blankIndex: 4 };
+                }
+                
+                case 'teen_borrow': return generateTeenBorrow();
+                case '2d1d_borrow': return generate2d1dBorrow();
+                case '2d1d_sub_opt2': {
+                    const p = generate2d1dBorrow();
+                    return { ...p, isPractice2: true };
+                }
+                
+                case '2d2d_carry': return generate2d2dAdd('single'); 
+                case '2d2d_double_carry': return generate2d2dAdd('double');
+                case '2d2d_add_mix': 
+                    const r = Math.random();
+                    if (r < 0.33) return generate2d2dAdd('none');
+                    else if (r < 0.66) return generate2d2dAdd('single');
+                    else return generate2d2dAdd('double');
+
+                case '2d2d_borrow': return generate2d2dSub(true);
+                case '2d2d_sub_mix': return (index % 2 === 0) ? generate2d2dSub(true) : generate2d2dSub(false);
+                case '2d2d_sub_opt2': {
+                    const p = generate2d2dSub(true);
+                    return { ...p, isPractice2: true };
+                }
+                
+                case '1d1d_carry': return generate1d1dCarry();
+                
+                // ★ 수정됨: 1자리+1자리 & 십몇-몇 혼합 ★
+                case 'mix_1d_2d': return (index <= halfPoint) ? generate1d1dCarry() : generateTeenBorrow();
+                
+                case 'mix_2d_all': 
+                    if (index <= halfPoint) {
+                        return (Math.random() < 0.5) ? generate2d2dAdd('single') : generate2d2dAdd('double');
+                    } else {
+                        return generate2d2dSub(true);
+                    }
+                    
+                default: return generate2d2dAdd('single');
+            }
+        }
+
+        function getTitle(type) {
+            if (type.includes('10의 보수')) return '10의 보수 연습';
+            if (type.includes('곱셈구구')) return '곱셈구구 연습';
+            if (type.includes('덧셈')) return '덧셈 연습';
+            if (type.includes('뺄셈')) return '뺄셈 연습';
+            return '계산 연습';
+        }
+
+        function generateWorksheets(mode) {
+            const container = document.getElementById('sheets-container');
+            const pageCount = parseInt(document.getElementById('pageCount').value) || 1;
+            const type = document.getElementById('problemType').value;
+            const selectElement = document.getElementById('problemType');
+            const titleText = selectElement.options[selectElement.selectedIndex].text;
+            
+            const isPractice = type.endsWith('_prac');
+
+            if (mode === 'replace') {
+                container.innerHTML = '';
+            }
+
+            for (let p = 0; p < pageCount; p++) {
+                createSingleSheet(container, type, titleText, isPractice);
+            }
+        }
+
+        function createSingleSheet(container, type, titleText, isPractice) {
+            const sheet = document.createElement('div');
+            sheet.className = 'sheet';
+
+            const h1 = document.createElement('h1');
+            
+            let displayTitle = titleText
+                .replace(' - 연습(가로셈)', '')
+                .replace(' - 연습', '')
+                .replace(' - 가로 연습', '')
+                .replace(' - 연습 2', '')
+                .replace(' - 가로', '');
+            
+            if (type.includes('_opt2')) displayTitle += ' (연습 2)';
+            if (type.includes('_horiz')) displayTitle += ' (가로셈)';
+            
+            h1.textContent = displayTitle;
+            sheet.appendChild(h1);
+
+            const grid = document.createElement('div');
+            
+            let totalProblems;
+            if (type === 'make_ten' || type.startsWith('gugudan') || (type.endsWith('_horiz') && !type.endsWith('_horiz_prac'))) {
+                totalProblems = 36;
+                grid.className = 'problem-grid dense';
+            } 
+            else if (type.endsWith('_horiz_prac') || isPractice || type.includes('_opt2')) {
+                totalProblems = 15;
+                grid.className = 'problem-grid horiz-practice'; 
+            } 
+            else {
+                totalProblems = 20;
+                grid.className = 'problem-grid standard';
+            }
+            
+            for (let i = 1; i <= totalProblems; i++) {
+                const problem = getProblem(type, i, totalProblems);
+                const item = document.createElement('div');
+                item.className = 'problem-item';
+
+                // --- 1. 가로셈 처리 ---
+                if (problem.isHorizontal) {
+                    let html = `<div class="problem-num">${i}</div>`;
+                    
+                    // ★ 가르기 연습 모드 (최적화 로직 적용) ★
+                    if (problem.isHorizPrac) {
+                        let n1 = problem.num1, n2 = problem.num2, ans = problem.ans, op = problem.op;
+                        
+                        let targetIdx = -1; // 0: 앞, 1: 뒤
+                        let split1, split2;
+                        
+                        if (op === '+') {
+                            // 덧셈: 항상 뒤(1)를 가름
+                            targetIdx = 1; 
+                            let need = 10 - (n1 % 10);
+                            split1 = need; 
+                            split2 = n2 - need;
+                        } else {
+                            // 뺄셈: 항상 앞(빼지는 수)을 가름
+                            targetIdx = 0;
+                            split1 = 10;
+                            split2 = n1 - 10;
+                        }
+
+                        html += `<div class="equation-row">`;
+                        
+                        // 앞 숫자
+                        if (targetIdx === 0) {
+                            html += `
+                                <div class="split-container">
+                                    <div class="split-target-num">${n1}</div>
+                                    <svg class="split-line-svg">
+                                        <line x1="38" y1="0" x2="15" y2="20" />
+                                        <line x1="38" y1="0" x2="61" y2="20" />
+                                    </svg>
+                                    <div class="bottom-boxes">
+                                        <div class="small-box"><span class="small-box-answer">${split1}</span></div>
+                                        <div class="small-box"><span class="small-box-answer">${split2}</span></div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            html += `<div class="text-part">${n1}</div>`;
+                        }
+
+                        html += `<div class="text-part">${op}</div>`;
+
+                        // 뒤 숫자
+                        if (targetIdx === 1) {
+                            html += `
+                                <div class="split-container">
+                                    <div class="split-target-num">${n2}</div>
+                                    <svg class="split-line-svg">
+                                        <line x1="38" y1="0" x2="15" y2="20" />
+                                        <line x1="38" y1="0" x2="61" y2="20" />
+                                    </svg>
+                                    <div class="bottom-boxes">
+                                        <div class="small-box"><span class="small-box-answer">${split1}</span></div>
+                                        <div class="small-box"><span class="small-box-answer">${split2}</span></div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            html += `<div class="text-part">${n2}</div>`;
+                        }
+
+                        html += `<div class="text-part">=</div>`;
+                        html += `<div class="answer-box answer-row">${ans}</div>`;
+                        html += `</div>`; 
+                        
+                    } else {
+                        // 일반 가로셈
+                        html += `<div class="horizontal-box">`;
+                        problem.parts.forEach((part, idx) => {
+                            if (idx === problem.blankIndex) {
+                                html += `<div class="blank-box"><span class="answer-row">${part}</span></div>`;
+                            } else {
+                                html += `<span>${part}</span>`;
+                            }
+                        });
+                        html += `</div>`;
+                    }
+                    
+                    item.innerHTML = html;
+                    grid.appendChild(item);
+                    continue; 
+                }
+
+                // --- 2. [연습 2] 전용 Grid Layout ---
+                if (problem.isPractice2) {
+                    let n1_tens = Math.floor(problem.num1 / 10);
+                    let n1_units = problem.num1 % 10;
+                    let n1_tens_str = n1_tens > 0 ? n1_tens : '';
+
+                    let n2_tens = Math.floor(problem.num2 / 10);
+                    let n2_units = problem.num2 % 10;
+                    let n2_tens_str = n2_tens > 0 ? n2_tens : ''; 
+
+                    let ans_tens = Math.floor(problem.ans / 10);
+                    let ans_units = problem.ans % 10;
+                    let ans_tens_str = ans_tens > 0 ? ans_tens : '';
+
+                    // Grid Layout HTML 구성
+                    item.innerHTML = `
+                        <div class="problem-num">${i}</div>
+                        <div class="calc-layout-v2">
+                            <!-- 1행: 받아내림 박스 & 빨간 괄호 시작 -->
+                            <div class="cell-v2" style="grid-column: 3 / 4;">
+                                <div class="borrow-box-v2 answer-row">10</div>
+                            </div>
+                            <div class="red-bracket-v2"></div>
+
+                            <!-- 2행: 첫 번째 수 -->
+                            <div class="cell-v2" style="grid-column: 2 / 3;">${n1_tens_str}</div>
+                            <div class="cell-v2" style="grid-column: 3 / 4;">${n1_units}</div>
+
+                            <!-- 3행: 기호 & 두 번째 수 -->
+                            <div class="operator-v2 cell-v2">${problem.op}</div>
+                            <div class="cell-v2" style="grid-column: 2 / 3;">${n2_tens_str}</div>
+                            <div class="cell-v2" style="grid-column: 3 / 4;">${n2_units}</div>
+
+                            <!-- 4행: 계산 선 -->
+                            <div class="calc-line-v2"></div>
+
+                            <!-- 5행: 정답 -->
+                            <div class="cell-v2 answer-row-v2" style="grid-column: 2 / 3;">${ans_tens_str}</div>
+                            <div class="cell-v2 answer-row-v2" style="grid-column: 3 / 4;">${ans_units}</div>
+                        </div>
+                    `;
+                    grid.appendChild(item);
+                    continue;
+                }
+
+                // --- 3. 일반/연습1 세로셈 처리 ---
+                let num1Html = `<div class="row">${problem.num1}</div>`;
+                let boxClass = 'calc-box';
+                let diagramHtml = '';
+
+                // [연습 1] 체리 다이어그램
+                let showDiagram = false;
+                if (isPractice) {
+                    if (type === 'teen_borrow_prac') {
+                        showDiagram = true;
+                    } else {
+                        if (problem.op === '+') {
+                            // 받아올림이 있으면 다이어그램 표시
+                            if ((problem.num1 % 10) + (problem.num2 % 10) >= 10) showDiagram = true;
+                        } else if (problem.op === '-') {
+                            if ((problem.num1 % 10) < (problem.num2 % 10)) {
+                                showDiagram = true;
+                                if (problem.num1 % 10 === 0) showDiagram = false;
+                            }
+                        }
+                    }
+                }
+
+                if (showDiagram) {
+                    boxClass += ' has-diagram';
+                    
+                    let extraStyle = '';
+                    if (type === 'teen_borrow_prac') {
+                        // 십몇-몇 연습일 때 다이어그램을 위로 올림 (50px 상향)
+                        extraStyle = 'margin-bottom: 50px; margin-left: -5px;'; 
+                    }
+
+                    diagramHtml = `
+                        <div class="diagram-box" style="${extraStyle}">
+                            <svg class="branch-lines" viewBox="0 0 20 40">
+                                <line x1="0" y1="20" x2="20" y2="5" stroke="black" stroke-width="1.5" />
+                                <line x1="0" y1="20" x2="20" y2="35" stroke="black" stroke-width="1.5" />
+                            </svg>
+                            <div class="cherry-inputs">
+                                <div class="input-circle"></div>
+                                <div class="input-circle"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                item.innerHTML = `
+                    <div class="problem-num">${i}</div>
+                    <div class="calc-wrapper">
+                        <div class="${boxClass}">
+                            ${num1Html}
+                            <div class="operator-row">
+                                <span class="operator">${problem.op}</span>
+                                <span>${problem.num2}</span>
+                            </div>
+                            <div class="answer-row">${problem.ans}</div>
+                        </div>
+                        ${diagramHtml}
+                    </div>
+                `;
+                grid.appendChild(item);
+            }
+            sheet.appendChild(grid);
+            container.appendChild(sheet);
+        }
+
+        function toggleAnswers() {
+            // 1. 일반/연습1 정답 토글
+            const answerRows = document.querySelectorAll('.answer-row');
+            if (answerRows.length > 0) {
+                const isVisible = answerRows[0].classList.contains('show');
+                answerRows.forEach(row => {
+                    if (!isVisible) row.classList.add('show');
+                    else row.classList.remove('show');
+                });
+            }
+
+            // 2. 연습2 (Grid Layout) 정답 토글 (박스 & 답안)
+            const v2Answers = document.querySelectorAll('.answer-row-v2');
+            const v2Boxes = document.querySelectorAll('.borrow-box-v2');
+            
+            if (v2Answers.length > 0) {
+                const isV2Visible = v2Answers[0].classList.contains('show');
+                
+                v2Answers.forEach(ans => {
+                    if (!isV2Visible) ans.classList.add('show');
+                    else ans.classList.remove('show');
+                });
+                
+                v2Boxes.forEach(box => {
+                    if (!isV2Visible) box.classList.add('show');
+                    else box.classList.remove('show');
+                });
+            }
+
+            // 3. 가로셈 연습용 작은 박스 정답 토글
+            const smallBoxAnswers = document.querySelectorAll('.small-box-answer');
+            if (smallBoxAnswers.length > 0) {
+                const isSmallVisible = smallBoxAnswers[0].classList.contains('show');
+                smallBoxAnswers.forEach(ans => {
+                    if (!isSmallVisible) ans.classList.add('show');
+                    else ans.classList.remove('show');
+                });
+            }
+        }
+
+        window.onload = function() {
+            generateWorksheets('replace');
+        };
+    </script>
+</body>
+</html>
