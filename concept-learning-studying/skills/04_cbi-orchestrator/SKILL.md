@@ -15,6 +15,7 @@ description: Orchestrate Concept-Based Inquiry (CBI) coaching end-to-end. Use wh
 # 전체 진행(반드시 이 순서)
 1) `$cbi-curriculum-random-matching` 실행: 과목 내 랜덤으로 "내용체계 축 + 성취기준 묶음" 선정
 2) `$cbi-generalization-coach` 실행: 거시 1~2 + 미시 5~7 일반화(총 7~9개) 작성/채점/통과(거시 80점 컷, pass_gate=true 확보 필수)
+2-0) 일반화 작성 전 개념 확정: core_concepts 1~2개, related_concepts 3~6개, conceptual lens 2~3개를 먼저 확정한다(미확정 시 2단계 시작 금지).
 3) `$cbi-inquiry-3tier` 실행: 미시 일반화 1개 기준 3층 질문 생성/비평/개선
 4) `$cbi-focusing-design` 실행: 오해-충돌-연결질문을 포함한 focusing 2개 설계
 5) `$cbi-template-recorder` 실행: 요약표+상세MD 누적 저장(파일)
