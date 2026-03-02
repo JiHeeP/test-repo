@@ -45,15 +45,23 @@ Follow template in `references/report-template.md`.
 ## User interaction rules
 - First send briefing summary in chat.
 - Then ask: `MD 파일 저장 + GitHub(브랜치/커밋/PR)까지 진행할까요? (예/아니오)`
-- If user says yes, save files and proceed with git flow they requested.
+- If user says yes, save files and proceed with git flow.
+- After merge, always report completion in-chat (what files were generated and where).
 
-## Git flow (when requested)
-1. Create/switch branch:
-   - Skill development: `news_briefing_skill_making`
-   - Daily report: `daily_briefing_YYYYMMDD`
-2. Add and commit report files.
-3. Open PR and merge.
-4. Switch back to `main`.
+## Git flow (mandatory when user asks GitHub process)
+Follow this exact sequence:
+1. Create/switch report branch: `daily_briefing_YYYYMMDD`
+2. Create/update report files:
+   - `exports/news/daily/YYYY/MM/DD.md`
+   - `exports/news/latest.md`
+   - `exports/news/diff/YYYY/MM/DD.md` (if comparison enabled)
+3. Commit:
+   - `git add ...`
+   - `git commit -m "news: daily briefing YYYY-MM-DD 07:30"`
+4. Create PR: `daily_briefing_YYYYMMDD -> main`
+5. Merge PR
+6. Switch back to `main`
+7. Confirm completion to user with: branch, commit hash, merged 여부
 
 ## Failure handling
 - If one source fails, continue with remaining sources and note the gap.
