@@ -42,6 +42,12 @@ Always include: `Impact: <level> - <why>`.
 ## Markdown format
 Follow template in `references/report-template.md`.
 
+Mandatory quality requirements:
+- Every key update must include a direct URL.
+- If URL is missing, do not include that item in final briefing.
+- Provide a 3-line summary per key update (`3줄 요약`).
+- In chat response, also include URL + 3-line summary (not only in md file).
+
 ## User interaction rules
 - First send briefing summary in chat.
 - Then ask: `MD 파일 저장 + GitHub(브랜치/커밋/PR)까지 진행할까요? (예/아니오)`
