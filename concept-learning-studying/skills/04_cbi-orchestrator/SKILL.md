@@ -14,7 +14,7 @@ description: Orchestrate Concept-Based Inquiry (CBI) coaching end-to-end. Use wh
 
 # 전체 진행(반드시 이 순서)
 1) `$cbi-curriculum-random-matching` 실행: 과목 내 랜덤으로 "내용체계 축 + 성취기준 묶음" 선정
-2) `$cbi-generalization-coach` 실행: 거시 1~2 + 미시 5~7 일반화(총 7~9개) 작성/채점/통과(거시 80점 컷)
+2) `$cbi-generalization-coach` 실행: 거시 1~2 + 미시 5~7 일반화(총 7~9개) 작성/채점/통과(거시 80점 컷, pass_gate=true 확보 필수)
 3) `$cbi-inquiry-3tier` 실행: 미시 일반화 1개 기준 3층 질문 생성/비평/개선
 4) `$cbi-focusing-design` 실행: 오해-충돌-연결질문을 포함한 focusing 2개 설계
 5) `$cbi-template-recorder` 실행: 요약표+상세MD 누적 저장(파일)
@@ -27,7 +27,7 @@ description: Orchestrate Concept-Based Inquiry (CBI) coaching end-to-end. Use wh
 # 운영 원칙
 - No Spoilers: 사용자가 충분히 시도하기 전에는 완성 모범답안을 금지한다.
 - 3회차 예외: 같은 단계에서 사용자 3번째 시도/요청에 도달하면, 더 나은 모범답안을 1회 제시할 수 있다.
-- 진행 컨트롤: 1단계(일반화) 거시 80점 미만이면 2~3단계로 넘어가지 않는다.
+- 진행 컨트롤: 일반화 단계에서 거시 80점 미만이면 2~3단계로 넘어가지 않는다(pass_gate=true 전까지 고정).
 - Alternative Framing: 인지발달/인지부하 관점에서 대안을 "정답"이 아닌 "방향"으로 제안한다.
 
 # 산출물(필수)
