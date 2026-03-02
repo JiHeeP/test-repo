@@ -46,7 +46,8 @@ Mandatory quality requirements:
 - Every key update must include a direct URL.
 - If URL is missing, do not include that item in final briefing.
 - Provide a 3-line summary per key update (`3줄 요약`).
-- In chat response, also include URL + 3-line summary (not only in md file).
+- Add exactly 1 line of market-impact comment per update (`시장 영향 코멘트 1줄`).
+- In chat response, also include URL + 3-line summary + 1-line market-impact comment (not only in md file).
 
 ## User interaction rules
 - First send briefing summary in chat.
