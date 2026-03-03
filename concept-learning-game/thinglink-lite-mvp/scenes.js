@@ -2,7 +2,7 @@ window.SCENES = [
   {
     id: "slide-1",
     title: "빙하와 기후",
-    panorama: "https://pannellum.org/images/alma.jpg",
+    panorama: "./assets_scene1.jpg",
     tags: [
       {
         pitch: 2,
