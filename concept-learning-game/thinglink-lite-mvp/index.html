@@ -10,7 +10,7 @@
   <body>
     <header>
       <h1>ThingLink Lite MVP</h1>
-      <p>360 + 태그 + 슬라이드 + 유튜브 임베드</p>
+      <p>360 + 태그 + 슬라이드 + 유튜브 임베드 + 편집 모드</p>
     </header>
 
     <main>
@@ -21,6 +21,12 @@
           <button id="prevBtn">이전</button>
           <button id="nextBtn">다음</button>
         </div>
+        <hr />
+        <div class="admin-tools">
+          <button id="toggleAddMode">태그 추가 모드: OFF</button>
+          <button id="exportJson">JSON 내보내기</button>
+          <small>추가 모드 ON 후 360 화면 클릭 → 태그 생성</small>
+        </div>
       </aside>
 
       <section class="viewer-wrap">
@@ -30,10 +36,27 @@
 
     <dialog id="tagDialog">
       <article>
-        <h3 id="tagTitle"></h3>
-        <p id="tagBody"></p>
+        <h3 id="dialogHeading">태그 편집</h3>
+
+        <label>제목
+          <input id="tagTitleInput" type="text" placeholder="태그 제목" />
+        </label>
+
+        <label>본문
+          <textarea id="tagBodyInput" rows="4" placeholder="태그 설명"></textarea>
+        </label>
+
+        <label>유튜브 ID (선택)
+          <input id="tagYoutubeInput" type="text" placeholder="예: G4H1N_yXBiA" />
+        </label>
+
         <div id="tagMedia"></div>
-        <button id="closeDialog">닫기</button>
+
+        <div class="dialog-actions">
+          <button id="saveTag">저장</button>
+          <button id="deleteTag" class="danger">삭제</button>
+          <button id="closeDialog">닫기</button>
+        </div>
       </article>
     </dialog>
 
