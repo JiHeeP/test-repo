@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ThingLink Lite MVP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>ThingLink Lite MVP</h1>
+      <p>360 + 태그 + 슬라이드 + 유튜브 임베드 + 편집 모드</p>
+    </header>
+
+    <main>
+      <aside class="slides">
+        <h2>Slides</h2>
+        <ul id="slideList"></ul>
+        <div class="nav-buttons">
+          <button id="prevBtn">이전</button>
+          <button id="nextBtn">다음</button>
+        </div>
+        <hr />
+        <div class="admin-tools">
+          <button id="toggleAddMode">태그 추가 모드: OFF</button>
+          <button id="addScene">슬라이드 추가</button>
+          <button id="editScene">슬라이드 수정</button>
+          <button id="deleteScene" class="danger">슬라이드 삭제</button>
+          <button id="exportJson">JSON 내보내기</button>
+          <small>추가 모드 ON 후 360 화면 클릭 → 새 태그 생성</small>
+        </div>
+      </aside>
+
+      <section class="viewer-wrap">
+        <div id="viewer"></div>
+      </section>
+    </main>
+
+    <dialog id="tagDialog">
+      <article>
+        <h3 id="dialogHeading">태그 편집</h3>
+
+        <label>제목
+          <input id="tagTitleInput" type="text" placeholder="태그 제목" />
+        </label>
+
+        <label>본문
+          <textarea id="tagBodyInput" rows="4" placeholder="태그 설명"></textarea>
+        </label>
+
+        <label>유튜브 ID (선택)
+          <input id="tagYoutubeInput" type="text" placeholder="예: G4H1N_yXBiA" />
+        </label>
+
+        <div id="tagMedia"></div>
+
+        <div class="dialog-actions">
+          <button id="saveTag">저장</button>
+          <button id="deleteTag" class="danger">삭제</button>
+          <button id="closeDialog">닫기</button>
+        </div>
+      </article>
+    </dialog>
+
+    <dialog id="sceneDialog">
+      <article>
+        <h3 id="sceneDialogHeading">슬라이드 편집</h3>
+        <label>슬라이드 제목
+          <input id="sceneTitleInput" type="text" placeholder="예: 기후 기록 1" />
+        </label>
+        <label>360 이미지 URL
+          <input id="scenePanoramaInput" type="text" placeholder="https://..." />
+        </label>
+        <div class="dialog-actions">
+          <button id="saveScene">저장</button>
+          <button id="closeSceneDialog">닫기</button>
+        </div>
+      </article>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <script src="./scenes.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
