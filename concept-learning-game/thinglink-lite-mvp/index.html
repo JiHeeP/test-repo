@@ -24,8 +24,11 @@
         <hr />
         <div class="admin-tools">
           <button id="toggleAddMode">태그 추가 모드: OFF</button>
+          <button id="addScene">슬라이드 추가</button>
+          <button id="editScene">슬라이드 수정</button>
+          <button id="deleteScene" class="danger">슬라이드 삭제</button>
           <button id="exportJson">JSON 내보내기</button>
-          <small>추가 모드 ON 후 360 화면 클릭 → 태그 생성</small>
+          <small>추가 모드 ON 후 360 화면 클릭 → 새 태그 생성</small>
         </div>
       </aside>
 
@@ -56,6 +59,22 @@
           <button id="saveTag">저장</button>
           <button id="deleteTag" class="danger">삭제</button>
           <button id="closeDialog">닫기</button>
+        </div>
+      </article>
+    </dialog>
+
+    <dialog id="sceneDialog">
+      <article>
+        <h3 id="sceneDialogHeading">슬라이드 편집</h3>
+        <label>슬라이드 제목
+          <input id="sceneTitleInput" type="text" placeholder="예: 기후 기록 1" />
+        </label>
+        <label>360 이미지 URL
+          <input id="scenePanoramaInput" type="text" placeholder="https://..." />
+        </label>
+        <div class="dialog-actions">
+          <button id="saveScene">저장</button>
+          <button id="closeSceneDialog">닫기</button>
         </div>
       </article>
     </dialog>
