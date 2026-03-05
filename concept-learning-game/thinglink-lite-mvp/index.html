@@ -10,13 +10,13 @@
   <body>
     <header>
       <h1>ThingLink Lite MVP</h1>
-      <p>360 + 태그 + 슬라이드 + 유튜브 임베드 + 편집 모드</p>
+      <p>360/평면 장면 + 태그 + 유튜브/HTML 표시 + 편집 모드</p>
     </header>
 
     <main>
-      <aside class="slides">
-        <h2>Slides</h2>
-        <ul id="slideList"></ul>
+      <aside class="scenes">
+        <h2>장면</h2>
+        <ul id="sceneList"></ul>
         <div class="nav-buttons">
           <button id="prevBtn">이전</button>
           <button id="nextBtn">다음</button>
@@ -24,16 +24,20 @@
         <hr />
         <div class="admin-tools">
           <button id="toggleAddMode">태그 추가 모드: OFF</button>
-          <button id="addScene">슬라이드 추가</button>
-          <button id="editScene">슬라이드 수정</button>
-          <button id="deleteScene" class="danger">슬라이드 삭제</button>
+          <button id="addScene">장면 추가</button>
+          <button id="editScene">장면 수정</button>
+          <button id="deleteScene" class="danger">장면 삭제</button>
           <button id="exportJson">JSON 내보내기</button>
-          <small>추가 모드 ON 후 360 화면 클릭 → 새 태그 생성</small>
+          <small>추가 모드 ON 후 화면 클릭 → 새 태그 생성 (360/평면 모두 지원)</small>
         </div>
       </aside>
 
       <section class="viewer-wrap">
-        <div id="viewer"></div>
+        <div id="viewer360"></div>
+        <div id="flatViewer" class="hidden">
+          <img id="flatImage" alt="flat scene" />
+          <div id="flatLayer"></div>
+        </div>
       </section>
     </main>
 
@@ -46,11 +50,23 @@
         </label>
 
         <label>본문
-          <textarea id="tagBodyInput" rows="4" placeholder="태그 설명"></textarea>
+          <textarea id="tagBodyInput" rows="3" placeholder="태그 설명"></textarea>
+        </label>
+
+        <label>표시 방식
+          <select id="tagDisplayMode">
+            <option value="card">카드(PPT 느낌)</option>
+            <option value="text">글씨만</option>
+            <option value="html">HTML 콘텐츠</option>
+          </select>
         </label>
 
         <label>유튜브 ID (선택)
           <input id="tagYoutubeInput" type="text" placeholder="예: G4H1N_yXBiA" />
+        </label>
+
+        <label>HTML (display=html일 때 사용)
+          <textarea id="tagHtmlInput" rows="4" placeholder="<iframe ...> 또는 임의 HTML"></textarea>
         </label>
 
         <div id="tagMedia"></div>
@@ -65,17 +81,23 @@
 
     <dialog id="sceneDialog">
       <article>
-        <h3 id="sceneDialogHeading">슬라이드 편집</h3>
-        <label>슬라이드 제목
+        <h3 id="sceneDialogHeading">장면 편집</h3>
+        <label>장면 제목
           <input id="sceneTitleInput" type="text" placeholder="예: 기후 기록 1" />
         </label>
-        <label>360 이미지 URL
+        <label>장면 타입
+          <select id="sceneTypeInput">
+            <option value="360">360</option>
+            <option value="flat">평면</option>
+          </select>
+        </label>
+        <label>이미지 URL
           <input id="scenePanoramaInput" type="text" placeholder="https://... 또는 data:image/..." />
         </label>
         <label>이미지 업로드 (로컬 파일)
           <input id="sceneImageUpload" type="file" accept="image/*" />
         </label>
-        <small class="hint">업로드하면 자동으로 현재 슬라이드 이미지 URL에 반영됩니다.</small>
+        <small class="hint">업로드하면 자동으로 현재 장면 이미지 URL에 반영됩니다.</small>
         <div class="dialog-actions">
           <button id="saveScene">저장</button>
           <button id="closeSceneDialog">닫기</button>
