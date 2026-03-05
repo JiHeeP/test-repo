@@ -1,11 +1,15 @@
+const STORAGE_KEY = "thinglink-lite-scenes-v2";
+
 const sceneList = document.getElementById("sceneList");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const toggleAddModeBtn = document.getElementById("toggleAddMode");
+const togglePresentationBtn = document.getElementById("togglePresentation");
 const addSceneBtn = document.getElementById("addScene");
 const editSceneBtn = document.getElementById("editScene");
 const deleteSceneBtn = document.getElementById("deleteScene");
 const exportJsonBtn = document.getElementById("exportJson");
+const resetStorageBtn = document.getElementById("resetStorage");
 
 const viewer360 = document.getElementById("viewer360");
 const flatViewer = document.getElementById("flatViewer");
@@ -17,6 +21,10 @@ const dialogHeading = document.getElementById("dialogHeading");
 const tagTitleInput = document.getElementById("tagTitleInput");
 const tagBodyInput = document.getElementById("tagBodyInput");
 const tagDisplayMode = document.getElementById("tagDisplayMode");
+const tagIconInput = document.getElementById("tagIconInput");
+const tagSizeInput = document.getElementById("tagSizeInput");
+const tagColorInput = document.getElementById("tagColorInput");
+const tagThemeInput = document.getElementById("tagThemeInput");
 const tagYoutubeInput = document.getElementById("tagYoutubeInput");
 const tagHtmlInput = document.getElementById("tagHtmlInput");
 const tagMedia = document.getElementById("tagMedia");
@@ -36,26 +44,73 @@ const closeSceneDialogBtn = document.getElementById("closeSceneDialog");
 let current = 0;
 let viewer;
 let addMode = false;
+let presentationMode = false;
 let sceneEditMode = "new";
 let editState = { tagIndex: null, pitch: null, yaw: null, x: null, y: null };
+let SCENES = loadScenes();
 
-function normalizeScene(scene) {
-  if (!scene.type) scene.type = "360";
-  if (!Array.isArray(scene.tags)) scene.tags = [];
-  scene.tags = scene.tags.map((t) => ({ displayMode: "card", ...t }));
-  return scene;
+function normalizeTag(t = {}) {
+  return {
+    displayMode: "card",
+    icon: "i",
+    size: "md",
+    color: "#f43f5e",
+    theme: "dark",
+    ...t,
+  };
 }
-window.SCENES = window.SCENES.map(normalizeScene);
 
-function currentScene() { return SCENES[current]; }
+function normalizeScene(scene = {}, i = 0) {
+  return {
+    id: scene.id || `scene-${Date.now()}-${i}`,
+    title: scene.title || `장면 ${i + 1}`,
+    type: scene.type || "360",
+    panorama: scene.panorama || "",
+    tags: Array.isArray(scene.tags) ? scene.tags.map(normalizeTag) : [],
+  };
+}
+
+function loadScenes() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length) return parsed.map(normalizeScene);
+    }
+  } catch (_) {}
+  return (window.SCENES || []).map(normalizeScene);
+}
+
+function saveScenes() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(SCENES));
+}
+
+function currentScene() {
+  return SCENES[current];
+}
+
+function sanitizeHtml(html) {
+  if (!window.DOMPurify) return html;
+  return window.DOMPurify.sanitize(html, {
+    ADD_TAGS: ["iframe"],
+    ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "scrolling"],
+  });
+}
 
 function renderMediaPreview() {
-  if (tagDisplayMode.value === "html" && tagHtmlInput.value.trim()) {
-    tagMedia.innerHTML = tagHtmlInput.value;
+  const mode = tagDisplayMode.value;
+  if (mode === "html" && tagHtmlInput.value.trim()) {
+    tagMedia.innerHTML = sanitizeHtml(tagHtmlInput.value);
     return;
   }
-  const youtubeId = tagYoutubeInput.value.trim();
-  tagMedia.innerHTML = youtubeId ? `<iframe src="https://www.youtube.com/embed/${youtubeId}" allowfullscreen></iframe>` : "";
+
+  if (tagYoutubeInput.value.trim()) {
+    tagMedia.innerHTML = `<iframe src="https://www.youtube.com/embed/${tagYoutubeInput.value.trim()}" allowfullscreen></iframe>`;
+    return;
+  }
+
+  const theme = tagThemeInput.value;
+  tagMedia.innerHTML = `<div class="preview-card ${theme}"><div class="preview-text">${tagTitleInput.value || "제목 미리보기"}</div><div>${tagBodyInput.value || "본문 미리보기"}</div></div>`;
 }
 
 function openTagDialog(tag, isNew) {
@@ -63,6 +118,10 @@ function openTagDialog(tag, isNew) {
   tagTitleInput.value = tag?.title || "";
   tagBodyInput.value = tag?.body || "";
   tagDisplayMode.value = tag?.displayMode || "card";
+  tagIconInput.value = tag?.icon || "i";
+  tagSizeInput.value = tag?.size || "md";
+  tagColorInput.value = tag?.color || "#f43f5e";
+  tagThemeInput.value = tag?.theme || "dark";
   tagYoutubeInput.value = tag?.youtubeId || "";
   tagHtmlInput.value = tag?.html || "";
   renderMediaPreview();
@@ -70,16 +129,40 @@ function openTagDialog(tag, isNew) {
   tagDialog.showModal();
 }
 
+function applyHotspotStyle(el, tag) {
+  el.dataset.icon = tag.icon || "i";
+  el.classList.add(`hotspot-${tag.size || "md"}`);
+  el.style.background = tag.color || "#f43f5e";
+  el.style.boxShadow = `0 0 0 6px ${hexToAlpha(tag.color || "#f43f5e", 0.25)}`;
+}
+
+function hexToAlpha(hex, alpha) {
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function hotspot(hotSpotDiv, args) {
   const { tag, tagIndex } = args;
   hotSpotDiv.classList.add("custom-hotspot");
+  applyHotspotStyle(hotSpotDiv, tag);
+
   if (tag.displayMode === "text") {
     const badge = document.createElement("span");
     badge.className = "text-badge";
     badge.textContent = tag.title;
     hotSpotDiv.appendChild(badge);
   }
+
   hotSpotDiv.addEventListener("click", () => {
+    if (presentationMode && tag.displayMode === "html" && tag.html) {
+      tagMedia.innerHTML = sanitizeHtml(tag.html);
+      tagDialog.showModal();
+      return;
+    }
     editState = { tagIndex, pitch: tag.pitch, yaw: tag.yaw, x: tag.x, y: tag.y };
     openTagDialog(tag, false);
   });
@@ -107,29 +190,66 @@ function build360Scene(scene) {
   };
 }
 
+function makeFlatHotspot(tag, tagIndex) {
+  const dot = document.createElement("button");
+  dot.type = "button";
+  dot.className = "flat-hotspot";
+  dot.style.left = `${tag.x}%`;
+  dot.style.top = `${tag.y}%`;
+  applyHotspotStyle(dot, tag);
+
+  if (tag.displayMode === "text") {
+    const txt = document.createElement("span");
+    txt.className = "text-badge flat-text";
+    txt.textContent = tag.title;
+    dot.appendChild(txt);
+  }
+
+  let moved = false;
+  let dragging = false;
+
+  const onPointerMove = (ev) => {
+    if (!dragging) return;
+    moved = true;
+    const rect = flatLayer.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((ev.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((ev.clientY - rect.top) / rect.height) * 100));
+    dot.style.left = `${x}%`;
+    dot.style.top = `${y}%`;
+    SCENES[current].tags[tagIndex].x = x;
+    SCENES[current].tags[tagIndex].y = y;
+  };
+
+  dot.addEventListener("pointerdown", (ev) => {
+    dragging = true;
+    moved = false;
+    dot.classList.add("dragging");
+    dot.setPointerCapture(ev.pointerId);
+  });
+
+  dot.addEventListener("pointermove", onPointerMove);
+
+  dot.addEventListener("pointerup", () => {
+    dragging = false;
+    dot.classList.remove("dragging");
+    saveScenes();
+  });
+
+  dot.addEventListener("click", () => {
+    if (moved) return;
+    editState = { tagIndex, pitch: null, yaw: null, x: tag.x, y: tag.y };
+    openTagDialog(tag, false);
+  });
+
+  return dot;
+}
+
 function buildFlatScene(scene) {
   flatImage.src = scene.panorama;
   flatLayer.innerHTML = "";
 
   scene.tags.forEach((tag, tagIndex) => {
-    const dot = document.createElement("button");
-    dot.type = "button";
-    dot.className = "flat-hotspot";
-    dot.style.left = `${tag.x}%`;
-    dot.style.top = `${tag.y}%`;
-
-    if (tag.displayMode === "text") {
-      const txt = document.createElement("span");
-      txt.className = "text-badge flat-text";
-      txt.textContent = tag.title;
-      dot.appendChild(txt);
-    }
-
-    dot.addEventListener("click", () => {
-      editState = { tagIndex, pitch: null, yaw: null, x: tag.x, y: tag.y };
-      openTagDialog(tag, false);
-    });
-    flatLayer.appendChild(dot);
+    flatLayer.appendChild(makeFlatHotspot(tag, tagIndex));
   });
 
   flatLayer.onclick = (e) => {
@@ -148,7 +268,10 @@ function renderScene(index) {
   current = Math.max(0, Math.min(index, SCENES.length - 1));
   const scene = currentScene();
 
-  if (viewer) { viewer.destroy(); viewer = null; }
+  if (viewer) {
+    viewer.destroy();
+    viewer = null;
+  }
 
   if (scene.type === "flat") {
     viewer360.classList.add("hidden");
@@ -180,13 +303,17 @@ function upsertTag() {
   const title = tagTitleInput.value.trim();
   if (!title) return alert("제목은 필수입니다.");
 
-  const payload = {
+  const payload = normalizeTag({
     title,
     body: tagBodyInput.value.trim(),
     displayMode: tagDisplayMode.value,
+    icon: tagIconInput.value,
+    size: tagSizeInput.value,
+    color: tagColorInput.value,
+    theme: tagThemeInput.value,
     ...(tagYoutubeInput.value.trim() ? { youtubeId: tagYoutubeInput.value.trim() } : {}),
     ...(tagHtmlInput.value.trim() ? { html: tagHtmlInput.value.trim() } : {}),
-  };
+  });
 
   if (currentScene().type === "flat") {
     payload.x = editState.x;
@@ -199,6 +326,7 @@ function upsertTag() {
   if (editState.tagIndex === null) currentScene().tags.push(payload);
   else currentScene().tags[editState.tagIndex] = payload;
 
+  saveScenes();
   tagDialog.close();
   renderScene(current);
 }
@@ -206,6 +334,7 @@ function upsertTag() {
 function removeTag() {
   if (editState.tagIndex === null) return;
   currentScene().tags.splice(editState.tagIndex, 1);
+  saveScenes();
   tagDialog.close();
   renderScene(current);
 }
@@ -235,13 +364,15 @@ function saveScene() {
   if (!title || !panorama) return alert("제목과 이미지 URL은 필수입니다.");
 
   if (sceneEditMode === "new") {
-    SCENES.push({ id: `scene-${Date.now()}`, title, type, panorama, tags: [] });
+    SCENES.push(normalizeScene({ id: `scene-${Date.now()}`, title, type, panorama, tags: [] }));
+    saveScenes();
     renderScene(SCENES.length - 1);
   } else {
     const scene = currentScene();
     scene.title = title;
     scene.type = type;
     scene.panorama = panorama;
+    saveScenes();
     renderScene(current);
   }
   sceneDialog.close();
@@ -251,6 +382,7 @@ function deleteScene() {
   if (SCENES.length <= 1) return alert("최소 1개 장면은 남겨야 합니다.");
   if (!confirm(`현재 장면 '${currentScene().title}' 을(를) 삭제할까요?`)) return;
   SCENES.splice(current, 1);
+  saveScenes();
   renderScene(Math.max(0, current - 1));
 }
 
@@ -273,6 +405,19 @@ function exportJson() {
   URL.revokeObjectURL(a.href);
 }
 
+function resetStorage() {
+  if (!confirm("로컬 저장된 장면 데이터를 초기화할까요?")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  SCENES = (window.SCENES || []).map(normalizeScene);
+  renderScene(0);
+}
+
+function togglePresentation() {
+  presentationMode = !presentationMode;
+  document.body.classList.toggle("presentation", presentationMode);
+  togglePresentationBtn.textContent = presentationMode ? "발표 모드 종료" : "발표 모드";
+}
+
 prevBtn.addEventListener("click", () => renderScene((current - 1 + SCENES.length) % SCENES.length));
 nextBtn.addEventListener("click", () => renderScene((current + 1) % SCENES.length));
 
@@ -282,14 +427,19 @@ toggleAddModeBtn.addEventListener("click", () => {
   toggleAddModeBtn.textContent = `태그 추가 모드: ${addMode ? "ON" : "OFF"}`;
 });
 
+togglePresentationBtn.addEventListener("click", togglePresentation);
 addSceneBtn.addEventListener("click", () => openSceneDialog("new"));
 editSceneBtn.addEventListener("click", () => openSceneDialog("edit"));
 deleteSceneBtn.addEventListener("click", deleteScene);
 exportJsonBtn.addEventListener("click", exportJson);
+resetStorageBtn.addEventListener("click", resetStorage);
 
 tagYoutubeInput.addEventListener("input", renderMediaPreview);
 tagHtmlInput.addEventListener("input", renderMediaPreview);
 tagDisplayMode.addEventListener("change", renderMediaPreview);
+tagThemeInput.addEventListener("change", renderMediaPreview);
+tagTitleInput.addEventListener("input", renderMediaPreview);
+tagBodyInput.addEventListener("input", renderMediaPreview);
 saveTagBtn.addEventListener("click", upsertTag);
 deleteTagBtn.addEventListener("click", removeTag);
 closeDialog.addEventListener("click", () => tagDialog.close());
