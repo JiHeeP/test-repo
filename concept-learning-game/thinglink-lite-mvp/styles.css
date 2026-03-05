@@ -16,12 +16,18 @@ main { display: grid; grid-template-columns: 320px 1fr; height: calc(100vh - 80p
 .admin-tools .danger-soft { background:#7f1d1d; }
 .admin-tools small { opacity:.8; line-height:1.4; white-space:pre-line; }
 .viewer-wrap { position: relative; }
-#viewer360, #flatViewer { width: 100%; height: 100%; }
+#viewer360, #flatViewer, #modelViewerWrap { width: 100%; height: 100%; }
 .hidden { display:none !important; }
 
-#flatViewer { position: relative; background:#0b1220; }
+#flatViewer, #modelViewerWrap { position: relative; background:#0b1220; }
 #flatImage { width: 100%; height: 100%; object-fit: contain; display:block; }
-#flatLayer { position:absolute; inset:0; }
+#flatLayer, #modelLayer { position:absolute; inset:0; }
+
+#modelViewer {
+  width: 100%;
+  height: 100%;
+  --poster-color: #0b1220;
+}
 
 .custom-hotspot, .flat-hotspot {
   width: 24px; height: 24px; border-radius: 50%;

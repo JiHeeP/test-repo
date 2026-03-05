@@ -15,6 +15,9 @@ const viewer360 = document.getElementById("viewer360");
 const flatViewer = document.getElementById("flatViewer");
 const flatImage = document.getElementById("flatImage");
 const flatLayer = document.getElementById("flatLayer");
+const modelViewerWrap = document.getElementById("modelViewerWrap");
+const modelViewer = document.getElementById("modelViewer");
+const modelLayer = document.getElementById("modelLayer");
 
 const tagDialog = document.getElementById("tagDialog");
 const dialogHeading = document.getElementById("dialogHeading");
@@ -190,7 +193,7 @@ function build360Scene(scene) {
   };
 }
 
-function makeFlatHotspot(tag, tagIndex) {
+function makeOverlayHotspot(tag, tagIndex, layerEl) {
   const dot = document.createElement("button");
   dot.type = "button";
   dot.className = "flat-hotspot";
@@ -211,7 +214,7 @@ function makeFlatHotspot(tag, tagIndex) {
   const onPointerMove = (ev) => {
     if (!dragging) return;
     moved = true;
-    const rect = flatLayer.getBoundingClientRect();
+    const rect = layerEl.getBoundingClientRect();
     const x = Math.max(0, Math.min(100, ((ev.clientX - rect.left) / rect.width) * 100));
     const y = Math.max(0, Math.min(100, ((ev.clientY - rect.top) / rect.height) * 100));
     dot.style.left = `${x}%`;
@@ -244,23 +247,38 @@ function makeFlatHotspot(tag, tagIndex) {
   return dot;
 }
 
-function buildFlatScene(scene) {
-  flatImage.src = scene.panorama;
-  flatLayer.innerHTML = "";
-
-  scene.tags.forEach((tag, tagIndex) => {
-    flatLayer.appendChild(makeFlatHotspot(tag, tagIndex));
-  });
-
-  flatLayer.onclick = (e) => {
+function bindOverlayAdd(layerEl) {
+  layerEl.onclick = (e) => {
     if (!addMode) return;
-    if (e.target !== flatLayer) return;
-    const rect = flatLayer.getBoundingClientRect();
+    if (e.target !== layerEl) return;
+    const rect = layerEl.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     editState = { tagIndex: null, pitch: null, yaw: null, x, y };
     openTagDialog({ title: "", body: "", displayMode: "card" }, true);
   };
+}
+
+function buildFlatScene(scene) {
+  flatImage.src = scene.panorama;
+  flatLayer.innerHTML = "";
+
+  scene.tags.forEach((tag, tagIndex) => {
+    flatLayer.appendChild(makeOverlayHotspot(tag, tagIndex, flatLayer));
+  });
+
+  bindOverlayAdd(flatLayer);
+}
+
+function buildModelScene(scene) {
+  modelViewer.src = scene.panorama;
+  modelLayer.innerHTML = "";
+
+  scene.tags.forEach((tag, tagIndex) => {
+    modelLayer.appendChild(makeOverlayHotspot(tag, tagIndex, modelLayer));
+  });
+
+  bindOverlayAdd(modelLayer);
 }
 
 function renderScene(index) {
@@ -275,10 +293,17 @@ function renderScene(index) {
 
   if (scene.type === "flat") {
     viewer360.classList.add("hidden");
+    modelViewerWrap.classList.add("hidden");
     flatViewer.classList.remove("hidden");
     buildFlatScene(scene);
+  } else if (scene.type === "model") {
+    viewer360.classList.add("hidden");
+    flatViewer.classList.add("hidden");
+    modelViewerWrap.classList.remove("hidden");
+    buildModelScene(scene);
   } else {
     flatViewer.classList.add("hidden");
+    modelViewerWrap.classList.add("hidden");
     viewer360.classList.remove("hidden");
     build360Scene(scene);
   }
@@ -315,7 +340,7 @@ function upsertTag() {
     ...(tagHtmlInput.value.trim() ? { html: tagHtmlInput.value.trim() } : {}),
   });
 
-  if (currentScene().type === "flat") {
+  if (currentScene().type === "flat" || currentScene().type === "model") {
     payload.x = editState.x;
     payload.y = editState.y;
   } else {
@@ -388,10 +413,27 @@ function deleteScene() {
 
 function handleSceneImageUpload(event) {
   const file = event.target.files?.[0];
-  if (!file || !file.type.startsWith("image/")) return;
+  if (!file) return;
+
+  const isModel = file.name.toLowerCase().endsWith(".glb") || file.name.toLowerCase().endsWith(".gltf") || file.type.includes("gltf");
+  if (isModel) {
+    sceneTypeInput.value = "model";
+    const objectUrl = URL.createObjectURL(file);
+    scenePanoramaInput.value = objectUrl;
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    alert("이미지 또는 3D 모델(.glb/.gltf) 파일만 업로드할 수 있어요.");
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = () => {
-    if (typeof reader.result === "string") scenePanoramaInput.value = reader.result;
+    if (typeof reader.result === "string") {
+      scenePanoramaInput.value = reader.result;
+      if (sceneTypeInput.value === "model") sceneTypeInput.value = "flat";
+    }
   };
   reader.readAsDataURL(file);
 }
