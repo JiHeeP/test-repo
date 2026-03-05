@@ -70,8 +70,12 @@
           <input id="sceneTitleInput" type="text" placeholder="예: 기후 기록 1" />
         </label>
         <label>360 이미지 URL
-          <input id="scenePanoramaInput" type="text" placeholder="https://..." />
+          <input id="scenePanoramaInput" type="text" placeholder="https://... 또는 data:image/..." />
         </label>
+        <label>이미지 업로드 (로컬 파일)
+          <input id="sceneImageUpload" type="file" accept="image/*" />
+        </label>
+        <small class="hint">업로드하면 자동으로 현재 슬라이드 이미지 URL에 반영됩니다.</small>
         <div class="dialog-actions">
           <button id="saveScene">저장</button>
           <button id="closeSceneDialog">닫기</button>

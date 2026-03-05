@@ -21,6 +21,7 @@ const sceneDialog = document.getElementById("sceneDialog");
 const sceneDialogHeading = document.getElementById("sceneDialogHeading");
 const sceneTitleInput = document.getElementById("sceneTitleInput");
 const scenePanoramaInput = document.getElementById("scenePanoramaInput");
+const sceneImageUpload = document.getElementById("sceneImageUpload");
 const saveSceneBtn = document.getElementById("saveScene");
 const closeSceneDialogBtn = document.getElementById("closeSceneDialog");
 
@@ -130,6 +131,7 @@ function openSceneDialog(mode) {
     sceneTitleInput.value = currentScene().title;
     scenePanoramaInput.value = currentScene().panorama;
   }
+  sceneImageUpload.value = "";
   sceneDialog.showModal();
 }
 
@@ -165,6 +167,24 @@ function exportJson() {
   URL.revokeObjectURL(a.href);
 }
 
+function handleSceneImageUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    alert("이미지 파일만 업로드할 수 있어요.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = reader.result;
+    if (typeof result === "string") {
+      scenePanoramaInput.value = result;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
 prevBtn.addEventListener("click", () => renderScene((current - 1 + SCENES.length) % SCENES.length));
 nextBtn.addEventListener("click", () => renderScene((current + 1) % SCENES.length));
 
@@ -186,5 +206,6 @@ closeDialog.addEventListener("click", () => tagDialog.close());
 
 saveSceneBtn.addEventListener("click", saveScene);
 closeSceneDialogBtn.addEventListener("click", () => sceneDialog.close());
+sceneImageUpload.addEventListener("change", handleSceneImageUpload);
 
 renderScene(0);
