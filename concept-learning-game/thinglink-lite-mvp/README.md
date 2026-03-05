@@ -17,7 +17,10 @@ python3 -m http.server 8080
 
 ## 커스터마이징
 - `scenes.js`에서 장면/태그/유튜브 ID 수정
-- 실제 360 이미지 URL로 `panorama` 교체
+- 실제 360 이미지 URL 또는 3D 모델(.glb/.gltf) URL로 `panorama` 교체
+- 메인 로직: `js/main.js`
+- 렌더 공통: `js/render.js`
+- 저장/복원: `js/storage.js`
 
 
 ## 편집 모드
