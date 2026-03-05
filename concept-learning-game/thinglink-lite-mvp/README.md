@@ -15,6 +15,17 @@ python3 -m http.server 8080
 ```
 브라우저에서 `http://localhost:8080` 접속.
 
+## 자동 테스트(스모크)
+```bash
+cd concept-learning-game/thinglink-lite-mvp
+npm test
+```
+검사 항목:
+- 필수 파일 존재 여부
+- index.html 핵심 요소/스크립트 포함 여부
+- JS 문법 체크
+- scenes.js 기본 구조 체크
+
 ## 커스터마이징
 - `scenes.js`에서 장면/태그/유튜브 ID 수정
 - 실제 360 이미지 URL 또는 3D 모델(.glb/.gltf) URL로 `panorama` 교체
