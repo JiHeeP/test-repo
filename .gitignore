@@ -6,3 +6,5 @@ memory/
 
 .openclaw/workspace-state.json
 .DS_Store
+
+external/
