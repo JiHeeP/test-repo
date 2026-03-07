@@ -1,6 +1,6 @@
 ---
 name: cbi-orchestrator
-description: Orchestrate Concept-Based Inquiry (CBI) coaching end-to-end. Use when the user wants the full 1) curriculum random matching -> 2) generalization coaching with strict gate -> 3) 3-tier inquiry questions -> 4) focusing design -> 5) save outputs to templates. Do NOT use for single-step requests.
+description: Orchestrate Concept-Based Inquiry (CBI) coaching end-to-end. Use when the user wants the full 1) curriculum random matching -> 2) generalization coaching with strict gate -> 3) 3-tier inquiry questions flow. Do NOT use for single-step requests.
 ---
 
 # 역할
@@ -17,8 +17,6 @@ description: Orchestrate Concept-Based Inquiry (CBI) coaching end-to-end. Use wh
 2) `$cbi-generalization-coach` 실행: 거시 1~2 + 미시 5~7 일반화(총 7~9개) 작성/채점/통과(거시 80점 컷, pass_gate=true 확보 필수)
 2-0) 일반화 작성 전 개념 확정: core_concepts 1~2개, related_concepts 3~6개, conceptual lens 2~3개를 먼저 확정한다(미확정 시 2단계 시작 금지).
 3) `$cbi-inquiry-3tier` 실행: 미시 일반화 1개 기준 3층 질문 생성/비평/개선
-4) `$cbi-focusing-design` 실행: 오해-충돌-연결질문을 포함한 focusing 2개 설계
-5) `$cbi-template-recorder` 실행: 요약표+상세MD 누적 저장(파일)
 
 # 공통 응답 형식
 - 채팅 출력은 모두 일반 텍스트로 제시한다.
@@ -28,11 +26,11 @@ description: Orchestrate Concept-Based Inquiry (CBI) coaching end-to-end. Use wh
 # 운영 원칙
 - No Spoilers: 사용자가 충분히 시도하기 전에는 완성 모범답안을 금지한다.
 - 3회차 예외: 같은 단계에서 사용자 3번째 시도/요청에 도달하면, 더 나은 모범답안을 1회 제시할 수 있다.
-- 진행 컨트롤: 일반화 단계에서 거시 80점 미만이면 2~3단계로 넘어가지 않는다(pass_gate=true 전까지 고정).
+- 진행 컨트롤: 일반화 단계에서 거시 80점 미만이면 3단계로 넘어가지 않는다(pass_gate=true 전까지 고정).
 - Alternative Framing: 인지발달/인지부하 관점에서 대안을 "정답"이 아닌 "방향"으로 제안한다.
 
 # 산출물(필수)
-- Anchor Evidence 1개 형태를 고정한다(활동 고정 X, 검증 포맷 고정 O).
-  - 기본: "개념 렌즈로 설명 3문장"
-  - 대안: "사례 A vs B 비교(개념 기준)"
-- 사용자가 둘 중 하나를 선택하게 하되, 선택 전에는 예시 정답을 주지 않는다.
+- 최종 산출물은 아래 3묶음을 모두 포함해야 한다.
+  - 랜덤 매칭 결과: 내용체계 축, 성취기준 묶음, 주제 초점
+  - 일반화 결과: 개념 확정 + 거시/미시 일반화 + pass_gate
+  - 탐구 질문 결과: 선택한 미시 일반화 + 3층 질문 + 경로성 피드백

@@ -6,7 +6,7 @@
 
 ## 2) 스킬 점검 및 수정
 - test-repo 내 스킬 목록 재확인
-- `04_cbi-orchestrator`와 `05_cbi-generalization-coach` 간 정합성 점검
+- `01_cbi-orchestrator`와 `03_cbi-generalization-coach` 간 정합성 점검
 - 주요 수정 사항:
   1. 일반화 개수 기준 반영
      - 기존 혼선: 거시 1 + 미시 2~3

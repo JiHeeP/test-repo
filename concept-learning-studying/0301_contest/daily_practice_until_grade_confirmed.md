@@ -127,21 +127,13 @@
 - 막힌 점(1문장):
 
 ## skills 메모(2:10-3:00 설계 훈련에 사용)
-- 0:00-1:10 근거문장 스프린트: 01_cbi-evidence-sprint
-- 1:10-2:10 활동 카드 채굴: 02_cbi-activity-mining
-- 3세션 결과물 일일 누적: 09_cbi-daily-recorder
-- end-to-end: 04_cbi-orchestrator
-- 단원 랜덤 선택: 03_cbi-curriculum-random-matching
-- 일반화 코칭/통과 게이트: 05_cbi-generalization-coach
-- 3단계 탐구질문: 06_cbi-inquiry-3tier
-- focusing 아이디어: 07_cbi-focusing-design
-- 세션 누적 기록(파일 저장): 08_cbi-template-recorder
+- end-to-end: 01_cbi-orchestrator
+- 단원 랜덤 선택: 02_cbi-curriculum-random-matching
+- 일반화 코칭/통과 게이트: 03_cbi-generalization-coach
+- 3단계 탐구질문: 04_cbi-inquiry-3tier
 
 ## 티키타카 실행 순서(매일: 책 → 단원 → 설계)
-- 1) `01_cbi-evidence-sprint`: 오늘 이론책 1소단원 → 근거문장 3개 + 설계규칙 1줄
-- 2) `02_cbi-activity-mining`: 같은 소단원에서 활동/전략 1개 → 활동 카드 1장
-- 3) (2:10 시작) 단원 확정: `03_cbi-curriculum-random-matching` 또는 내가 원하는 단원
-- 4) `05_cbi-generalization-coach`: 단원용 일반화(거시 1 + 미시 2~3) 작성/게이트 통과
-- 5) `06_cbi-inquiry-3tier`: 미시 일반화 1개 기준 탐구질문 3단계 작성
-- 6) `07_cbi-focusing-design`: 오늘 활동 카드가 탐구질문에 기여하도록 배치/수정
-- 7) `08_cbi-template-recorder` 또는 `09_cbi-daily-recorder`: 3세션 산출물 저장/누적
+- 1) 통합 진행이 필요하면 `01_cbi-orchestrator` 사용
+- 2) 수동 진행이면 단원 확정: `02_cbi-curriculum-random-matching` 또는 내가 원하는 단원
+- 3) `03_cbi-generalization-coach`: 단원용 일반화 작성/게이트 통과
+- 4) `04_cbi-inquiry-3tier`: 미시 일반화 1개 기준 탐구질문 3단계 작성

@@ -15,13 +15,22 @@
 해당 유형의 작업 시 관련 `SKILL.md` 또는 `Skill.md` 를 먼저 읽고 따를 것.
 워크스페이스에 없더라도 전역 스킬이 있으면 사용할 수 있다.
 
-- `skills/webapp/SKILL.md` → 수업용 웹앱 제작
-- `skills/printable/SKILL.md` → 학습자료(프린트물) 제작
-- `skills/edu-text-summarizer/SKILL.md` → 학습 정리
-- `skills/edu-deep-talk/SKILL.md` → 심화 대화 (읽은 내용 → 교육과정 연결 → 수업 설계)
-- `skills/frontend-slides/SKILL.md` → 웹 프레젠테이션 제작 (단일 HTML, 애니메이션, PPT 변환)
-- `skills/meta-skill-forge/SKILL.md` → 새 스킬 설계 (암묵지 발굴 → 차별화 → 검증)
-- `~/.codex/skills/pdf/SKILL.md` → PDF 읽기·추출·검토
+현재 워크스페이스에서 확인된 스킬은 아래와 같다.
+
+- `skills/01_cbi-orchestrator/SKILL.md` → CBI 전체 흐름 총괄. 랜덤 매칭 → 일반화 → 3층 질문까지 순서대로 진행
+- `skills/02_cbi-curriculum-random-matching/SKILL.md` → 교육과정 JSON/TXT에서 학년·과목 기준 랜덤 단원 묶음 추출
+- `skills/03_cbi-generalization-coach/SKILL.md` → 거시 1~2개 + 미시 5~7개 일반화 작성 코칭 및 루브릭 채점
+- `skills/04_cbi-inquiry-3tier/SKILL.md` → 승인된 미시 일반화를 기반으로 사실적·개념적·논쟁적 질문 세트 설계
+- `skills/edu-text-summarizer/edu-text-summarizer/Skill.md` → 교육학 텍스트를 고정 템플릿의 Markdown 요약 문서로 구조화
+- `skills/edu-deep-talk/edu-deep-talk/Skill.md` → 교육학 텍스트를 바탕으로 심화 대화 후 교육과정 연결과 수업 설계안 생성
+- `skills/frontend-slides/SKILL.md` → 애니메이션 중심의 단일 HTML 프레젠테이션 제작
+
+스킬 사용 원칙:
+- CBI 전체 설계 요청이면 `01_cbi-orchestrator` 를 우선 검토하고, 그 안에서 연결된 하위 스킬 순서를 따른다.
+- CBI 일부 단계만 요청이면 해당 단일 스킬만 직접 사용한다.
+- 교육학 독서 정리는 `edu-text-summarizer`, 읽은 내용을 수업 적용까지 대화로 확장하는 요청은 `edu-deep-talk` 을 사용한다.
+- 발표 자료 제작 요청은 `frontend-slides` 를 우선 사용한다.
+- 워크스페이스 스킬이 우선이며, 필요한 기능이 없을 때만 전역 스킬을 추가로 찾는다.
 
 ## 폴더 네이밍
 - 새 프로젝트: `MMDD_프로젝트명` 형식 (예: `0222_gugudan-quiz`)
@@ -66,7 +75,7 @@
 
 ---
 
-## 태스크 관리                                                                                              
+## 태스크 관리
 
 1. **계획 먼저**: `tasks/todo.md` 에 체크 가능한 항목으로 작성
 2. **계획 검토**: 구현 시작 전 확인

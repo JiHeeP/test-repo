@@ -1,6 +1,6 @@
 ---
 name: cbi-inquiry-3tier
-description: Coach the user to generate 3-tier inquiry questions (factual, conceptual, debatable) that build a thinking path toward an approved micro generalization. Use only after generalization gate passed. Do NOT design focusing activities here.
+description: Coach the user to generate 3-tier inquiry questions (factual, conceptual, debatable) that build a thinking path toward an approved micro generalization. Use only after generalization gate passed.
 ---
 
 # 전제(필수)
