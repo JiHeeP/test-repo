@@ -11,7 +11,9 @@
 - 코드 변경 시 "왜 이렇게 하는지" 함께 안내
 
 ## Skills 폴더
-프로젝트 유형별 가이드가 `skills/` 에 있다. 해당 유형의 작업 시 반드시 SKILL.md를 먼저 읽고 따를 것.
+프로젝트 유형별 가이드는 워크스페이스의 `skills/` 와 전역 Codex 스킬 폴더 `~/.codex/skills/` 에 있을 수 있다.
+해당 유형의 작업 시 관련 `SKILL.md` 또는 `Skill.md` 를 먼저 읽고 따를 것.
+워크스페이스에 없더라도 전역 스킬이 있으면 사용할 수 있다.
 
 - `skills/webapp/SKILL.md` → 수업용 웹앱 제작
 - `skills/printable/SKILL.md` → 학습자료(프린트물) 제작
@@ -19,6 +21,7 @@
 - `skills/edu-deep-talk/SKILL.md` → 심화 대화 (읽은 내용 → 교육과정 연결 → 수업 설계)
 - `skills/frontend-slides/SKILL.md` → 웹 프레젠테이션 제작 (단일 HTML, 애니메이션, PPT 변환)
 - `skills/meta-skill-forge/SKILL.md` → 새 스킬 설계 (암묵지 발굴 → 차별화 → 검증)
+- `~/.codex/skills/pdf/SKILL.md` → PDF 읽기·추출·검토
 
 ## 폴더 네이밍
 - 새 프로젝트: `MMDD_프로젝트명` 형식 (예: `0222_gugudan-quiz`)
@@ -63,7 +66,7 @@
 
 ---
 
-## 태스크 관리
+## 태스크 관리                                                                                              
 
 1. **계획 먼저**: `tasks/todo.md` 에 체크 가능한 항목으로 작성
 2. **계획 검토**: 구현 시작 전 확인
