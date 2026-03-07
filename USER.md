@@ -10,7 +10,9 @@ _Learn about the person you're helping. Update this as you go._
 
 ## Context
 
-_(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
+- 앞으로 모든 코딩을 이 워크스페이스(여기 채널)에서 함께 진행하기로 함.
+- 협업 중심 워크플로우 선호.
+
 
 ---
 
