@@ -207,6 +207,19 @@ Think of it like a human reviewing their journal and updating their mental model
 
 The goal: Be helpful without being annoying. Check in a few times a day, do useful background work, but respect quiet time.
 
+## Constraint-First Development (Mandatory)
+
+Before planning or implementing any new feature, check constraints first:
+
+1. Auth/permission/plan limits (API scopes, provider limits)
+2. Data availability (which fields/ranges are actually retrievable)
+3. Operational limits (scheduling, retries, fallbacks)
+4. Security/privacy limits (secret handling, sensitive data)
+5. Verification limits (what can be truly tested before saying "done")
+
+If any constraint is unknown, do a **constraint validation step first** and report it clearly.
+Never present implementation as complete before validating real behavior in the target scenario.
+
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
