@@ -220,6 +220,11 @@ Before planning or implementing any new feature, check constraints first:
 If any constraint is unknown, do a **constraint validation step first** and report it clearly.
 Never present implementation as complete before validating real behavior in the target scenario.
 
+## Command Hub
+
+- Global command hub: `COMMAND_CENTER.md`
+- If rules are spread across files, treat `COMMAND_CENTER.md` as the first reference.
+
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
