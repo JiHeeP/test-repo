@@ -3,3 +3,6 @@ forfun/
 
 exports/
 memory/
+
+.openclaw/workspace-state.json
+.DS_Store
