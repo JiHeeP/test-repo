@@ -1,7 +1,7 @@
 import { hexToAlpha } from "./utils.js";
 
-export function applyHotspotStyle(el, tag) {
-  el.dataset.icon = tag.icon || "i";
+export function applyHotspotStyle(el, tag, hotspotNumber) {
+  el.dataset.icon = String(hotspotNumber);
   el.classList.add(`hotspot-${tag.size || "md"}`);
   el.style.background = tag.color || "#f43f5e";
   el.style.boxShadow = `0 0 0 6px ${hexToAlpha(tag.color || "#f43f5e", 0.25)}`;
@@ -17,7 +17,7 @@ export function build360({ viewerEl, scene, onHotspotClick, onAddTag }) {
       yaw: tag.yaw,
       createTooltipFunc: (hotSpotDiv, args) => {
         hotSpotDiv.classList.add("custom-hotspot");
-        applyHotspotStyle(hotSpotDiv, args.tag);
+        applyHotspotStyle(hotSpotDiv, args.tag, args.tagIndex + 1);
         if (args.tag.displayMode === "text") {
           const badge = document.createElement("span");
           badge.className = "text-badge";
@@ -48,7 +48,7 @@ export function buildOverlay({ layerEl, tags, onHotspotClick, onAddTag, onDragEn
     dot.className = "flat-hotspot";
     dot.style.left = `${tag.x}%`;
     dot.style.top = `${tag.y}%`;
-    applyHotspotStyle(dot, tag);
+    applyHotspotStyle(dot, tag, tagIndex + 1);
 
     if (tag.displayMode === "text") {
       const txt = document.createElement("span");

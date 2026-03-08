@@ -66,6 +66,13 @@ input, textarea, select { width:100%; padding:8px; border-radius:8px; border:1px
 .preview-card.accent { background:#1e3a8a; color:#eff6ff; }
 .preview-text { font-size:14px; font-weight:600; }
 
+#contentBody iframe { width:100%; aspect-ratio:16/9; border:0; border-radius:8px; }
+.content-meta { font-size:12px; opacity:.75; margin-bottom:8px; }
+.content-slide { padding:12px; border-radius:10px; border:1px solid #334155; }
+.content-slide.dark { background:#0f172a; color:#e2e8f0; }
+.content-slide.light { background:#f8fafc; color:#0f172a; }
+.content-slide.accent { background:#1e3a8a; color:#eff6ff; }
+
 .dialog-actions { display:flex; gap:8px; justify-content:flex-end; }
 .dialog-actions button { padding:8px 12px; border:0; border-radius:8px; cursor:pointer; background:#0ea5e9; color:white; }
 .dialog-actions .danger { background:#dc2626; }
