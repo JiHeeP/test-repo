@@ -42,3 +42,12 @@
 ## 6) 업데이트 규칙
 - 새 운영 규칙은 먼저 여기에 추가
 - 필요 시 관련 상세 문서에 링크/요약만 반영
+
+## Conversation-Derived Operating Rules (2026-03-08)
+
+- After GitHub-ending commands (e.g., PR merge / push complete / 작업 끝), ask user: "개발모드 종료할까요?"
+- If user says "개발모드 종료", check running dev processes and terminate, then confirm stopped state.
+- Keep workspace focus strict: manage work in `~/.openclaw/workspace-*`; avoid editing `~/.openclaw/agents/*` unless explicitly needed.
+- Keep daily policy memory split:
+  - durable operating rules -> `control/COMMAND_CENTER.md`
+  - daily agreement/event logs -> `memory/YYYY-MM-DD.md`
