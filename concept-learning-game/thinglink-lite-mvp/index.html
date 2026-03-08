@@ -33,7 +33,8 @@
           <input id="importJsonInput" type="file" accept="application/json" class="hidden" />
           <button id="resetStorage" class="danger-soft">저장 초기화</button>
           <small>
-            - 360/평면/3D 모델 모두 태그 추가 가능
+            - 핫스팟은 기본 클릭 시 콘텐츠 열기(슬라이드/유튜브)
+            - 태그 편집은 "태그 추가 모드: ON" 상태에서 핫스팟 클릭
             - 평면/3D 태그는 드래그로 위치 이동 가능
           </small>
         </div>
@@ -53,6 +54,16 @@
     </main>
 
     <div id="statusBar" class="status-bar" aria-live="polite"></div>
+
+    <dialog id="contentDialog">
+      <article>
+        <h3 id="contentTitle">콘텐츠 보기</h3>
+        <div id="contentBody"></div>
+        <div class="dialog-actions">
+          <button id="closeContentDialog">닫기</button>
+        </div>
+      </article>
+    </dialog>
 
     <dialog id="tagDialog">
       <article>

@@ -26,6 +26,11 @@ const el = {
   modelViewer: document.getElementById("modelViewer"),
   modelLayer: document.getElementById("modelLayer"),
 
+  contentDialog: document.getElementById("contentDialog"),
+  contentTitle: document.getElementById("contentTitle"),
+  contentBody: document.getElementById("contentBody"),
+  closeContentDialogBtn: document.getElementById("closeContentDialog"),
+
   tagDialog: document.getElementById("tagDialog"),
   dialogHeading: document.getElementById("dialogHeading"),
   tagTitleInput: document.getElementById("tagTitleInput"),
@@ -93,6 +98,37 @@ function openTagDialog(tag, isNew) {
   el.tagDialog.showModal();
 }
 
+function openContentDialog(tag) {
+  const title = tag?.title || "콘텐츠";
+  el.contentTitle.textContent = title;
+
+  if (tag?.youtubeId) {
+    el.contentBody.innerHTML = `
+      <div class="content-meta">유형: 유튜브</div>
+      <iframe src="https://www.youtube.com/embed/${tag.youtubeId}" allowfullscreen></iframe>
+    `;
+  } else {
+    const bodyHtml = tag?.displayMode === "html" && tag?.html
+      ? sanitizeHtml(tag.html)
+      : `<p>${(tag?.body || "내용 없음").replace(/\n/g, "<br />")}</p>`;
+
+    el.contentBody.innerHTML = `
+      <div class="content-meta">유형: 슬라이드</div>
+      <div class="content-slide ${tag?.theme || "dark"}">${bodyHtml}</div>
+    `;
+  }
+
+  el.contentDialog.showModal();
+}
+
+function handleHotspotClick(tag, tagIndex) {
+  if (addMode) {
+    editTag(tag, tagIndex);
+    return;
+  }
+  openContentDialog(tag);
+}
+
 function renderSceneList() {
   el.sceneList.innerHTML = "";
   scenes.forEach((scene, i) => {
@@ -134,7 +170,7 @@ function renderScene(index) {
     buildOverlay({
       layerEl: el.flatLayer,
       tags: scene.tags,
-      onHotspotClick: editTag,
+      onHotspotClick: handleHotspotClick,
       onAddTag: beginAddTag,
       onDragEnd: (i, x, y, finalize) => {
         if (x != null) { scene.tags[i].x = x; scene.tags[i].y = y; }
@@ -147,7 +183,7 @@ function renderScene(index) {
     buildOverlay({
       layerEl: el.modelLayer,
       tags: scene.tags,
-      onHotspotClick: editTag,
+      onHotspotClick: handleHotspotClick,
       onAddTag: beginAddTag,
       onDragEnd: (i, x, y, finalize) => {
         if (x != null) { scene.tags[i].x = x; scene.tags[i].y = y; }
@@ -159,7 +195,7 @@ function renderScene(index) {
     viewer = build360({
       viewerEl: el.viewer360,
       scene,
-      onHotspotClick: editTag,
+      onHotspotClick: handleHotspotClick,
       onAddTag: beginAddTag,
     });
   }
@@ -359,6 +395,8 @@ function bindEvents() {
   el.saveTagBtn.onclick = upsertTag;
   el.deleteTagBtn.onclick = removeTag;
   el.closeDialog.onclick = () => el.tagDialog.close();
+
+  el.closeContentDialogBtn.onclick = () => el.contentDialog.close();
 
   el.saveSceneBtn.onclick = saveSceneFromDialog;
   el.sceneImageUpload.onchange = handleSceneUpload;
