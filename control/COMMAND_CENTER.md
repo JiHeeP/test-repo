@@ -51,3 +51,17 @@
 - Keep daily policy memory split:
   - durable operating rules -> `control/COMMAND_CENTER.md`
   - daily agreement/event logs -> `memory/YYYY-MM-DD.md`
+
+## 7) plna 실행 모드 지침 (성능/메모리)
+- `dev` 모드(`npm run dev`)는 개발·수정 전용이다. 장시간 실행 시 메모리 사용량이 크게 증가할 수 있다.
+- `start` 모드(`npm run build && npm run start`)는 운영/점검 전용이다. 안정성과 메모리 효율을 우선한다.
+- 기본 원칙:
+  - 수정할 때만 `dev` 실행
+  - 작업 종료 시 `dev` 종료
+  - 실제 사용/검증은 `start` 기준으로 판단
+- GitHub 종료성 명령(PR merge / push 완료 / 작업 끝) 뒤에는 반드시 질문:
+  - "개발모드 종료할까요?"
+- 사용자가 "개발모드 종료"라고 하면:
+  1) 실행 중인 dev 프로세스 확인
+  2) 종료
+  3) 종료 상태 재확인 후 보고
