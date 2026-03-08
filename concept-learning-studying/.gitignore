@@ -1,0 +1,7 @@
+# 대용량 PDF — 로컬 보관, git 추적 제외
+0301_contest/awards/
+0301_contest/awards_type2_develop/
+0218_studying/references/*.pdf
+
+# 임시 파일
+tmp/
