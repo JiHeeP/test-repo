@@ -3,190 +3,533 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>5학년 1학기 수학 연습지 생성기</title>
+  <title>5학년 1학기 수학 연습지 만들기</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
-    :root { --paper-width: 210mm; --paper-height: 297mm; }
+    :root {
+      --paper-width: 210mm;
+      --paper-height: 297mm;
+      --control-width: 1180px;
+      --line-color: #4a4a4a;
+    }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Noto Sans KR', sans-serif;
-      background: #e9ecef;
+      background: linear-gradient(180deg, #eef2f7 0%, #dde5ee 100%);
       padding: 20px;
-      display: flex; flex-direction: column; align-items: center;
-      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #2f3640;
     }
 
-    /* ===== 컨트롤 패널 ===== */
     .controls {
-      background: white; padding: 16px 20px;
-      border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-      display: flex; gap: 12px; align-items: center;
-      position: sticky; top: 20px; z-index: 100;
-      flex-wrap: wrap; justify-content: center;
-      max-width: 1100px;
+      width: min(100%, var(--control-width));
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(8px);
+      padding: 18px 20px;
+      border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(31, 41, 55, 0.12);
+      margin-bottom: 22px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 18px;
+      z-index: 100;
     }
 
-    select {
-      padding: 8px 12px; border: 2px solid #ddd; border-radius: 8px;
-      font-size: 14px; font-family: inherit; min-width: 340px;
+    .control-stack {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      flex: 1 1 620px;
     }
 
-    .input-group { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    select,
+    input[type="number"] {
+      padding: 9px 12px;
+      border: 2px solid #d8dee9;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+    }
+
+    #unitSelect { min-width: 250px; }
+    #worksheetSelect { min-width: 420px; }
 
     input[type="number"] {
-      width: 50px; padding: 8px; border: 2px solid #ddd;
-      border-radius: 8px; font-size: 15px; text-align: center; font-family: inherit;
+      width: 58px;
+      text-align: center;
+      font-size: 15px;
     }
 
     button {
-      padding: 9px 16px; border: none; border-radius: 8px;
-      font-size: 14px; font-weight: 700; cursor: pointer;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
       transition: transform 0.1s, opacity 0.2s;
-      font-family: inherit; display: flex; align-items: center; gap: 5px; white-space: nowrap;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
     }
-    button:active { transform: scale(0.97); }
+
     button:hover { opacity: 0.88; }
+    button:active { transform: scale(0.98); }
 
-    .btn-refresh { background: #2ecc71; color: white; }
-    .btn-add     { background: #f39c12; color: white; }
-    .btn-answer  { background: #9b59b6; color: white; }
-    .btn-print   { background: #3498db; color: white; }
+    .btn-refresh { background: #23b26d; color: white; }
+    .btn-add { background: #ef8f1d; color: white; }
+    .btn-answer { background: #6f58c9; color: white; }
+    .btn-print { background: #2d8ae2; color: white; }
 
-    /* ===== A4 용지 ===== */
+    .meta-note {
+      width: 100%;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      color: #57606f;
+      font-size: 13px;
+    }
+
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #f4f7fb;
+      border: 1px solid #dce4ef;
+    }
+
     .sheet {
-      width: var(--paper-width); height: var(--paper-height);
-      background: white; padding: 18mm 20mm;
-      box-sizing: border-box;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      display: flex; flex-direction: column;
-      margin-bottom: 30px; page-break-after: always;
+      width: var(--paper-width);
+      height: var(--paper-height);
+      background: white;
+      padding: 17mm 19mm 18mm;
+      box-shadow: 0 0 18px rgba(28, 37, 54, 0.13);
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 30px;
+      page-break-after: always;
       overflow: hidden;
     }
+
     .sheet:last-child { margin-bottom: 0; }
 
     .sheet-title {
-      font-size: 14px; font-weight: 700;
-      margin-bottom: 16px; padding-bottom: 8px;
-      border-bottom: 2px solid #333;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 14px;
+      padding-bottom: 9px;
+      border-bottom: 2px solid #2f3640;
     }
 
-    /* ===== 문제 그리드 ===== */
-    .problem-grid { display: grid; flex-grow: 1; gap: 12px 8px; }
-    .problem-grid.standard  { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr); }
-    .problem-grid.practice  { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(5, 1fr); }
-    .problem-grid.dense     { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(9, 1fr); gap: 6px 5px; }
-    .problem-grid.divgrid   { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); }
-
-    /* ===== 나눗셈 세로셈 (긴 나눗셈 기호) ===== */
-    .ldiv-table { margin-top: 24px; border-collapse: collapse; font-size: 22px; }
-    .ldiv-q-box {
-      display: inline-block; min-width: 48px; text-align: right;
-      border-bottom: 2px solid #555; padding: 2px 5px;
+    .sheet-title-main {
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .ldiv-dvsr-td { text-align: right; padding-right: 4px; padding-top: 4px; vertical-align: middle; }
-    .ldiv-dvnd-td { border-top: 2px solid #333; border-left: 2px solid #333; padding: 4px 12px 4px 6px; }
 
-    /* ===== 문제 아이템 ===== */
+    .sheet-title-sub {
+      font-size: 11px;
+      color: #677188;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .problem-grid {
+      display: grid;
+      flex-grow: 1;
+      gap: 12px 8px;
+    }
+
+    .problem-grid.standard { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr); }
+    .problem-grid.practice { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(5, 1fr); }
+    .problem-grid.dense { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(9, 1fr); gap: 6px 5px; }
+    .problem-grid.divgrid { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); }
+    .problem-grid.concept { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(5, 1fr); gap: 14px 14px; }
+    .problem-grid.wide { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); gap: 16px 16px; }
+
     .problem-item {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: flex-start;
-      padding-top: 8px; position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 8px;
+      position: relative;
     }
 
     .problem-num {
-      position: absolute; top: 0; left: 0;
-      width: 19px; height: 19px;
-      border: 1.5px solid #555; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 500; color: #555;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 19px;
+      height: 19px;
+      border: 1.5px solid #5a6578;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 500;
+      color: #5a6578;
+      background: white;
     }
 
-    /* ===== 세로셈 ===== */
     .calc-wrapper { display: flex; align-items: center; margin-top: 12px; }
+
     .calc-box {
-      display: flex; flex-direction: column; align-items: flex-end;
-      font-size: 22px; letter-spacing: 2px;
-      min-width: 90px; padding: 4px 10px;
-      position: relative; background: white;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-size: 22px;
+      letter-spacing: 2px;
+      min-width: 90px;
+      padding: 4px 10px;
+      position: relative;
+      background: white;
     }
+
     .row { width: 100%; text-align: right; line-height: 1.35; }
+
     .operator-row {
-      display: flex; justify-content: space-between; align-items: center;
-      width: 100%; border-bottom: 2px solid #333; margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      border-bottom: 2px solid #2f3640;
+      margin-bottom: 6px;
     }
-    .calc-ans { height: 28px; text-align: right; width: 100%; font-weight: 700; }
 
-    /* ===== 가로셈 ===== */
-    .horiz-box {
-      display: flex; align-items: center; justify-content: center;
-      flex-wrap: wrap; font-size: 18px;
-      margin-top: 22px; gap: 5px; width: 100%; padding: 0 4px; text-align: center;
+    .calc-ans {
+      height: 28px;
+      text-align: right;
+      width: 100%;
+      font-weight: 700;
+      visibility: hidden;
     }
-    .dense .horiz-box { margin-top: 8px; font-size: 16px; gap: 4px; }
 
-    /* ===== 분수 표시 ===== */
-    .frac-row {
-      display: flex; align-items: center; justify-content: center;
-      margin-top: 20px; gap: 8px; flex-wrap: wrap;
-    }
-    .frac-d {
-      display: inline-flex; flex-direction: column;
-      align-items: center; vertical-align: middle; font-size: 18px;
-    }
-    .frac-d .ft { padding: 1px 8px; border-bottom: 1.5px solid #333; min-width: 20px; text-align: center; }
-    .frac-d .fb { padding: 1px 8px; min-width: 20px; text-align: center; }
-    .op-txt, .eq-txt { font-size: 18px; }
-
-    /* ===== 빈칸 박스들 ===== */
-    .num-blank {
-      display: inline-flex; align-items: center; justify-content: center;
-      min-width: 38px; height: 32px; padding: 0 6px;
-      border: 1.5px solid #666; border-radius: 5px;
-      background: white; font-size: 17px; vertical-align: middle;
-    }
-    .sym-blank {
-      width: 26px; height: 26px;
-      border: 1.5px solid #666; border-radius: 50%;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 15px; vertical-align: middle;
-    }
-    .frac-blank {
-      display: inline-flex; flex-direction: column;
-      align-items: center; vertical-align: middle;
-    }
-    .frac-blank .fb-top, .frac-blank .fb-bot {
-      width: 32px; height: 24px;
-      border: 1.5px solid #666; border-radius: 4px;
-      background: white; display: flex; align-items: center; justify-content: center;
-      font-size: 15px;
-    }
-    .frac-blank .fb-line { width: 36px; height: 2px; background: #444; margin: 2px 0; }
-
-    /* ===== 정답 숨기기/보이기 (data-ans 속성 사용) ===== */
-    [data-ans] { color: transparent; }
-    .answers-shown [data-ans] { color: #e74c3c; }
-    /* 세로셈 정답: visibility 방식 (높이 유지) */
-    .calc-ans { visibility: hidden; }
     .answers-shown .calc-ans { visibility: visible; color: #e74c3c; }
 
-    /* ===== 인쇄 ===== */
+    .ldiv-table {
+      margin-top: 22px;
+      border-collapse: collapse;
+      font-size: 22px;
+    }
+
+    .ldiv-q-box {
+      display: inline-block;
+      min-width: 56px;
+      text-align: right;
+      border-bottom: 2px solid #555;
+      padding: 2px 6px;
+    }
+
+    .ldiv-dvsr-td {
+      text-align: right;
+      padding-right: 4px;
+      padding-top: 4px;
+      vertical-align: middle;
+    }
+
+    .ldiv-dvnd-td {
+      border-top: 2px solid #2f3640;
+      border-left: 2px solid #2f3640;
+      padding: 4px 12px 4px 6px;
+    }
+
+    .horiz-box,
+    .frac-row,
+    .concept-layout,
+    .relation-layout,
+    .shape-layout {
+      width: 100%;
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    .horiz-box,
+    .frac-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 0 3px;
+    }
+
+    .frac-row { gap: 8px; }
+
+    .dense .horiz-box { margin-top: 8px; font-size: 16px; gap: 4px; }
+
+    .concept-layout,
+    .relation-layout,
+    .shape-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .concept-card,
+    .relation-card,
+    .shape-card {
+      width: 100%;
+      border: 1.5px solid #d7dee8;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+      padding: 10px 10px 12px;
+    }
+
+    .concept-question,
+    .relation-question,
+    .shape-question {
+      font-size: 16px;
+      line-height: 1.45;
+      word-break: keep-all;
+    }
+
+    .concept-answer,
+    .shape-answer {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 16px;
+    }
+
+    .small-note {
+      font-size: 12px;
+      color: #6c7890;
+      line-height: 1.35;
+    }
+
+    .frac-d {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      font-size: 18px;
+      min-width: 30px;
+    }
+
+    .frac-d .ft {
+      padding: 1px 8px;
+      border-bottom: 1.5px solid #2f3640;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .frac-d .fb {
+      padding: 1px 8px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .mixed-d {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      vertical-align: middle;
+    }
+
+    .mixed-d .whole {
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .op-txt,
+    .eq-txt { font-size: 18px; }
+
+    .num-blank,
+    .text-blank,
+    .table-blank {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 0 8px;
+      border: 1.5px solid #666;
+      border-radius: 6px;
+      background: white;
+      vertical-align: middle;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .num-blank { min-width: 40px; }
+    .text-blank { min-width: 62px; }
+    .table-blank { min-width: 34px; padding: 2px 8px; }
+
+    .sym-blank {
+      width: 28px;
+      height: 28px;
+      border: 1.5px solid #666;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: white;
+    }
+
+    .frac-blank {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+    }
+
+    .frac-blank .fb-top,
+    .frac-blank .fb-bot {
+      min-width: 32px;
+      height: 24px;
+      padding: 0 8px;
+      border: 1.5px solid #666;
+      border-radius: 4px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .frac-blank .fb-line {
+      width: 38px;
+      height: 2px;
+      background: #444;
+      margin: 2px 0;
+    }
+
+    .relation-table {
+      margin: 4px auto 0;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .relation-table th,
+    .relation-table td {
+      border: 1.5px solid #6b7788;
+      padding: 6px 8px;
+      min-width: 48px;
+      text-align: center;
+    }
+
+    .relation-table th {
+      background: #f6f8fb;
+      font-weight: 700;
+    }
+
+    .shape-svg {
+      width: 150px;
+      height: 96px;
+      overflow: visible;
+    }
+
+    .shape-svg text {
+      font-family: 'Noto Sans KR', sans-serif;
+      fill: #2f3640;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .shape-svg .outline {
+      fill: #f6fbff;
+      stroke: #2f3640;
+      stroke-width: 2;
+    }
+
+    .shape-svg .guide {
+      stroke: #6b7788;
+      stroke-width: 1.5;
+      stroke-dasharray: 4 3;
+      fill: none;
+    }
+
+    .shape-svg .grid-line {
+      stroke: #c9d4e2;
+      stroke-width: 1;
+    }
+
+    .shape-svg .grid-fill {
+      fill: #e8f3ff;
+      stroke: #94b9df;
+      stroke-width: 1;
+    }
+
+    .unit-tail { margin-left: 4px; }
+
+    [data-ans] { color: transparent; }
+    .answers-shown [data-ans] { color: #e74c3c; }
+
     @media print {
       @page { size: A4; margin: 0; }
-      body { display: block; background: none; margin: 0; padding: 0;
-             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+      body {
+        display: block;
+        background: none;
+        margin: 0;
+        padding: 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
       .controls { display: none !important; }
-      .sheet { box-shadow: none; margin: 0; page-break-after: always; break-inside: avoid; }
+
+      .sheet {
+        box-shadow: none;
+        margin: 0;
+        page-break-after: always;
+        break-inside: avoid;
+      }
+
       .sheet:last-child { page-break-after: auto; }
     }
 
+    @media screen and (max-width: 980px) {
+      .controls { align-items: stretch; }
+      .control-stack { flex-direction: column; align-items: stretch; }
+      .input-group { justify-content: space-between; }
+      #unitSelect,
+      #worksheetSelect { min-width: 0; width: 100%; }
+    }
+
     @media screen and (max-width: 850px) {
-      .controls { flex-direction: column; align-items: stretch; }
-      .sheet { transform: scale(0.55); transform-origin: top center; margin-bottom: -500px; }
+      .sheet {
+        transform: scale(0.55);
+        transform-origin: top center;
+        margin-bottom: -500px;
+      }
+
       .sheet:last-child { margin-bottom: 0; }
     }
   </style>
@@ -194,50 +537,20 @@
 <body>
 
 <div class="controls">
-  <div class="input-group">
-    <select id="problemType">
-      <optgroup label="━━ 1단원: 자연수의 혼합 계산 ━━">
-        <option value="u1_pre_add">[선수] 세 자리 수 덧셈 (세로셈)</option>
-        <option value="u1_pre_sub">[선수] 세 자리 수 뺄셈 (세로셈)</option>
-        <option value="u1_pre_mul">[선수] 두 자리 수 곱셈 (세로셈)</option>
-        <option value="u1_pre_mul_3x2">[선수] 세 자리 수 × 두 자리 수 (세로셈)</option>
-        <option value="u1_pre_div">[선수] 두 자리 수 나눗셈 (가로셈)</option>
-        <option value="u1_pre_div_3d2">[선수] 세 자리 수 ÷ 두 자리 수 (세로셈)</option>
-        <option value="u1_pre_div_3d1">[선수] 세 자리 수 ÷ 한 자리 수 (세로셈)</option>
-        <option value="u1_main_mix">[본단원] 혼합 계산 (가로셈)</option>
-      </optgroup>
-      <optgroup label="━━ 2단원: 약수와 배수 ━━">
-        <option value="u2_pre_mul">[선수] 곱셈구구</option>
-        <option value="u2_pre_div">[선수] 나눗셈 (한 자리 나누기)</option>
-        <option value="u2_main_gcd">[본단원] 최대공약수</option>
-        <option value="u2_main_lcm">[본단원] 최소공배수</option>
-        <option value="u2_main_mix">[본단원] 최대·최소공배수 혼합</option>
-      </optgroup>
-      <optgroup label="━━ 4단원: 약분과 통분 ━━">
-        <option value="u4_pre_cmp">[선수] 분모 같은 분수 크기 비교</option>
-        <option value="u4_pre_conv">[선수] 가분수 → 대분수 변환</option>
-        <option value="u4_main_red">[본단원] 약분 (기약분수 만들기)</option>
-        <option value="u4_main_lcd">[본단원] 통분 (공통분모 구하기)</option>
-      </optgroup>
-      <optgroup label="━━ 5단원: 분수의 덧셈과 뺄셈 ━━">
-        <option value="u5_pre_add">[선수] 분모 같은 분수의 덧셈</option>
-        <option value="u5_pre_sub">[선수] 분모 같은 분수의 뺄셈</option>
-        <option value="u5_main_add">[본단원] 분모 다른 진분수의 덧셈</option>
-        <option value="u5_main_sub">[본단원] 분모 다른 진분수의 뺄셈</option>
-        <option value="u5_main_mix">[본단원] 분모 다른 분수 덧셈·뺄셈 혼합</option>
-      </optgroup>
-      <optgroup label="━━ 6단원: 다각형의 둘레와 넓이 ━━">
-        <option value="u6_pre_unit">[선수] 단위 변환 (cm, m, km)</option>
-        <option value="u6_pre_len">[선수] 길이의 합과 차</option>
-        <option value="u6_main_rect">[본단원] 직사각형·정사각형 넓이</option>
-        <option value="u6_main_tri">[본단원] 삼각형·평행사변형 넓이</option>
-        <option value="u6_main_mix">[본단원] 도형 넓이 혼합</option>
-      </optgroup>
-    </select>
+  <div class="control-stack">
+    <div class="input-group">
+      <label for="unitSelect">단원</label>
+      <select id="unitSelect"></select>
+    </div>
+
+    <div class="input-group">
+      <label for="worksheetSelect">연습지</label>
+      <select id="worksheetSelect"></select>
+    </div>
   </div>
 
   <div class="input-group">
-    <label for="pageCount">장 수:</label>
+    <label for="pageCount">쪽수</label>
     <input type="number" id="pageCount" value="1" min="1" max="20">
   </div>
 
@@ -245,407 +558,983 @@
     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
     새로 만들기
   </button>
+
   <button class="btn-add" onclick="generate('append')">
     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-    추가하기
+    이어 붙이기
   </button>
+
   <button class="btn-answer" onclick="toggleAnswers()">
     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-    정답
+    정답 보기
   </button>
+
   <button class="btn-print" onclick="window.print()">
     <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2M7 9h10V4H7v5zm10 8H7v5h10v-5z"/></svg>
     인쇄
   </button>
+
+  <div class="meta-note">
+    <span class="meta-chip" id="selectedSection"></span>
+    <span class="meta-chip" id="selectedLesson"></span>
+  </div>
 </div>
 
 <div id="sheets-container"></div>
 
 <script>
-// ===== 유틸리티 =====
+'use strict';
+
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function randChoice(items) { return items[rand(0, items.length - 1)]; }
 function gcd(a, b) { return b === 0 ? Math.abs(a) : gcd(b, a % b); }
 function lcm(a, b) { return Math.abs(a * b) / gcd(a, b); }
-function simplify(n, d) { const g = gcd(Math.abs(n), Math.abs(d)); return [n / g, d / g]; }
+function simplify(n, d) {
+  const g = gcd(Math.abs(n), Math.abs(d));
+  return [n / g, d / g];
+}
 
-// ===== 문제 생성기 =====
+function escapeAttr(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
-// 1단원 선수: 세 자리 덧셈
+function factorsOf(n) {
+  const result = [];
+  for (let i = 1; i <= n; i++) {
+    if (n % i === 0) result.push(i);
+  }
+  return result;
+}
+
+function multiplesOf(n, count) {
+  return Array.from({ length: count }, (_, idx) => n * (idx + 1));
+}
+
+function fracD(n, d) {
+  return `<span class="frac-d"><span class="ft">${n}</span><span class="fb">${d}</span></span>`;
+}
+
+function mixedD(w, n, d) {
+  return `<span class="mixed-d"><span class="whole">${w}</span>${fracD(n, d)}</span>`;
+}
+
+function numBlank(value, unit = '') {
+  return `<span class="num-blank" data-ans="${escapeAttr(value)}">${value}</span>${unit ? `<span class="unit-tail">${unit}</span>` : ''}`;
+}
+
+function textBlank(value, minWidth = 72) {
+  return `<span class="text-blank" style="min-width:${minWidth}px" data-ans="${escapeAttr(value)}">${value}</span>`;
+}
+
+function symBlank(value) {
+  return `<span class="sym-blank" data-ans="${escapeAttr(value)}">${value}</span>`;
+}
+
+function fracBlank(n, d) {
+  return `<span class="frac-blank">
+    <span class="fb-top" data-ans="${escapeAttr(n)}">${n}</span>
+    <span class="fb-line"></span>
+    <span class="fb-bot" data-ans="${escapeAttr(d)}">${d}</span>
+  </span>`;
+}
+
+function mixedBlank(w, n, d) {
+  return `<span class="mixed-d"><span class="num-blank" data-ans="${escapeAttr(w)}">${w}</span>${fracBlank(n, d)}</span>`;
+}
+
+function relationTableHtml(xLabel, yLabel, xs, ys) {
+  const headCells = xs.map((value) => `<td>${value}</td>`).join('');
+  const bodyCells = ys.map((value) => `<td>${value}</td>`).join('');
+  return `<table class="relation-table">
+    <tbody>
+      <tr><th>${xLabel}</th>${headCells}</tr>
+      <tr><th>${yLabel}</th>${bodyCells}</tr>
+    </tbody>
+  </table>`;
+}
+
+function svgShell(inner) {
+  return `<svg class="shape-svg" viewBox="0 0 160 104" aria-hidden="true">${inner}</svg>`;
+}
+
+function unitGridSvg(cols, rows) {
+  const cell = 20;
+  const width = cols * cell;
+  const height = rows * cell;
+  const startX = 18;
+  const startY = 18;
+  const rects = [];
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      rects.push(`<rect class="grid-fill" x="${startX + (x * cell)}" y="${startY + (y * cell)}" width="${cell}" height="${cell}"></rect>`);
+    }
+  }
+
+  for (let x = 0; x <= cols; x++) {
+    rects.push(`<line class="grid-line" x1="${startX + (x * cell)}" y1="${startY}" x2="${startX + (x * cell)}" y2="${startY + height}"></line>`);
+  }
+
+  for (let y = 0; y <= rows; y++) {
+    rects.push(`<line class="grid-line" x1="${startX}" y1="${startY + (y * cell)}" x2="${startX + width}" y2="${startY + (y * cell)}"></line>`);
+  }
+
+  rects.push(`<text x="${startX + width + 8}" y="${startY + 15}">한 칸 = 1㎠</text>`);
+  return svgShell(rects.join(''));
+}
+
+function rectangleSvg(w, h) {
+  return svgShell(`
+    <rect class="outline" x="30" y="20" width="95" height="58"></rect>
+    <text x="67" y="16">${w}cm</text>
+    <text x="131" y="54">${h}cm</text>
+  `);
+}
+
+function triangleSvg(base, height) {
+  return svgShell(`
+    <polygon class="outline" points="24,78 124,78 58,22"></polygon>
+    <line class="guide" x1="58" y1="22" x2="58" y2="78"></line>
+    <text x="68" y="18">높이 ${height}cm</text>
+    <text x="55" y="95">밑변 ${base}cm</text>
+  `);
+}
+
+function parallelogramSvg(base, height) {
+  return svgShell(`
+    <polygon class="outline" points="36,78 122,78 102,28 16,28"></polygon>
+    <line class="guide" x1="102" y1="28" x2="102" y2="78"></line>
+    <text x="44" y="95">밑변 ${base}cm</text>
+    <text x="109" y="56">높이 ${height}cm</text>
+  `);
+}
+
+function trapezoidSvg(top, bottom, height) {
+  return svgShell(`
+    <polygon class="outline" points="34,78 122,78 104,28 54,28"></polygon>
+    <line class="guide" x1="104" y1="28" x2="104" y2="78"></line>
+    <text x="62" y="20">윗변 ${top}cm</text>
+    <text x="48" y="95">아랫변 ${bottom}cm</text>
+    <text x="110" y="56">높이 ${height}cm</text>
+  `);
+}
+
+function rhombusSvg(d1, d2) {
+  return svgShell(`
+    <polygon class="outline" points="78,18 122,52 78,86 34,52"></polygon>
+    <line class="guide" x1="34" y1="52" x2="122" y2="52"></line>
+    <line class="guide" x1="78" y1="18" x2="78" y2="86"></line>
+    <text x="42" y="47">대각선 ${d1}cm</text>
+    <text x="84" y="34">대각선 ${d2}cm</text>
+  `);
+}
+
+function perimeterTriangleSvg(a, b, c) {
+  return svgShell(`
+    <polygon class="outline" points="24,78 124,78 70,18"></polygon>
+    <text x="54" y="94">${a}cm</text>
+    <text x="30" y="49">${b}cm</text>
+    <text x="97" y="48">${c}cm</text>
+  `);
+}
+
+function formulaResultHtml(num, den) {
+  const [sn, sd] = simplify(num, den);
+  if (sd === 1) return numBlank(sn);
+  if (sn > sd) {
+    const whole = Math.floor(sn / sd);
+    const remain = sn % sd;
+    if (remain === 0) return numBlank(whole);
+    return mixedBlank(whole, remain, sd);
+  }
+  return fracBlank(sn, sd);
+}
+
+function htmlProblem(layout, html, itemClass = '') {
+  return { kind: 'html', layout, html, itemClass };
+}
+
+function horizProblem(expression, answerHtml) {
+  return htmlProblem('horiz-box', `${expression} = ${answerHtml}`);
+}
+
+function conceptProblem(question, answerHtml, note = '') {
+  return htmlProblem('concept-layout', `
+    <div class="concept-card">
+      <div class="concept-question">${question}</div>
+      <div class="concept-answer">${answerHtml}</div>
+      ${note ? `<div class="small-note">${note}</div>` : ''}
+    </div>
+  `);
+}
+
+function relationProblem(question, tableHtml, answerHtml = '', note = '') {
+  return htmlProblem('relation-layout', `
+    <div class="relation-card">
+      <div class="relation-question">${question}</div>
+      ${tableHtml}
+      ${answerHtml ? `<div class="concept-answer">${answerHtml}</div>` : ''}
+      ${note ? `<div class="small-note">${note}</div>` : ''}
+    </div>
+  `);
+}
+
+function shapeProblem(svg, prompt, answerHtml, note = '') {
+  return htmlProblem('shape-layout', `
+    <div class="shape-card">
+      ${svg}
+      <div class="shape-question">${prompt}</div>
+      <div class="shape-answer">${answerHtml}</div>
+      ${note ? `<div class="small-note">${note}</div>` : ''}
+    </div>
+  `);
+}
+
 function genU1PreAdd() {
-  const a = rand(100, 499), b = rand(100, 400);
+  const a = rand(100, 499);
+  const b = rand(100, 400);
   return { kind: 'vertical', num1: a, num2: b, op: '+', ans: a + b };
 }
-// 1단원 선수: 세 자리 뺄셈
+
 function genU1PreSub() {
-  const b = rand(100, 399), a = b + rand(10, 300);
+  const b = rand(100, 399);
+  const a = b + rand(10, 300);
   return { kind: 'vertical', num1: a, num2: b, op: '−', ans: a - b };
 }
-// 1단원 선수: 두 자리 곱셈
+
 function genU1PreMul() {
-  const a = rand(12, 45), b = rand(11, 25);
+  const a = rand(12, 45);
+  const b = rand(11, 25);
   return { kind: 'vertical', num1: a, num2: b, op: '×', ans: a * b };
 }
-// 1단원 선수: 세 자리 × 두 자리 곱셈
+
 function genU1PreMul3x2() {
-  const a = rand(100, 300), b = rand(11, 25);
+  const a = rand(100, 399);
+  const b = rand(11, 25);
   return { kind: 'vertical', num1: a, num2: b, op: '×', ans: a * b };
 }
-// 1단원 선수: 두 자리 나눗셈 (나누어 떨어짐)
+
 function genU1PreDiv() {
-  const b = rand(11, 25), q = rand(10, 30);
-  return { kind: 'horiz', eq: `${b * q} ÷ ${b}`, ans: q };
+  const b = rand(11, 25);
+  const q = rand(10, 30);
+  return horizProblem(`${b * q} ÷ ${b}`, numBlank(q));
 }
-// 1단원 선수: 세 자리 ÷ 두 자리 (세로셈, 나머지 포함)
+
 function genDiv3d2() {
   const dvsr = rand(11, 30);
   const dvnd = rand(100, 900);
   const quot = Math.floor(dvnd / dvsr);
-  if (quot < 10) return genDiv3d2(); // 몫이 두 자리 이상이 되도록
+  if (quot < 10) return genDiv3d2();
   return { kind: 'longdiv', dvsr, dvnd, quot, rem: dvnd % dvsr };
 }
-// 1단원 선수: 세 자리 ÷ 한 자리 (세로셈, 나머지 포함)
+
 function genDiv3d1() {
   const dvsr = rand(2, 9);
   const dvnd = rand(100, 999);
-  const quot = Math.floor(dvnd / dvsr);
-  return { kind: 'longdiv', dvsr, dvnd, quot, rem: dvnd % dvsr };
+  return { kind: 'longdiv', dvsr, dvnd, quot: Math.floor(dvnd / dvsr), rem: dvnd % dvsr };
 }
-// 1단원 본단원: 혼합 계산
+
+function genU1MainAddSubMix() {
+  const a = rand(20, 80);
+  const b = rand(20, 80);
+  const c = rand(10, 50);
+  return horizProblem(`${a} + ${b} − ${c}`, numBlank(a + b - c));
+}
+
+function genU1MainMulDivMix() {
+  const a = rand(2, 9);
+  const c = rand(2, 8);
+  const k = rand(2, 6);
+  const b = c * k;
+  return horizProblem(`${a} × ${b} ÷ ${c}`, numBlank(a * k));
+}
+
+function genU1MainAddSubMul() {
+  if (rand(1, 2) === 1) {
+    const a = rand(10, 60);
+    const b = rand(2, 9);
+    const c = rand(2, 9);
+    return horizProblem(`${a} + ${b} × ${c}`, numBlank(a + (b * c)));
+  }
+  const a = rand(3, 9);
+  const b = rand(4, 9);
+  const c = rand(5, (a * b) - 1);
+  return horizProblem(`${a} × ${b} − ${c}`, numBlank((a * b) - c));
+}
+
+function genU1MainAddSubDiv() {
+  if (rand(1, 2) === 1) {
+    const a = rand(30, 90);
+    const b = rand(10, 40);
+    const d = rand(2, 9);
+    const q = rand(2, 9);
+    return horizProblem(`${a} + ${b} − ${q * d} ÷ ${d}`, numBlank(a + b - q));
+  }
+  const a = rand(50, 90);
+  const b = rand(10, 30);
+  const d = rand(2, 9);
+  const q = rand(2, 8);
+  return horizProblem(`${a} − ${b} + ${q * d} ÷ ${d}`, numBlank(a - b + q));
+}
+
 function genU1MainMix() {
-  const t = rand(1, 4);
-  if (t === 1) { const a = rand(20, 80), b = rand(20, 80), c = rand(10, 50); return { kind: 'horiz', eq: `${a} + ${b} − ${c}`, ans: a + b - c }; }
-  if (t === 2) { const a = rand(2, 9), c = rand(2, 6), k = rand(2, 5); return { kind: 'horiz', eq: `${a} × ${c * k} ÷ ${c}`, ans: a * k }; }
-  if (t === 3) { const a = rand(10, 50), b = rand(2, 9), c = rand(2, 9); return { kind: 'horiz', eq: `${a} + ${b} × ${c}`, ans: a + b * c }; }
-  const a = rand(5, 20), b = rand(5, 20), c = rand(2, 6);
-  return { kind: 'horiz', eq: `(${a} + ${b}) × ${c}`, ans: (a + b) * c };
+  if (rand(1, 2) === 1) {
+    const a = rand(20, 60);
+    const b = rand(2, 9);
+    const c = rand(2, 6);
+    const d = rand(2, 8);
+    const q = rand(2, 8);
+    return horizProblem(`${a} + ${b} × ${c} − ${q * d} ÷ ${d}`, numBlank(a + (b * c) - q));
+  }
+  const a = rand(6, 20);
+  const b = rand(5, 18);
+  const c = rand(2, 5);
+  const d = rand(2, 7);
+  const q = rand(2, 6);
+  return horizProblem(`(${a} + ${b}) × ${c} − ${q * d} ÷ ${d}`, numBlank((a + b) * c - q));
 }
 
-// 2단원 선수: 곱셈구구
 function genU2PreMul() {
-  const a = rand(2, 9), b = rand(1, 9);
-  return { kind: 'horiz', eq: `${a} × ${b}`, ans: a * b };
+  const a = rand(2, 9);
+  const b = rand(1, 9);
+  return horizProblem(`${a} × ${b}`, numBlank(a * b));
 }
-// 2단원 선수: 나눗셈
+
 function genU2PreDiv() {
-  const b = rand(2, 9), q = rand(2, 9);
-  return { kind: 'horiz', eq: `${b * q} ÷ ${b}`, ans: q };
+  const b = rand(2, 9);
+  const q = rand(2, 9);
+  return horizProblem(`${b * q} ÷ ${b}`, numBlank(q));
 }
-// 2단원 본단원: 최대공약수
+
+function genU2MainFactorConcept() {
+  const n = randChoice([12, 14, 15, 16, 18, 20, 24, 28, 30]);
+  const answer = factorsOf(n).join(', ');
+  return conceptProblem(`${n}의 약수를 작은 수부터 모두 써 보세요.`, textBlank(answer, 150), '쉼표로 구분해 보세요.');
+}
+
+function genU2MainMultipleConcept() {
+  const n = rand(3, 9);
+  const answer = multiplesOf(n, 4).join(', ');
+  return conceptProblem(`${n}의 배수를 작은 수부터 네 개 써 보세요.`, textBlank(answer, 135), `${n}씩 커지는 수를 찾으면 됩니다.`);
+}
+
+function genU2MainCommonFactorConcept() {
+  const g = rand(2, 6);
+  const p = rand(2, 5);
+  const q = rand(2, 5);
+  const a = g * p;
+  const b = g * q;
+  const answer = factorsOf(gcd(a, b)).join(', ');
+  return conceptProblem(`${a}와 ${b}의 공약수를 모두 써 보세요.`, textBlank(answer, 130), '두 수를 모두 나누는 수를 찾습니다.');
+}
+
 function genU2MainGcd() {
-  const g = rand(2, 6), p = rand(2, 7), q = rand(2, 7);
-  const a = g * p, b = g * q;
-  return { kind: 'horiz', eq: `최대공약수 (${a}, ${b})`, ans: gcd(a, b) };
+  const g = rand(2, 6);
+  const p = rand(2, 7);
+  const q = rand(2, 7);
+  const a = g * p;
+  const b = g * q;
+  return horizProblem(`최대공약수 (${a}, ${b})`, numBlank(gcd(a, b)));
 }
-// 2단원 본단원: 최소공배수
+
+function genU2MainCommonMultipleConcept() {
+  const a = rand(2, 7);
+  const b = rand(2, 7);
+  const base = lcm(a, b);
+  const answer = [base, base * 2, base * 3].join(', ');
+  return conceptProblem(`${a}와 ${b}의 공배수 중 작은 수부터 세 개 써 보세요.`, textBlank(answer, 150), '최소공배수의 배수를 이용하면 쉽게 찾을 수 있습니다.');
+}
+
 function genU2MainLcm() {
-  const a = rand(2, 8), b = rand(2, 8);
-  return { kind: 'horiz', eq: `최소공배수 (${a}, ${b})`, ans: lcm(a, b) };
+  const a = rand(2, 8);
+  const b = rand(2, 8);
+  return horizProblem(`최소공배수 (${a}, ${b})`, numBlank(lcm(a, b)));
 }
-// 2단원 본단원: 혼합
-function genU2MainMix() { return rand(1, 2) === 1 ? genU2MainGcd() : genU2MainLcm(); }
 
-// 4단원 선수: 분수 크기 비교
+function genU2MainMix() {
+  return randChoice([
+    genU2MainCommonFactorConcept,
+    genU2MainGcd,
+    genU2MainCommonMultipleConcept,
+    genU2MainLcm,
+  ])();
+}
+
+const RELATION_SCENARIOS = [
+  { subject: '로봇', target: '바퀴', xLabel: '로봇 수', yLabel: '바퀴 수', factor: 4, unitA: '대', unitB: '개' },
+  { subject: '의자', target: '팔걸이', xLabel: '의자 수', yLabel: '팔걸이 수', factor: 2, unitA: '개', unitB: '개' },
+  { subject: '드론', target: '날개', xLabel: '드론 수', yLabel: '날개 수', factor: 4, unitA: '대', unitB: '개' },
+  { subject: '쟁반', target: '컵', xLabel: '쟁반 수', yLabel: '컵 수', factor: 3, unitA: '개', unitB: '개' },
+];
+
+function genU3MainRelationFind1() {
+  const scene = randChoice(RELATION_SCENARIOS);
+  const x = rand(2, 8);
+  const y = x * scene.factor;
+  return conceptProblem(`한 ${scene.subject}에 ${scene.target}가 ${scene.factor}${scene.unitB}씩 있습니다.<br>${scene.subject} ${x}${scene.unitA}의 ${scene.target} 수는?`, numBlank(y, scene.unitB));
+}
+
+function genU3MainRelationFind2() {
+  const scene = randChoice(RELATION_SCENARIOS);
+  const x = rand(2, 8);
+  const y = x * scene.factor;
+  return conceptProblem(`한 ${scene.subject}에 ${scene.target}가 ${scene.factor}${scene.unitB}씩 있습니다.<br>${scene.target}가 ${y}${scene.unitB}라면 ${scene.subject} 수는?`, numBlank(x, scene.unitA));
+}
+
+function genU3MainRelationTable() {
+  const scene = randChoice(RELATION_SCENARIOS);
+  const xs = [1, 2, 3, 4];
+  const blankIndex = rand(1, 3);
+  const ys = xs.map((x, idx) => idx === blankIndex ? numBlank(x * scene.factor) : `${x * scene.factor}`);
+  return relationProblem(
+    `${scene.subject} 수와 ${scene.target} 수의 관계표를 완성해 보세요.`,
+    relationTableHtml(scene.xLabel, scene.yLabel, xs, ys),
+    '',
+    `한 ${scene.subject}에 ${scene.target} ${scene.factor}${scene.unitB}씩입니다.`,
+  );
+}
+
+function genU3MainRelationFormula() {
+  const scene = randChoice(RELATION_SCENARIOS);
+  return conceptProblem(
+    `${scene.subject} 수를 □, ${scene.target} 수를 △라고 할 때 식을 완성해 보세요.<br>△ = □ × ${numBlank(scene.factor)}`,
+    textBlank(`${scene.target} 수 = ${scene.subject} 수 × ${scene.factor}`, 170),
+    '아래 문장은 정답 확인용입니다.',
+  );
+}
+
+function genU3MainRelationReal() {
+  const scene = randChoice(RELATION_SCENARIOS);
+  const xs = [2, 4, 6];
+  const ys = xs.map((x) => x * scene.factor);
+  return relationProblem(
+    `생활 속 대응 관계를 보고 빈칸을 채워 보세요.`,
+    relationTableHtml(scene.xLabel, scene.yLabel, xs, [ys[0], ys[1], numBlank(ys[2])]),
+    textBlank(`${scene.yLabel} = ${scene.xLabel} × ${scene.factor}`, 180),
+    `${scene.subject} 수가 늘어나면 ${scene.target} 수는 일정한 비율로 늘어납니다.`,
+  );
+}
+
 function genU4PreCmp() {
-  const den = rand(5, 12); let a, b;
-  do { a = rand(1, den - 1); b = rand(1, den - 1); } while (a === b);
-  return { kind: 'frac-cmp', n1: a, d1: den, n2: b, d2: den, sym: a > b ? '>' : '<' };
-}
-// 4단원 선수: 가분수 → 대분수
-function genU4PreConv() {
-  const den = rand(2, 7), whole = rand(1, 3), rem = rand(1, den - 1);
-  return { kind: 'frac-conv', num: whole * den + rem, den, ansWhole: whole, ansNum: rem, ansDen: den };
-}
-// 4단원 본단원: 약분
-function genU4MainRed() {
-  let n, d, g;
-  do { g = rand(2, 6); n = rand(1, 7); d = rand(n + 1, 9); } while (gcd(n, d) > 1);
-  return { kind: 'frac-red', bigNum: n * g, bigDen: d * g, ansNum: n, ansDen: d };
-}
-// 4단원 본단원: 통분 공통분모
-function genU4MainLcd() {
-  let a, b; do { a = rand(2, 6); b = rand(2, 6); } while (a === b);
-  return { kind: 'horiz', eq: `공통분모 (${a}, ${b})`, ans: lcm(a, b) };
-}
-
-// 5단원 선수: 같은 분모 덧셈
-function genU5PreAdd() {
-  const d = rand(5, 12), a = rand(1, Math.floor(d / 2)), b = rand(1, d - a - 1);
-  const [sn, sd] = simplify(a + b, d);
-  return { kind: 'frac-calc', n1: a, d1: d, n2: b, d2: d, op: '+', at: 'frac', an: sn, ad: sd };
-}
-// 5단원 선수: 같은 분모 뺄셈
-function genU5PreSub() {
-  const d = rand(5, 12), b = rand(1, d - 2), a = rand(b + 1, d - 1);
-  const [sn, sd] = simplify(a - b, d);
-  return { kind: 'frac-calc', n1: a, d1: d, n2: b, d2: d, op: '−', at: 'frac', an: sn, ad: sd };
-}
-// 5단원 본단원: 다른 분모 덧셈
-function genU5MainAdd() {
-  let d1, d2; do { d1 = rand(2, 6); d2 = rand(2, 6); } while (d1 === d2);
-  const n1 = rand(1, d1 - 1), n2 = rand(1, d2 - 1), l = lcm(d1, d2);
-  const total = n1 * (l / d1) + n2 * (l / d2);
-  const [sn, sd] = simplify(total, l);
-  if (sn >= sd) {
-    const w = Math.floor(sn / sd), r = sn % sd;
-    if (r === 0) return { kind: 'frac-calc', n1, d1, n2, d2, op: '+', at: 'int', an: w };
-    return { kind: 'frac-calc', n1, d1, n2, d2, op: '+', at: 'mix', aw: w, an: r, ad: sd };
-  }
-  return { kind: 'frac-calc', n1, d1, n2, d2, op: '+', at: 'frac', an: sn, ad: sd };
-}
-// 5단원 본단원: 다른 분모 뺄셈
-function genU5MainSub() {
-  let d1, d2, n1, n2, diff, l, tries = 0;
+  const den = rand(5, 12);
+  let a;
+  let b;
   do {
-    d1 = rand(3, 8); d2 = rand(2, d1 - 1);
-    n1 = rand(1, d1 - 1); n2 = rand(1, d2 - 1);
-    l = lcm(d1, d2); diff = n1 * (l / d1) - n2 * (l / d2); tries++;
-  } while (diff <= 0 && tries < 30);
-  if (diff <= 0) return genU5MainSub();
-  const [sn, sd] = simplify(diff, l);
-  return { kind: 'frac-calc', n1, d1, n2, d2, op: '−', at: 'frac', an: sn, ad: sd };
+    a = rand(1, den - 1);
+    b = rand(1, den - 1);
+  } while (a === b);
+  return htmlProblem('frac-row', `${fracD(a, den)} ${symBlank(a > b ? '>' : '<')} ${fracD(b, den)}`);
 }
-// 5단원 본단원: 혼합
-function genU5MainMix() { return rand(1, 2) === 1 ? genU5MainAdd() : genU5MainSub(); }
 
-// 6단원 선수: 단위 변환
+function genU4PreConv() {
+  const den = rand(2, 7);
+  const whole = rand(1, 3);
+  const rem = rand(1, den - 1);
+  return htmlProblem('frac-row', `${fracD((whole * den) + rem, den)} <span class="eq-txt">=</span> ${mixedBlank(whole, rem, den)}`);
+}
+
+function genU4MainEquivFind() {
+  const den = rand(2, 8);
+  const num = rand(1, den - 1);
+  const multiplier = rand(2, 4);
+  const [sn, sd] = simplify(num, den);
+  return htmlProblem('frac-row', `${fracD(sn, sd)} <span class="eq-txt">=</span> ${fracBlank(sn * multiplier, sd * multiplier)}`);
+}
+
+function genU4MainEquivMake() {
+  const den = rand(2, 7);
+  const num = rand(1, den - 1);
+  const multiplier = rand(2, 5);
+  if (rand(1, 2) === 1) {
+    return htmlProblem('frac-row', `${fracD(num, den)} <span class="eq-txt">=</span> <span class="frac-blank"><span class="fb-top" data-ans="${num * multiplier}">${num * multiplier}</span><span class="fb-line"></span><span class="fb-bot">${den * multiplier}</span></span>`);
+  }
+  return htmlProblem('frac-row', `${fracD(num, den)} <span class="eq-txt">=</span> <span class="frac-blank"><span class="fb-top">${num * multiplier}</span><span class="fb-line"></span><span class="fb-bot" data-ans="${den * multiplier}">${den * multiplier}</span></span>`);
+}
+
+function genU4MainRed() {
+  let n;
+  let d;
+  let g;
+  do {
+    g = rand(2, 6);
+    n = rand(1, 7);
+    d = rand(n + 1, 9);
+  } while (gcd(n, d) > 1);
+  return htmlProblem('frac-row', `${fracD(n * g, d * g)} <span class="eq-txt">=</span> ${fracBlank(n, d)}`);
+}
+
+function genU4MainLcd() {
+  let d1;
+  let d2;
+  do {
+    d1 = rand(2, 6);
+    d2 = rand(2, 6);
+  } while (d1 === d2);
+  const n1 = rand(1, d1 - 1);
+  const n2 = rand(1, d2 - 1);
+  const common = lcm(d1, d2);
+  return htmlProblem('frac-row', `${fracD(n1, d1)} <span class="eq-txt">=</span> ${fracBlank(n1 * (common / d1), common)} <span class="op-txt">,</span> ${fracD(n2, d2)} <span class="eq-txt">=</span> ${fracBlank(n2 * (common / d2), common)}`);
+}
+
+function genU4MainCmp() {
+  let d1;
+  let d2;
+  do {
+    d1 = rand(2, 8);
+    d2 = rand(2, 8);
+  } while (d1 === d2);
+  const n1 = rand(1, d1 - 1);
+  const n2 = rand(1, d2 - 1);
+  const left = n1 / d1;
+  const right = n2 / d2;
+  return htmlProblem('frac-row', `${fracD(n1, d1)} ${symBlank(left > right ? '>' : '<')} ${fracD(n2, d2)}`);
+}
+
+function genU4MainDecCmp() {
+  const set = randChoice([
+    { n: 1, d: 2, dec: '0.6' },
+    { n: 3, d: 4, dec: '0.7' },
+    { n: 2, d: 5, dec: '0.5' },
+    { n: 7, d: 10, dec: '0.6' },
+    { n: 1, d: 4, dec: '0.3' },
+  ]);
+  const answer = (set.n / set.d) > parseFloat(set.dec) ? '>' : '<';
+  return htmlProblem('frac-row', `${fracD(set.n, set.d)} ${symBlank(answer)} <span class="text-blank" style="border:none; background:none; min-width:0; color:#2f3640;">${set.dec}</span>`);
+}
+
+function genU5PreAdd() {
+  const d = rand(5, 12);
+  const a = rand(1, Math.floor(d / 2));
+  const b = rand(1, d - a - 1);
+  return htmlProblem('frac-row', `${fracD(a, d)} <span class="op-txt">+</span> ${fracD(b, d)} <span class="eq-txt">=</span> ${formulaResultHtml(a + b, d)}`);
+}
+
+function genU5PreSub() {
+  const d = rand(5, 12);
+  const b = rand(1, d - 2);
+  const a = rand(b + 1, d - 1);
+  return htmlProblem('frac-row', `${fracD(a, d)} <span class="op-txt">−</span> ${fracD(b, d)} <span class="eq-txt">=</span> ${formulaResultHtml(a - b, d)}`);
+}
+
+function genU5MainAdd() {
+  let d1;
+  let d2;
+  let n1;
+  let n2;
+  let total;
+  let common;
+  do {
+    d1 = rand(2, 8);
+    d2 = rand(2, 8);
+    n1 = rand(1, d1 - 1);
+    n2 = rand(1, d2 - 1);
+    common = lcm(d1, d2);
+    total = (n1 * (common / d1)) + (n2 * (common / d2));
+  } while (total >= common);
+  return htmlProblem('frac-row', `${fracD(n1, d1)} <span class="op-txt">+</span> ${fracD(n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(total, common)}`);
+}
+
+function genU5MainAddGe1() {
+  let d1;
+  let d2;
+  let n1;
+  let n2;
+  let total;
+  let common;
+  do {
+    d1 = rand(2, 6);
+    d2 = rand(2, 6);
+    n1 = rand(1, d1 - 1);
+    n2 = rand(1, d2 - 1);
+    common = lcm(d1, d2);
+    total = (n1 * (common / d1)) + (n2 * (common / d2));
+  } while (total < common);
+  return htmlProblem('frac-row', `${fracD(n1, d1)} <span class="op-txt">+</span> ${fracD(n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(total, common)}`);
+}
+
+function genU5MainMixedAdd() {
+  const d1 = rand(2, 5);
+  const d2 = rand(2, 5);
+  const w1 = rand(1, 3);
+  const w2 = rand(1, 3);
+  const n1 = rand(1, d1 - 1);
+  const n2 = rand(1, d2 - 1);
+  const common = lcm(d1, d2);
+  const total = ((w1 * d1) + n1) * (common / d1) + (((w2 * d2) + n2) * (common / d2));
+  return htmlProblem('frac-row', `${mixedD(w1, n1, d1)} <span class="op-txt">+</span> ${mixedD(w2, n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(total, common)}`);
+}
+
+function genU5MainSub() {
+  let d1;
+  let d2;
+  let n1;
+  let n2;
+  let diff;
+  let common;
+  do {
+    d1 = rand(3, 8);
+    d2 = rand(2, 7);
+    n1 = rand(1, d1 - 1);
+    n2 = rand(1, d2 - 1);
+    common = lcm(d1, d2);
+    diff = (n1 * (common / d1)) - (n2 * (common / d2));
+  } while (diff <= 0);
+  return htmlProblem('frac-row', `${fracD(n1, d1)} <span class="op-txt">−</span> ${fracD(n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(diff, common)}`);
+}
+
+function genU5MainMixedSubNoBorrow() {
+  const d1 = rand(2, 6);
+  const d2 = rand(2, 6);
+  const common = lcm(d1, d2);
+  const n2 = rand(1, d2 - 1);
+  const n2c = n2 * (common / d2);
+  const n1c = rand(n2c, common - 1);
+  const n1 = n1c / (common / d1);
+  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1) return genU5MainMixedSubNoBorrow();
+  const w2 = rand(1, 3);
+  const w1 = w2 + rand(1, 3);
+  const total1 = (w1 * d1) + n1;
+  const total2 = (w2 * d2) + n2;
+  const diff = (total1 * (common / d1)) - (total2 * (common / d2));
+  return htmlProblem('frac-row', `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(diff, common)}`);
+}
+
+function genU5MainMixedSubBorrow() {
+  const d1 = rand(2, 6);
+  const d2 = rand(2, 6);
+  const common = lcm(d1, d2);
+  const n2 = rand(1, d2 - 1);
+  const n2c = n2 * (common / d2);
+  const n1c = rand(1, Math.max(1, n2c - 1));
+  const n1 = n1c / (common / d1);
+  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1) return genU5MainMixedSubBorrow();
+  const w2 = rand(1, 3);
+  const w1 = w2 + rand(1, 3);
+  const total1 = (w1 * d1) + n1;
+  const total2 = (w2 * d2) + n2;
+  const diff = (total1 * (common / d1)) - (total2 * (common / d2));
+  return htmlProblem('frac-row', `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(diff, common)}`);
+}
+
+function genU5MainMix() {
+  return randChoice([
+    genU5MainAdd,
+    genU5MainAddGe1,
+    genU5MainMixedAdd,
+    genU5MainSub,
+    genU5MainMixedSubNoBorrow,
+    genU5MainMixedSubBorrow,
+  ])();
+}
+
 function genU6PreUnit() {
-  const t = rand(1, 4);
-  if (t === 1) { const m = rand(1, 9); return { kind: 'horiz', eq: `${m} m`, ans: m * 100, unit: 'cm' }; }
-  if (t === 2) { const c = rand(1, 9) * 100; return { kind: 'horiz', eq: `${c} cm`, ans: c / 100, unit: 'm' }; }
-  if (t === 3) { const k = rand(1, 5); return { kind: 'horiz', eq: `${k} km`, ans: k * 1000, unit: 'm' }; }
-  const m = rand(1, 5) * 1000; return { kind: 'horiz', eq: `${m} m`, ans: m / 1000, unit: 'km' };
-}
-// 6단원 선수: 길이의 합과 차
-function genU6PreLen() {
-  const a = rand(10, 90), b = rand(10, 90);
-  if (rand(1, 2) === 1) return { kind: 'horiz', eq: `${a} cm + ${b} cm`, ans: a + b, unit: 'cm' };
-  const big = Math.max(a, b), small = Math.min(a, b);
-  return { kind: 'horiz', eq: `${big} cm − ${small} cm`, ans: big - small, unit: 'cm' };
-}
-// 6단원 본단원: 직사각형·정사각형 넓이
-function genU6MainRect() {
-  if (rand(1, 2) === 1) {
-    const w = rand(3, 15), h = rand(3, 12);
-    return { kind: 'horiz', eq: `가로 ${w}cm × 세로 ${h}cm 직사각형`, ans: w * h, unit: 'cm²' };
+  const type = rand(1, 4);
+  if (type === 1) {
+    const m = rand(1, 9);
+    return horizProblem(`${m} m`, numBlank(m * 100, 'cm'));
   }
-  const s = rand(3, 15);
-  return { kind: 'horiz', eq: `한 변 ${s}cm 정사각형`, ans: s * s, unit: 'cm²' };
-}
-// 6단원 본단원: 삼각형·평행사변형 넓이
-function genU6MainTri() {
-  if (rand(1, 2) === 1) {
-    const b = rand(2, 14) * 2, h = rand(2, 10); // b 짝수 → 정수 결과
-    return { kind: 'horiz', eq: `밑변 ${b}cm, 높이 ${h}cm 삼각형`, ans: b * h / 2, unit: 'cm²' };
+  if (type === 2) {
+    const c = rand(1, 9) * 100;
+    return horizProblem(`${c} cm`, numBlank(c / 100, 'm'));
   }
-  const b = rand(3, 12), h = rand(3, 10);
-  return { kind: 'horiz', eq: `밑변 ${b}cm, 높이 ${h}cm 평행사변형`, ans: b * h, unit: 'cm²' };
-}
-// 6단원 본단원: 혼합
-function genU6MainMix() {
-  const t = rand(1, 4);
-  if (t === 1) return genU6MainRect();
-  if (t === 2) return genU6MainTri();
-  if (t === 3) {
-    const a = rand(3, 10), b = rand(3, 10), h = rand(2, 8) * 2; // h 짝수
-    return { kind: 'horiz', eq: `윗변 ${a}cm, 아랫변 ${b}cm, 높이 ${h}cm 사다리꼴`, ans: (a + b) * h / 2, unit: 'cm²' };
+  if (type === 3) {
+    const km = rand(1, 5);
+    return horizProblem(`${km} km`, numBlank(km * 1000, 'm'));
   }
-  const w = rand(3, 15), h = rand(3, 12);
-  return { kind: 'horiz', eq: `가로 ${w}cm × 세로 ${h}cm 직사각형`, ans: w * h, unit: 'cm²' };
+  const m = rand(1, 5) * 1000;
+  return horizProblem(`${m} m`, numBlank(m / 1000, 'km'));
 }
 
-// ===== 문제 유형 테이블 =====
-const TYPE_TABLE = {
-  u1_pre_add:  { gen: genU1PreAdd,  grid: 'standard', count: 20, title: '1단원 [선수학습] 세 자리 수 덧셈' },
-  u1_pre_sub:  { gen: genU1PreSub,  grid: 'standard', count: 20, title: '1단원 [선수학습] 세 자리 수 뺄셈' },
-  u1_pre_mul:      { gen: genU1PreMul,    grid: 'standard', count: 20, title: '1단원 [선수학습] 두 자리 수 곱셈' },
-  u1_pre_mul_3x2:  { gen: genU1PreMul3x2, grid: 'standard', count: 20, title: '1단원 [선수학습] 세 자리 수 × 두 자리 수 곱셈' },
-  u1_pre_div:      { gen: genU1PreDiv,    grid: 'standard', count: 20, title: '1단원 [선수학습] 두 자리 수 나눗셈' },
-  u1_pre_div_3d2:  { gen: genDiv3d2,      grid: 'divgrid',  count: 12, title: '1단원 [선수학습] 세 자리 수 ÷ 두 자리 수 (세로셈)' },
-  u1_pre_div_3d1:  { gen: genDiv3d1,      grid: 'divgrid',  count: 12, title: '1단원 [선수학습] 세 자리 수 ÷ 한 자리 수 (세로셈)' },
-  u1_main_mix: { gen: genU1MainMix, grid: 'standard', count: 20, title: '1단원 [본단원] 자연수의 혼합 계산' },
-  u2_pre_mul:  { gen: genU2PreMul,  grid: 'dense',    count: 36, title: '2단원 [선수학습] 곱셈구구' },
-  u2_pre_div:  { gen: genU2PreDiv,  grid: 'dense',    count: 36, title: '2단원 [선수학습] 나눗셈 기초' },
-  u2_main_gcd: { gen: genU2MainGcd, grid: 'standard', count: 20, title: '2단원 [본단원] 최대공약수' },
-  u2_main_lcm: { gen: genU2MainLcm, grid: 'standard', count: 20, title: '2단원 [본단원] 최소공배수' },
-  u2_main_mix: { gen: genU2MainMix, grid: 'standard', count: 20, title: '2단원 [본단원] 최대·최소공배수 혼합' },
-  u4_pre_cmp:  { gen: genU4PreCmp,  grid: 'practice', count: 15, title: '4단원 [선수학습] 분수 크기 비교' },
-  u4_pre_conv: { gen: genU4PreConv, grid: 'practice', count: 15, title: '4단원 [선수학습] 가분수 → 대분수' },
-  u4_main_red: { gen: genU4MainRed, grid: 'practice', count: 15, title: '4단원 [본단원] 약분 (기약분수)' },
-  u4_main_lcd: { gen: genU4MainLcd, grid: 'standard', count: 20, title: '4단원 [본단원] 통분 (공통분모)' },
-  u5_pre_add:  { gen: genU5PreAdd,  grid: 'practice', count: 15, title: '5단원 [선수학습] 분모 같은 분수 덧셈' },
-  u5_pre_sub:  { gen: genU5PreSub,  grid: 'practice', count: 15, title: '5단원 [선수학습] 분모 같은 분수 뺄셈' },
-  u5_main_add: { gen: genU5MainAdd, grid: 'practice', count: 15, title: '5단원 [본단원] 분모 다른 진분수 덧셈' },
-  u5_main_sub: { gen: genU5MainSub, grid: 'practice', count: 15, title: '5단원 [본단원] 분모 다른 진분수 뺄셈' },
-  u5_main_mix: { gen: genU5MainMix, grid: 'practice', count: 15, title: '5단원 [본단원] 분모 다른 분수 혼합' },
-  u6_pre_unit: { gen: genU6PreUnit, grid: 'standard', count: 20, title: '6단원 [선수학습] 단위 변환' },
-  u6_pre_len:  { gen: genU6PreLen,  grid: 'standard', count: 20, title: '6단원 [선수학습] 길이의 합과 차' },
-  u6_main_rect:{ gen: genU6MainRect,grid: 'practice', count: 15, title: '6단원 [본단원] 직사각형·정사각형 넓이' },
-  u6_main_tri: { gen: genU6MainTri, grid: 'practice', count: 15, title: '6단원 [본단원] 삼각형·평행사변형 넓이' },
-  u6_main_mix: { gen: genU6MainMix, grid: 'practice', count: 15, title: '6단원 [본단원] 도형 넓이 혼합' },
+function genU6PreLen() {
+  const a = rand(10, 90);
+  const b = rand(10, 90);
+  if (rand(1, 2) === 1) return horizProblem(`${a} cm + ${b} cm`, numBlank(a + b, 'cm'));
+  const big = Math.max(a, b);
+  const small = Math.min(a, b);
+  return horizProblem(`${big} cm − ${small} cm`, numBlank(big - small, 'cm'));
+}
+
+function genU6MainPerimeter() {
+  if (rand(1, 2) === 1) {
+    const a = rand(4, 9);
+    const b = rand(4, 9);
+    const c = rand(4, 9);
+    return shapeProblem(perimeterTriangleSvg(a, b, c), '삼각형의 둘레를 구해 보세요.', numBlank(a + b + c, 'cm'));
+  }
+  const w = rand(4, 12);
+  const h = rand(3, 9);
+  return shapeProblem(rectangleSvg(w, h), '직사각형의 둘레를 구해 보세요.', numBlank((w * 2) + (h * 2), 'cm'));
+}
+
+function genU6MainUnitSquare() {
+  const cols = rand(2, 5);
+  const rows = rand(2, 4);
+  return shapeProblem(unitGridSvg(cols, rows), '그림의 넓이는 몇 ㎠인가요?', numBlank(cols * rows, '㎠'));
+}
+
+function genU6MainRect() {
+  const w = rand(3, 15);
+  const h = rand(3, 12);
+  return shapeProblem(rectangleSvg(w, h), '직사각형의 넓이를 구해 보세요.', numBlank(w * h, 'cm²'), '넓이 = 가로 × 세로');
+}
+
+function genU6MainAreaUnit() {
+  if (rand(1, 2) === 1) {
+    const sqm = rand(1, 4);
+    return horizProblem(`${sqm} m²`, numBlank(sqm * 10000, 'cm²'));
+  }
+  const sqcm = rand(1, 4) * 10000;
+  return horizProblem(`${sqcm} cm²`, numBlank(sqcm / 10000, 'm²'));
+}
+
+function genU6MainPara() {
+  const base = rand(4, 14);
+  const height = rand(3, 10);
+  return shapeProblem(parallelogramSvg(base, height), '평행사변형의 넓이를 구해 보세요.', numBlank(base * height, 'cm²'));
+}
+
+function genU6MainTri() {
+  const base = rand(2, 12) * 2;
+  const height = rand(2, 10);
+  return shapeProblem(triangleSvg(base, height), '삼각형의 넓이를 구해 보세요.', numBlank((base * height) / 2, 'cm²'));
+}
+
+function genU6MainTrap() {
+  const top = rand(3, 8);
+  const bottom = rand(top + 1, top + 8);
+  const height = rand(2, 7) * 2;
+  return shapeProblem(trapezoidSvg(top, bottom, height), '사다리꼴의 넓이를 구해 보세요.', numBlank(((top + bottom) * height) / 2, 'cm²'));
+}
+
+function genU6MainRhombus() {
+  const d1 = rand(3, 8) * 2;
+  const d2 = rand(3, 8);
+  return shapeProblem(rhombusSvg(d1, d2), '마름모의 넓이를 구해 보세요.', numBlank((d1 * d2) / 2, 'cm²'));
+}
+
+function genU6MainMix() {
+  return randChoice([
+    genU6MainRect,
+    genU6MainPara,
+    genU6MainTri,
+    genU6MainTrap,
+    genU6MainRhombus,
+  ])();
+}
+
+const UNIT_META = {
+  u1: { short: '1단원', name: '자연수의 혼합 계산' },
+  u2: { short: '2단원', name: '약수와 배수' },
+  u3: { short: '3단원', name: '대응 관계' },
+  u4: { short: '4단원', name: '약분과 통분' },
+  u5: { short: '5단원', name: '분수의 덧셈과 뺄셈' },
+  u6: { short: '6단원', name: '다각형의 둘레와 넓이' },
 };
 
-// ===== 렌더링 헬퍼 =====
-function fracD(n, d) {
-  return `<span class="frac-d"><span class="ft">${n}</span><span class="fb">${d}</span></span>`;
-}
-function numBlank(val, unit = '') {
-  return `<span class="num-blank" data-ans="${val}">${val}</span>${unit ? `<span> ${unit}</span>` : ''}`;
-}
-function symBlank(val) {
-  return `<span class="sym-blank" data-ans="${val}">${val}</span>`;
-}
-function fracBlank(n, d) {
-  return `<span class="frac-blank">
-    <span class="fb-top" data-ans="${n}">${n}</span>
-    <span class="fb-line"></span>
-    <span class="fb-bot" data-ans="${d}">${d}</span>
-  </span>`;
+const WORKSHEET_CATALOG = [
+  { id: 'u1_pre_add', unit: 'u1', section: '선수학습', label: '세 자리 수 덧셈 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreAdd },
+  { id: 'u1_pre_sub', unit: 'u1', section: '선수학습', label: '세 자리 수 뺄셈 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreSub },
+  { id: 'u1_pre_mul', unit: 'u1', section: '선수학습', label: '두 자리 수 곱셈 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreMul },
+  { id: 'u1_pre_mul_3x2', unit: 'u1', section: '선수학습', label: '세 자리 수 × 두 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreMul3x2 },
+  { id: 'u1_pre_div', unit: 'u1', section: '선수학습', label: '두 자리 수 나눗셈 (가로셈)', lessonRef: '선수학습', kind: 'html', grid: 'standard', count: 20, generator: genU1PreDiv },
+  { id: 'u1_pre_div_3d2', unit: 'u1', section: '선수학습', label: '세 자리 수 ÷ 두 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'longdiv', grid: 'divgrid', count: 12, generator: genDiv3d2 },
+  { id: 'u1_pre_div_3d1', unit: 'u1', section: '선수학습', label: '세 자리 수 ÷ 한 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'longdiv', grid: 'divgrid', count: 12, generator: genDiv3d1 },
+  { id: 'u1_main_addsub', unit: 'u1', section: '본단원', label: '덧셈·뺄셈 혼합', lessonRef: '1차시 덧셈과 뺄셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubMix },
+  { id: 'u1_main_muldiv', unit: 'u1', section: '본단원', label: '곱셈·나눗셈 혼합', lessonRef: '2차시 곱셈과 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMulDivMix },
+  { id: 'u1_main_addsubmul', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·곱셈 혼합', lessonRef: '3차시 덧셈, 뺄셈, 곱셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubMul },
+  { id: 'u1_main_addsubdiv', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·나눗셈 혼합', lessonRef: '4차시 덧셈, 뺄셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubDiv },
+  { id: 'u1_main_mix', unit: 'u1', section: '본단원', label: '사칙 혼합', lessonRef: '5차시 덧셈, 뺄셈, 곱셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMix },
+
+  { id: 'u2_pre_mul', unit: 'u2', section: '선수학습', label: '곱셈구구', lessonRef: '선수학습', kind: 'html', grid: 'dense', count: 36, generator: genU2PreMul },
+  { id: 'u2_pre_div', unit: 'u2', section: '선수학습', label: '나눗셈 (한 자리 나누기)', lessonRef: '선수학습', kind: 'html', grid: 'dense', count: 36, generator: genU2PreDiv },
+  { id: 'u2_main_factor', unit: 'u2', section: '본단원', label: '약수 이해', lessonRef: '1차시 약수 이해하기', kind: 'html', grid: 'concept', count: 10, generator: genU2MainFactorConcept },
+  { id: 'u2_main_multiple', unit: 'u2', section: '본단원', label: '배수 이해', lessonRef: '2차시 배수 이해하기', kind: 'html', grid: 'concept', count: 10, generator: genU2MainMultipleConcept },
+  { id: 'u2_main_common_factor', unit: 'u2', section: '본단원', label: '공약수 이해', lessonRef: '3차시 공약수와 최대공약수 이해하기', kind: 'html', grid: 'concept', count: 10, generator: genU2MainCommonFactorConcept },
+  { id: 'u2_main_gcd', unit: 'u2', section: '본단원', label: '최대공약수', lessonRef: '4차시 두 수의 최대공약수 구하기', kind: 'html', grid: 'standard', count: 20, generator: genU2MainGcd },
+  { id: 'u2_main_common_multiple', unit: 'u2', section: '본단원', label: '공배수 이해', lessonRef: '5차시 공배수와 최소공배수 이해하기', kind: 'html', grid: 'concept', count: 10, generator: genU2MainCommonMultipleConcept },
+  { id: 'u2_main_lcm', unit: 'u2', section: '본단원', label: '최소공배수', lessonRef: '6차시 두 수의 최소공배수 구하기', kind: 'html', grid: 'standard', count: 20, generator: genU2MainLcm },
+  { id: 'u2_main_mix', unit: 'u2', section: '본단원', label: '약수·배수 혼합', lessonRef: '3~6차시 약수와 배수 혼합', kind: 'html', grid: 'concept', count: 10, generator: genU2MainMix },
+
+  { id: 'u3_main_relation_find1', unit: 'u3', section: '본단원', label: '두 양 사이의 관계 찾기 (1)', lessonRef: '1차시 두 양 사이의 관계 알아보기(1)', kind: 'html', grid: 'concept', count: 10, generator: genU3MainRelationFind1 },
+  { id: 'u3_main_relation_find2', unit: 'u3', section: '본단원', label: '두 양 사이의 관계 찾기 (2)', lessonRef: '2차시 두 양 사이의 관계 알아보기(2)', kind: 'html', grid: 'concept', count: 10, generator: genU3MainRelationFind2 },
+  { id: 'u3_main_relation_table', unit: 'u3', section: '본단원', label: '대응 관계 표 완성', lessonRef: '3차시 대응 관계를 식으로 나타내기', kind: 'html', grid: 'concept', count: 10, generator: genU3MainRelationTable },
+  { id: 'u3_main_relation_formula', unit: 'u3', section: '본단원', label: '대응 관계 식 쓰기', lessonRef: '4차시 실생활에서 대응 관계를 찾아 식으로 나타내기', kind: 'html', grid: 'concept', count: 10, generator: genU3MainRelationFormula },
+  { id: 'u3_main_relation_real', unit: 'u3', section: '본단원', label: '실생활 대응 관계', lessonRef: '1~4차시 대응 관계 복습', kind: 'html', grid: 'concept', count: 10, generator: genU3MainRelationReal },
+
+  { id: 'u4_pre_cmp', unit: 'u4', section: '선수학습', label: '분모 같은 분수 크기 비교', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU4PreCmp },
+  { id: 'u4_pre_conv', unit: 'u4', section: '선수학습', label: '가분수 → 대분수 변환', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU4PreConv },
+  { id: 'u4_main_equiv_find', unit: 'u4', section: '본단원', label: '크기가 같은 분수 찾기', lessonRef: '1차시 크기가 같은 분수 알아보기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainEquivFind },
+  { id: 'u4_main_equiv_make', unit: 'u4', section: '본단원', label: '크기가 같은 분수 만들기', lessonRef: '2차시 크기가 같은 분수를 만드는 방법 알아보기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainEquivMake },
+  { id: 'u4_main_red', unit: 'u4', section: '본단원', label: '약분', lessonRef: '3차시 약분 알아보기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainRed },
+  { id: 'u4_main_lcd', unit: 'u4', section: '본단원', label: '통분', lessonRef: '4차시 통분 알아보기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainLcd },
+  { id: 'u4_main_cmp', unit: 'u4', section: '본단원', label: '분수 크기 비교', lessonRef: '5차시 분수의 크기 비교하기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainCmp },
+  { id: 'u4_main_dec_cmp', unit: 'u4', section: '본단원', label: '분수와 소수 크기 비교', lessonRef: '6차시 분수와 소수의 크기 비교하기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainDecCmp },
+
+  { id: 'u5_pre_add', unit: 'u5', section: '선수학습', label: '분모 같은 분수의 덧셈', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU5PreAdd },
+  { id: 'u5_pre_sub', unit: 'u5', section: '선수학습', label: '분모 같은 분수의 뺄셈', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU5PreSub },
+  { id: 'u5_main_add', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 덧셈 (합이 1 미만)', lessonRef: '1~2차시 (진분수)+(진분수) 계산하기', kind: 'html', grid: 'practice', count: 15, generator: genU5MainAdd },
+  { id: 'u5_main_add_ge1', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 덧셈 (합이 1 이상)', lessonRef: '1~2차시 (진분수)+(진분수) 계산하기', kind: 'html', grid: 'practice', count: 15, generator: genU5MainAddGe1 },
+  { id: 'u5_main_mixed_add', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 덧셈', lessonRef: '3차시 (대분수)+(대분수) 계산하기', kind: 'html', grid: 'practice', count: 15, generator: genU5MainMixedAdd },
+  { id: 'u5_main_sub', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 뺄셈', lessonRef: '4차시 (진분수)-(진분수) 계산하기', kind: 'html', grid: 'practice', count: 15, generator: genU5MainSub },
+  { id: 'u5_main_mixed_sub_no_borrow', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 뺄셈 (받아내림 없음)', lessonRef: '5차시 (대분수)-(대분수) 계산하기(1)', kind: 'html', grid: 'practice', count: 15, generator: genU5MainMixedSubNoBorrow },
+  { id: 'u5_main_mixed_sub_borrow', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 뺄셈 (받아내림 있음)', lessonRef: '6차시 (대분수)-(대분수) 계산하기(2)', kind: 'html', grid: 'practice', count: 15, generator: genU5MainMixedSubBorrow },
+  { id: 'u5_main_mix', unit: 'u5', section: '본단원', label: '분수 덧셈·뺄셈 혼합', lessonRef: '1~6차시 분수의 덧셈과 뺄셈 혼합', kind: 'html', grid: 'practice', count: 15, generator: genU5MainMix },
+
+  { id: 'u6_pre_unit', unit: 'u6', section: '선수학습', label: '단위 변환 (cm, m, km)', lessonRef: '선수학습', kind: 'html', grid: 'standard', count: 20, generator: genU6PreUnit },
+  { id: 'u6_pre_len', unit: 'u6', section: '선수학습', label: '길이의 합과 차', lessonRef: '선수학습', kind: 'html', grid: 'standard', count: 20, generator: genU6PreLen },
+  { id: 'u6_main_perimeter', unit: 'u6', section: '본단원', label: '다각형의 둘레', lessonRef: '1차시 다각형의 둘레 구하기', kind: 'html', grid: 'wide', count: 8, generator: genU6MainPerimeter },
+  { id: 'u6_main_unit_square', unit: 'u6', section: '본단원', label: '1㎠ 이해', lessonRef: '2차시 1㎠ 알아보기', kind: 'html', grid: 'wide', count: 8, generator: genU6MainUnitSquare },
+  { id: 'u6_main_rect', unit: 'u6', section: '본단원', label: '직사각형 넓이', lessonRef: '3차시 직사각형의 넓이 구하기', kind: 'html', grid: 'wide', count: 8, generator: genU6MainRect },
+  { id: 'u6_main_area_unit', unit: 'u6', section: '본단원', label: '넓이 단위 확장', lessonRef: '4차시 1㎠보다 더 큰 넓이의 단위 알아보기', kind: 'html', grid: 'standard', count: 20, generator: genU6MainAreaUnit },
+  { id: 'u6_main_para', unit: 'u6', section: '본단원', label: '평행사변형 넓이', lessonRef: '5차시 평행사변형의 넓이 구하기', kind: 'html', grid: 'wide', count: 8, generator: genU6MainPara },
+  { id: 'u6_main_tri', unit: 'u6', section: '본단원', label: '삼각형 넓이', lessonRef: '6~7차시 삼각형의 넓이 구하기', kind: 'html', grid: 'wide', count: 8, generator: genU6MainTri },
+  { id: 'u6_main_trap', unit: 'u6', section: '본단원', label: '사다리꼴 넓이', lessonRef: '8~9차시 사다리꼴의 넓이 구하기', kind: 'html', grid: 'wide', count: 8, generator: genU6MainTrap },
+  { id: 'u6_main_rhombus', unit: 'u6', section: '본단원', label: '마름모 넓이', lessonRef: '10~11차시 마름모의 넓이 구하기', kind: 'html', grid: 'wide', count: 8, generator: genU6MainRhombus },
+  { id: 'u6_main_mix', unit: 'u6', section: '본단원', label: '도형 넓이 혼합', lessonRef: '3~11차시 도형 넓이 혼합', kind: 'html', grid: 'wide', count: 8, generator: genU6MainMix },
+];
+
+const catalogMap = Object.fromEntries(WORKSHEET_CATALOG.map((item) => [item.id, item]));
+
+function getWorksheetsByUnit(unitId) {
+  return WORKSHEET_CATALOG.filter((item) => item.unit === unitId);
 }
 
-// ===== 문제 아이템 HTML 생성 =====
-function renderItem(p, idx) {
+function buildSheetTitle(item) {
+  const meta = UNIT_META[item.unit];
+  return {
+    main: `${meta.short} [${item.section}] ${item.label}`,
+    sub: item.lessonRef,
+  };
+}
+
+function renderItem(problem, idx) {
   const num = `<div class="problem-num">${idx}</div>`;
 
-  // ── 세로셈 ──
-  if (p.kind === 'vertical') {
+  if (problem.kind === 'vertical') {
     return `<div class="problem-item">${num}
       <div class="calc-wrapper"><div class="calc-box">
-        <div class="row">${p.num1}</div>
-        <div class="operator-row"><span>${p.op}</span><span>${p.num2}</span></div>
-        <div class="calc-ans">${p.ans}</div>
+        <div class="row">${problem.num1}</div>
+        <div class="operator-row"><span>${problem.op}</span><span>${problem.num2}</span></div>
+        <div class="calc-ans">${problem.ans}</div>
       </div></div>
     </div>`;
   }
 
-  // ── 나눗셈 세로셈 ──
-  if (p.kind === 'longdiv') {
-    const remStr = p.rem > 0 ? `···${p.rem}` : '';
+  if (problem.kind === 'longdiv') {
+    const remStr = problem.rem > 0 ? ` … ${problem.rem}` : '';
     return `<div class="problem-item">${num}
       <table class="ldiv-table">
         <tr>
           <td></td>
-          <td><div class="ldiv-q-box"><span data-ans="">${p.quot}${remStr}</span></div></td>
+          <td><div class="ldiv-q-box"><span data-ans="${problem.quot}${remStr}">${problem.quot}${remStr}</span></div></td>
         </tr>
         <tr>
-          <td class="ldiv-dvsr-td">${p.dvsr}</td>
-          <td class="ldiv-dvnd-td">${p.dvnd}</td>
+          <td class="ldiv-dvsr-td">${problem.dvsr}</td>
+          <td class="ldiv-dvnd-td">${problem.dvnd}</td>
         </tr>
       </table>
     </div>`;
   }
 
-  // ── 가로셈 ──
-  if (p.kind === 'horiz') {
-    const unit = p.unit || '';
-    return `<div class="problem-item">${num}
-      <div class="horiz-box">
-        ${p.eq} = ${numBlank(p.ans, unit)}
-      </div>
-    </div>`;
-  }
-
-  // ── 분수 크기 비교 ──
-  if (p.kind === 'frac-cmp') {
-    return `<div class="problem-item">${num}
-      <div class="frac-row">
-        ${fracD(p.n1, p.d1)} ${symBlank(p.sym)} ${fracD(p.n2, p.d2)}
-      </div>
-    </div>`;
-  }
-
-  // ── 가분수 → 대분수 ──
-  if (p.kind === 'frac-conv') {
-    return `<div class="problem-item">${num}
-      <div class="frac-row">
-        ${fracD(p.num, p.den)}
-        <span class="eq-txt">=</span>
-        ${numBlank(p.ansWhole)} <span style="font-size:15px">과</span> ${fracBlank(p.ansNum, p.ansDen)}
-      </div>
-    </div>`;
-  }
-
-  // ── 약분 ──
-  if (p.kind === 'frac-red') {
-    return `<div class="problem-item">${num}
-      <div class="frac-row">
-        ${fracD(p.bigNum, p.bigDen)}
-        <span class="eq-txt">=</span>
-        ${fracBlank(p.ansNum, p.ansDen)}
-      </div>
-    </div>`;
-  }
-
-  // ── 분수 덧셈·뺄셈 ──
-  if (p.kind === 'frac-calc') {
-    let ansHtml = '';
-    if (p.at === 'int')  ansHtml = numBlank(p.an);
-    if (p.at === 'frac') ansHtml = fracBlank(p.an, p.ad);
-    if (p.at === 'mix')  ansHtml = `${numBlank(p.aw)}<span style="font-size:14px">과</span>${fracBlank(p.an, p.ad)}`;
-    return `<div class="problem-item">${num}
-      <div class="frac-row">
-        ${fracD(p.n1, p.d1)}
-        <span class="op-txt">${p.op}</span>
-        ${fracD(p.n2, p.d2)}
-        <span class="eq-txt">=</span>
-        ${ansHtml}
-      </div>
-    </div>`;
-  }
-
-  return `<div class="problem-item">${num}<div class="horiz-box">?</div></div>`;
+  const layoutClass = problem.layout || 'horiz-box';
+  const itemClass = problem.itemClass ? ` ${problem.itemClass}` : '';
+  return `<div class="problem-item${itemClass}">${num}<div class="${layoutClass}">${problem.html}</div></div>`;
 }
 
-// ===== 시트 생성 =====
-function createSheet(cfg, title) {
+function createSheet(item) {
   const sheet = document.createElement('div');
   sheet.className = 'sheet';
 
-  const h = document.createElement('div');
-  h.className = 'sheet-title';
-  h.textContent = title;
-  sheet.appendChild(h);
+  const titleWrap = document.createElement('div');
+  titleWrap.className = 'sheet-title';
+
+  const title = buildSheetTitle(item);
+  const main = document.createElement('div');
+  main.className = 'sheet-title-main';
+  main.textContent = title.main;
+  const sub = document.createElement('div');
+  sub.className = 'sheet-title-sub';
+  sub.textContent = title.sub;
+  titleWrap.appendChild(main);
+  titleWrap.appendChild(sub);
+  sheet.appendChild(titleWrap);
 
   const grid = document.createElement('div');
-  grid.className = `problem-grid ${cfg.grid}`;
+  grid.className = `problem-grid ${item.grid}`;
 
-  for (let i = 1; i <= cfg.count; i++) {
-    const p = cfg.gen();
-    grid.insertAdjacentHTML('beforeend', renderItem(p, i));
+  for (let i = 1; i <= item.count; i++) {
+    grid.insertAdjacentHTML('beforeend', renderItem(item.generator(), i));
   }
 
   sheet.appendChild(grid);
   return sheet;
 }
 
-// ===== 생성 실행 =====
+function populateUnitSelect() {
+  const unitSelect = document.getElementById('unitSelect');
+  unitSelect.innerHTML = Object.entries(UNIT_META)
+    .map(([id, meta]) => `<option value="${id}">${meta.short}: ${meta.name}</option>`)
+    .join('');
+}
+
+function populateWorksheetSelect(unitId, preferredId) {
+  const worksheetSelect = document.getElementById('worksheetSelect');
+  const items = getWorksheetsByUnit(unitId);
+  worksheetSelect.innerHTML = items.map((item) => `<option value="${item.id}">[${item.section}] ${item.label}</option>`).join('');
+
+  const nextId = preferredId && items.some((item) => item.id === preferredId) ? preferredId : items[0].id;
+  worksheetSelect.value = nextId;
+  updateSelectedMeta();
+}
+
+function updateSelectedMeta() {
+  const item = catalogMap[document.getElementById('worksheetSelect').value];
+  const section = document.getElementById('selectedSection');
+  const lesson = document.getElementById('selectedLesson');
+  section.textContent = `${UNIT_META[item.unit].short} · ${item.section}`;
+  lesson.textContent = `교과 차시: ${item.lessonRef}`;
+}
+
+let answerShown = false;
+
 function generate(mode) {
   const container = document.getElementById('sheets-container');
-  const typeKey = document.getElementById('problemType').value;
-  const pageCount = parseInt(document.getElementById('pageCount').value) || 1;
-  const cfg = TYPE_TABLE[typeKey];
-  const selectEl = document.getElementById('problemType');
-  const title = selectEl.options[selectEl.selectedIndex].text.replace(/^\[.*?\]\s*/, '').trim();
+  const worksheetId = document.getElementById('worksheetSelect').value;
+  const pageCount = Math.min(20, Math.max(1, parseInt(document.getElementById('pageCount').value, 10) || 1));
+  const item = catalogMap[worksheetId];
 
   if (mode === 'replace') container.innerHTML = '';
 
-  // 정답 상태 초기화
   container.classList.remove('answers-shown');
   answerShown = false;
 
   for (let i = 0; i < pageCount; i++) {
-    container.appendChild(createSheet(cfg, title));
+    container.appendChild(createSheet(item));
   }
 }
 
-// ===== 정답 토글 =====
-let answerShown = false;
 function toggleAnswers() {
   answerShown = !answerShown;
   document.getElementById('sheets-container').classList.toggle('answers-shown', answerShown);
 }
 
-// ===== 시작 =====
-window.onload = () => generate('replace');
+document.getElementById('unitSelect').addEventListener('change', (event) => {
+  populateWorksheetSelect(event.target.value);
+  generate('replace');
+});
+
+document.getElementById('worksheetSelect').addEventListener('change', () => {
+  updateSelectedMeta();
+  generate('replace');
+});
+
+populateUnitSelect();
+populateWorksheetSelect('u1');
+generate('replace');
 </script>
 </body>
 </html>
