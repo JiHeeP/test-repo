@@ -794,6 +794,36 @@ function shapeProblem(svg, prompt, answerHtml, note = '') {
   `);
 }
 
+function genU1PreAdd2d() {
+  const a1 = rand(1, 9), b1 = rand(10 - a1, 9);
+  const a10 = rand(1, 8), b10 = rand(1, 9 - a10);
+  const a = a10 * 10 + a1;
+  const b = b10 * 10 + b1;
+  return { kind: 'vertical', num1: a, num2: b, op: '+', ans: a + b };
+}
+
+function genU1PreSub2d() {
+  const a1 = rand(0, 7), b1 = rand(a1 + 1, 9);
+  const b10 = rand(1, 7);
+  const a10 = rand(b10 + 1, 9);
+  const a = a10 * 10 + a1;
+  const b = b10 * 10 + b1;
+  return { kind: 'vertical', num1: a, num2: b, op: '−', ans: a - b };
+}
+
+function genU1PreMul2d1d() {
+  const a = rand(12, 99);
+  const b = rand(2, 9);
+  return { kind: 'vertical', num1: a, num2: b, op: '×', ans: a * b };
+}
+
+function genU1PreDiv2d1d() {
+  const b = rand(2, 9);
+  const q = rand(3, Math.floor(99 / b));
+  const a = b * q;
+  return horizProblem(`${a} ÷ ${b}`, numBlank(q));
+}
+
 function genU1PreAdd() {
   const a = rand(100, 499);
   const b = rand(100, 400);
@@ -1336,6 +1366,10 @@ const UNIT_META = {
 };
 
 const WORKSHEET_CATALOG = [
+  { id: 'u1_pre_add_2d', unit: 'u1', section: '선수학습', label: '두 자리 수 덧셈 (받아올림)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreAdd2d },
+  { id: 'u1_pre_sub_2d', unit: 'u1', section: '선수학습', label: '두 자리 수 뺄셈 (받아내림)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreSub2d },
+  { id: 'u1_pre_mul_2d1d', unit: 'u1', section: '선수학습', label: '두 자리 수 × 한 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreMul2d1d },
+  { id: 'u1_pre_div_2d1d', unit: 'u1', section: '선수학습', label: '두 자리 수 ÷ 한 자리 수 (가로셈)', lessonRef: '선수학습', kind: 'html', grid: 'standard', count: 20, generator: genU1PreDiv2d1d },
   { id: 'u1_pre_add', unit: 'u1', section: '선수학습', label: '세 자리 수 덧셈 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreAdd },
   { id: 'u1_pre_sub', unit: 'u1', section: '선수학습', label: '세 자리 수 뺄셈 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreSub },
   { id: 'u1_pre_mul', unit: 'u1', section: '선수학습', label: '두 자리 수 곱셈 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreMul },
