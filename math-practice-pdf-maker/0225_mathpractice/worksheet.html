@@ -1910,12 +1910,10 @@ function toggleAnswers() {
 
 document.getElementById('unitSelect').addEventListener('change', (event) => {
   populateWorksheetSelect(event.target.value);
-  generate('replace');
 });
 
 document.getElementById('worksheetSelect').addEventListener('change', () => {
   updateSelectedMeta();
-  generate('replace');
 });
 
 document.getElementById('fontScale').addEventListener('change', () => {
