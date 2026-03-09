@@ -1,0 +1,30 @@
+name: Deploy Math Practice to Netlify
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "math-practice-pdf-maker/0225_mathpractice/**"
+      - ".github/workflows/netlify-math-practice.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Deploy to Netlify
+        working-directory: math-practice-pdf-maker
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_MATH_PRACTICE }}
+        run: npx netlify-cli deploy --prod --no-build --dir 0225_mathpractice --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "GitHub Actions deploy"

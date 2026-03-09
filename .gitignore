@@ -8,3 +8,6 @@ memory/
 .DS_Store
 
 external/
+
+# Local Netlify folder
+.netlify
