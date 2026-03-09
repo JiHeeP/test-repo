@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>격자 세로셈 연습지 만들기</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+    :root {
+      --paper-width: 210mm;
+      --paper-height: 297mm;
+      --cell: 26px;
+      --fs: 17px;
+      --line: #555;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #e9ecef;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #2f3640;
+    }
+
+    .controls {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      padding: 18px 20px;
+      border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(31,41,55,0.12);
+      margin-bottom: 22px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 18px;
+      z-index: 100;
+      max-width: 1100px;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    select, input[type="number"] {
+      padding: 9px 12px;
+      border: 2px solid #d8dee9;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+    }
+
+    #opType { min-width: 300px; }
+
+    input[type="number"] {
+      width: 58px;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    button:hover { opacity: 0.88; }
+    button:active { transform: scale(0.98); }
+
+    .btn-refresh { background: #23b26d; color: white; }
+    .btn-answer { background: #6f58c9; color: white; }
+    .btn-print { background: #2d8ae2; color: white; }
+
+    /* ===== A4 sheet ===== */
+    .sheet {
+      width: var(--paper-width);
+      height: var(--paper-height);
+      background: white;
+      padding: 17mm 19mm 18mm;
+      box-shadow: 0 0 18px rgba(28,37,54,0.13);
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 30px;
+      page-break-after: always;
+      overflow: hidden;
+    }
+    .sheet:last-child { margin-bottom: 0; }
+
+    .sheet-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      padding-bottom: 9px;
+      border-bottom: 2px solid #2f3640;
+    }
+
+    .problem-grid {
+      display: grid;
+      flex-grow: 1;
+      gap: 14px 10px;
+    }
+
+    .problem-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 8px;
+      position: relative;
+    }
+
+    .problem-num {
+      position: absolute;
+      top: 0; left: 0;
+      width: 19px; height: 19px;
+      border: 1.5px solid #5a6578;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 500;
+      color: #5a6578;
+    }
+
+    /* ===== Grid table (add/sub/mul) ===== */
+    .grid-table {
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: var(--fs);
+      font-weight: 500;
+    }
+
+    .grid-table td {
+      width: var(--cell);
+      height: var(--cell);
+      text-align: center;
+      vertical-align: middle;
+      border: 1.5px solid var(--line);
+      padding: 0;
+    }
+
+    .grid-table .op-cell { font-weight: 700; }
+    .grid-table .sep-bottom { border-bottom: 3px solid #2f3640; }
+    .grid-table .ans-digit { color: transparent; }
+    .answers-shown .grid-table .ans-digit { color: #e74c3c; }
+
+    /* ===== Division grid ===== */
+    .div-table {
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: var(--fs);
+      font-weight: 500;
+    }
+
+    .div-table td {
+      width: var(--cell);
+      height: var(--cell);
+      text-align: center;
+      vertical-align: middle;
+      padding: 0;
+    }
+
+    .div-table .b { border: 1.5px solid var(--line); }
+    .div-table .quot-border { border-bottom: 2.5px solid #2f3640; }
+    .div-table .dvsr-border { border-right: 2.5px solid #2f3640; }
+    .div-table .op-cell { font-weight: 700; font-size: calc(var(--fs) * 0.85); }
+    .div-table .ans-digit { color: transparent; }
+    .answers-shown .div-table .ans-digit { color: #e74c3c; }
+
+    /* ===== Print ===== */
+    @media print {
+      @page { size: A4; margin: 0; }
+      body { display: block; background: none; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .controls { display: none !important; }
+      .sheet { box-shadow: none; margin: 0; page-break-after: always; break-inside: avoid; }
+      .sheet:last-child { page-break-after: auto; }
+    }
+
+    @media screen and (max-width: 850px) {
+      .sheet { transform: scale(0.55); transform-origin: top center; margin-bottom: -500px; }
+      .sheet:last-child { margin-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="controls">
+  <div class="input-group">
+    <label for="opType">유형</label>
+    <select id="opType">
+      <optgroup label="덧셈">
+        <option value="add_2d">두 자리 수 + 두 자리 수</option>
+        <option value="add_3d">세 자리 수 + 세 자리 수</option>
+      </optgroup>
+      <optgroup label="뺄셈">
+        <option value="sub_2d">두 자리 수 − 두 자리 수</option>
+        <option value="sub_3d">세 자리 수 − 세 자리 수</option>
+      </optgroup>
+      <optgroup label="곱셈">
+        <option value="mul_2d1d">두 자리 수 × 한 자리 수</option>
+        <option value="mul_2d2d">두 자리 수 × 두 자리 수</option>
+        <option value="mul_3d2d">세 자리 수 × 두 자리 수</option>
+      </optgroup>
+      <optgroup label="나눗셈">
+        <option value="div_2d1d">두 자리 수 ÷ 한 자리 수</option>
+        <option value="div_3d1d">세 자리 수 ÷ 한 자리 수</option>
+        <option value="div_3d2d">세 자리 수 ÷ 두 자리 수</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <label for="pageCount">쪽수</label>
+    <input type="number" id="pageCount" value="1" min="1" max="20">
+  </div>
+
+  <button class="btn-refresh" onclick="generate()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+    새로 만들기
+  </button>
+
+  <button class="btn-answer" onclick="toggleAnswers()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+    정답 보기
+  </button>
+
+  <button class="btn-print" onclick="window.print()">
+    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 17H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2M7 9h10V4H7v5zm10 8H7v5h10v-5z"/></svg>
+    인쇄
+  </button>
+</div>
+
+<div id="sheets-container"></div>
+
+<script>
+'use strict';
+
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function digits(num, cols) {
+  const d = String(Math.abs(num)).split('').map(Number);
+  while (d.length < cols) d.unshift(null);
+  return d;
+}
+
+function cell(d) { return d !== null ? d : ''; }
+
+/* ===== Generators ===== */
+const GEN = {
+  add_2d() {
+    const a = rand(11, 89), b = rand(11, 99 - a);
+    return { num1: a, num2: b, op: '+', ans: a + b };
+  },
+  add_3d() {
+    const a = rand(100, 499), b = rand(100, 400);
+    return { num1: a, num2: b, op: '+', ans: a + b };
+  },
+  sub_2d() {
+    const b = rand(11, 49), a = b + rand(10, 50);
+    return { num1: a, num2: b, op: '\u2212', ans: a - b };
+  },
+  sub_3d() {
+    const b = rand(100, 399), a = b + rand(10, 300);
+    return { num1: a, num2: b, op: '\u2212', ans: a - b };
+  },
+  mul_2d1d() {
+    const a = rand(12, 99), b = rand(2, 9);
+    return { num1: a, num2: b, op: '\u00d7', ans: a * b };
+  },
+  mul_2d2d() {
+    const a = rand(12, 45), b = rand(11, 25);
+    return { num1: a, num2: b, op: '\u00d7', ans: a * b };
+  },
+  mul_3d2d() {
+    const a = rand(100, 399), b = rand(11, 25);
+    return { num1: a, num2: b, op: '\u00d7', ans: a * b };
+  },
+  div_2d1d() {
+    const dvsr = rand(2, 9), dvnd = rand(10, 99);
+    return { dvsr, dvnd, quot: Math.floor(dvnd / dvsr), rem: dvnd % dvsr };
+  },
+  div_3d1d() {
+    const dvsr = rand(2, 9), dvnd = rand(100, 999);
+    return { dvsr, dvnd, quot: Math.floor(dvnd / dvsr), rem: dvnd % dvsr };
+  },
+  div_3d2d() {
+    const dvsr = rand(11, 30), dvnd = rand(100, 999);
+    const quot = Math.floor(dvnd / dvsr);
+    if (quot < 10) return GEN.div_3d2d();
+    return { dvsr, dvnd, quot, rem: dvnd % dvsr };
+  }
+};
+
+/* ===== Layout configs: { type, gridCols, gridRows, label } ===== */
+const CFG = {
+  add_2d:   { type: 'addsub',   gridCols: 4, gridRows: 5, label: '두 자리 수 + 두 자리 수' },
+  add_3d:   { type: 'addsub',   gridCols: 3, gridRows: 5, label: '세 자리 수 + 세 자리 수' },
+  sub_2d:   { type: 'addsub',   gridCols: 4, gridRows: 5, label: '두 자리 수 \u2212 두 자리 수' },
+  sub_3d:   { type: 'addsub',   gridCols: 3, gridRows: 5, label: '세 자리 수 \u2212 세 자리 수' },
+  mul_2d1d: { type: 'mul_s',    gridCols: 3, gridRows: 5, label: '두 자리 수 \u00d7 한 자리 수' },
+  mul_2d2d: { type: 'mul_l',    gridCols: 3, gridRows: 4, label: '두 자리 수 \u00d7 두 자리 수' },
+  mul_3d2d: { type: 'mul_l',    gridCols: 3, gridRows: 4, label: '세 자리 수 \u00d7 두 자리 수' },
+  div_2d1d: { type: 'div',      gridCols: 3, gridRows: 4, label: '두 자리 수 \u00f7 한 자리 수' },
+  div_3d1d: { type: 'div',      gridCols: 3, gridRows: 3, label: '세 자리 수 \u00f7 한 자리 수' },
+  div_3d2d: { type: 'div',      gridCols: 3, gridRows: 3, label: '세 자리 수 \u00f7 두 자리 수' },
+};
+
+/* ===== Renderers ===== */
+
+// 덧셈·뺄셈: num1 / op num2 / ---- / answer (1줄)
+function renderAddSub(p, idx) {
+  const n = Math.max(String(p.num1).length, String(p.num2).length, String(Math.abs(p.ans)).length);
+  const d1 = digits(p.num1, n), d2 = digits(p.num2, n), da = digits(p.ans, n);
+
+  let rows = '';
+  // Row 1: num1
+  rows += '<tr>' + '<td></td>' + d1.map(d => `<td>${cell(d)}</td>`).join('') + '</tr>';
+  // Row 2: op + num2  (bottom border = separator)
+  rows += '<tr>' + `<td class="op-cell sep-bottom">${p.op}</td>` + d2.map(d => `<td class="sep-bottom">${cell(d)}</td>`).join('') + '</tr>';
+  // Row 3: answer
+  rows += '<tr>' + '<td></td>' + da.map(d => `<td class="ans-digit">${cell(d)}</td>`).join('') + '</tr>';
+
+  return `<div class="problem-item"><div class="problem-num">${idx}</div>
+    <table class="grid-table">${rows}</table></div>`;
+}
+
+// 곱셈 (짧은: 2d×1d) - 동일 레이아웃
+function renderMulShort(p, idx) {
+  const n = Math.max(String(p.num1).length, String(p.num2).length, String(p.ans).length);
+  const d1 = digits(p.num1, n), d2 = digits(p.num2, n), da = digits(p.ans, n);
+
+  let rows = '';
+  rows += '<tr>' + '<td></td>' + d1.map(d => `<td>${cell(d)}</td>`).join('') + '</tr>';
+  rows += '<tr>' + `<td class="op-cell sep-bottom">\u00d7</td>` + d2.map(d => `<td class="sep-bottom">${cell(d)}</td>`).join('') + '</tr>';
+  rows += '<tr>' + '<td></td>' + da.map(d => `<td class="ans-digit">${cell(d)}</td>`).join('') + '</tr>';
+
+  return `<div class="problem-item"><div class="problem-num">${idx}</div>
+    <table class="grid-table">${rows}</table></div>`;
+}
+
+// 곱셈 (긴: 2d×2d, 3d×2d) - 3줄: 부분곱1, 부분곱2, 합계
+function renderMulLong(p, idx) {
+  const ones = p.num2 % 10;
+  const tens = Math.floor(p.num2 / 10);
+  const p1 = p.num1 * ones;       // 일의 자리 부분곱
+  const p2 = p.num1 * tens;       // 십의 자리 부분곱 (한 칸 왼쪽으로)
+  const total = p.ans;
+
+  const n = Math.max(
+    String(p.num1).length, String(p.num2).length,
+    String(p1).length, String(p2).length + 1, String(total).length
+  );
+
+  const d1 = digits(p.num1, n);
+  const d2 = digits(p.num2, n);
+  const dp1 = digits(p1, n);
+
+  // p2 shifted left: ones place is empty
+  const p2d = String(p2).split('').map(Number);
+  const dp2 = [];
+  while (dp2.length + p2d.length + 1 < n) dp2.push(null);
+  dp2.push(...p2d);
+  dp2.push(null); // 일의 자리 비움
+
+  const dt = digits(total, n);
+
+  let rows = '';
+  // num1
+  rows += '<tr>' + '<td></td>' + d1.map(d => `<td>${cell(d)}</td>`).join('') + '</tr>';
+  // × num2 with separator
+  rows += '<tr>' + `<td class="op-cell sep-bottom">\u00d7</td>` + d2.map(d => `<td class="sep-bottom">${cell(d)}</td>`).join('') + '</tr>';
+  // partial product 1
+  rows += '<tr>' + '<td></td>' + dp1.map(d => `<td class="ans-digit">${cell(d)}</td>`).join('') + '</tr>';
+  // partial product 2 (shifted) with separator at bottom
+  rows += '<tr>' + `<td class="sep-bottom"></td>` + dp2.map(d => `<td class="ans-digit sep-bottom">${cell(d)}</td>`).join('') + '</tr>';
+  // total
+  rows += '<tr>' + '<td></td>' + dt.map(d => `<td class="ans-digit">${cell(d)}</td>`).join('') + '</tr>';
+
+  return `<div class="problem-item"><div class="problem-num">${idx}</div>
+    <table class="grid-table">${rows}</table></div>`;
+}
+
+// ===== 나눗셈 =====
+// Simulate long division steps
+function simDiv(dvsr, dvnd) {
+  const s = String(dvnd);
+  const steps = [];
+  let cur = 0, started = false;
+  for (let i = 0; i < s.length; i++) {
+    cur = cur * 10 + parseInt(s[i]);
+    const q = Math.floor(cur / dvsr);
+    if (q > 0 || started) {
+      started = true;
+      const sub = q * dvsr;
+      steps.push({ pos: i, sub, rem: cur - sub });
+      cur = cur - sub;
+    }
+  }
+  return steps;
+}
+
+function renderDiv(p, idx) {
+  const { dvsr, dvnd, quot, rem } = p;
+  const dvndStr = String(dvnd);
+  const dvsrStr = String(dvsr);
+  const dc = dvsrStr.length;   // divisor columns
+  const wc = dvndStr.length;   // work (dividend) columns
+
+  const steps = simDiv(dvsr, dvnd);
+
+  // Calculate total grid rows needed:
+  // 1: quotient, 1: dividend, per step: 2 (subtraction + remainder)
+  // Plus 1 extra row for remainder label if needed
+  const totalWorkRows = 2 + steps.length * 2;
+
+  let html = '';
+
+  // --- Row 1: Quotient (bordered, top-border thick) ---
+  html += '<tr>';
+  for (let c = 0; c < dc; c++) html += '<td></td>';
+  const qd = digits(quot, wc);
+  for (let c = 0; c < wc; c++) {
+    html += `<td class="b quot-border ans-digit">${cell(qd[c])}</td>`;
+  }
+  html += '</tr>';
+
+  // --- Row 2: Divisor | Dividend ---
+  html += '<tr>';
+  const dd = digits(dvsr, dc);
+  for (let c = 0; c < dc; c++) {
+    const cls = (c === dc - 1) ? 'dvsr-border' : '';
+    html += `<td class="${cls}">${cell(dd[c])}</td>`;
+  }
+  const vd = digits(dvnd, wc);
+  for (let c = 0; c < wc; c++) {
+    html += `<td class="b">${cell(vd[c])}</td>`;
+  }
+  html += '</tr>';
+
+  // --- Work rows: empty bordered cells for student ---
+  for (let s = 0; s < steps.length; s++) {
+    // Subtraction row
+    html += '<tr>';
+    for (let c = 0; c < dc; c++) html += '<td></td>';
+    for (let c = 0; c < wc; c++) html += '<td class="b"></td>';
+    html += '</tr>';
+
+    // Remainder row (with top separator)
+    html += '<tr>';
+    for (let c = 0; c < dc; c++) html += '<td></td>';
+    for (let c = 0; c < wc; c++) html += '<td class="b" style="border-top:2.5px solid #2f3640;"></td>';
+    html += '</tr>';
+  }
+
+  // If no steps (very small dividend), add at least 2 empty work rows
+  if (steps.length === 0) {
+    for (let r = 0; r < 2; r++) {
+      html += '<tr>';
+      for (let c = 0; c < dc; c++) html += '<td></td>';
+      for (let c = 0; c < wc; c++) html += '<td class="b"></td>';
+      html += '</tr>';
+    }
+  }
+
+  // Remainder display row
+  html += '<tr>';
+  for (let c = 0; c < dc; c++) html += '<td></td>';
+  for (let c = 0; c < wc; c++) html += '<td class="b"></td>';
+  html += '</tr>';
+
+  return `<div class="problem-item"><div class="problem-num">${idx}</div>
+    <table class="div-table">${html}</table></div>`;
+}
+
+/* ===== Dispatcher ===== */
+function render(opType, p, idx) {
+  const t = CFG[opType].type;
+  if (t === 'addsub') return renderAddSub(p, idx);
+  if (t === 'mul_s') return renderMulShort(p, idx);
+  if (t === 'mul_l') return renderMulLong(p, idx);
+  if (t === 'div') return renderDiv(p, idx);
+  return '';
+}
+
+/* ===== Sheet ===== */
+function createSheet(opType) {
+  const c = CFG[opType];
+  const count = c.gridCols * c.gridRows;
+
+  const sheet = document.createElement('div');
+  sheet.className = 'sheet';
+
+  const title = document.createElement('div');
+  title.className = 'sheet-title';
+  title.textContent = `격자 세로셈 연습 \u2014 ${c.label}`;
+  sheet.appendChild(title);
+
+  const grid = document.createElement('div');
+  grid.className = 'problem-grid';
+  grid.style.gridTemplateColumns = `repeat(${c.gridCols}, 1fr)`;
+  grid.style.gridTemplateRows = `repeat(${c.gridRows}, 1fr)`;
+
+  for (let i = 1; i <= count; i++) {
+    const p = GEN[opType]();
+    grid.insertAdjacentHTML('beforeend', render(opType, p, i));
+  }
+
+  sheet.appendChild(grid);
+  return sheet;
+}
+
+/* ===== Main ===== */
+let answerShown = false;
+
+function generate() {
+  const container = document.getElementById('sheets-container');
+  const opType = document.getElementById('opType').value;
+  const pages = Math.min(20, Math.max(1, parseInt(document.getElementById('pageCount').value, 10) || 1));
+
+  container.innerHTML = '';
+  container.classList.remove('answers-shown');
+  answerShown = false;
+
+  for (let i = 0; i < pages; i++) container.appendChild(createSheet(opType));
+}
+
+function toggleAnswers() {
+  answerShown = !answerShown;
+  document.getElementById('sheets-container').classList.toggle('answers-shown', answerShown);
+}
+
+generate();
+</script>
+</body>
+</html>
