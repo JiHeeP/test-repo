@@ -290,11 +290,18 @@
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: calc(5px * var(--font-scale, 1));
       padding: 0 3px;
     }
 
-    .frac-row { gap: 8px; }
+    .horiz-box {
+      font-size: calc(20px * var(--font-scale, 1));
+      line-height: 1.35;
+    }
+
+    .frac-row {
+      gap: calc(8px * var(--font-scale, 1));
+    }
 
     .dense .horiz-box { margin-top: 8px; font-size: calc(16px * var(--font-scale, 1)); gap: 4px; }
 
@@ -333,7 +340,7 @@
       align-items: center;
       gap: 6px;
       flex-wrap: wrap;
-      font-size: 16px;
+      font-size: calc(16px * var(--font-scale, 1));
     }
 
     .small-note {
@@ -372,7 +379,7 @@
     }
 
     .mixed-d .whole {
-      font-size: 18px;
+      font-size: calc(18px * var(--font-scale, 1));
       font-weight: 500;
     }
 
@@ -385,29 +392,29 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 32px;
-      padding: 0 8px;
+      min-height: calc(32px * var(--font-scale, 1));
+      padding: 0 calc(8px * var(--font-scale, 1));
       border: 1.5px solid #666;
       border-radius: 6px;
       background: white;
       vertical-align: middle;
-      font-size: 16px;
+      font-size: calc(16px * var(--font-scale, 1));
       font-weight: 500;
     }
 
-    .num-blank { min-width: 40px; }
-    .text-blank { min-width: 62px; }
-    .table-blank { min-width: 34px; padding: 2px 8px; }
+    .num-blank { min-width: calc(40px * var(--font-scale, 1)); }
+    .text-blank { min-width: calc(62px * var(--font-scale, 1)); }
+    .table-blank { min-width: calc(34px * var(--font-scale, 1)); padding: calc(2px * var(--font-scale, 1)) calc(8px * var(--font-scale, 1)); }
 
     .sym-blank {
-      width: 28px;
-      height: 28px;
+      width: calc(28px * var(--font-scale, 1));
+      height: calc(28px * var(--font-scale, 1));
       border: 1.5px solid #666;
       border-radius: 50%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: calc(16px * var(--font-scale, 1));
       background: white;
     }
 
@@ -420,24 +427,24 @@
 
     .frac-blank .fb-top,
     .frac-blank .fb-bot {
-      min-width: 32px;
-      height: 24px;
-      padding: 0 8px;
+      min-width: calc(32px * var(--font-scale, 1));
+      height: calc(24px * var(--font-scale, 1));
+      padding: 0 calc(8px * var(--font-scale, 1));
       border: 1.5px solid #666;
       border-radius: 4px;
       background: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
+      font-size: calc(15px * var(--font-scale, 1));
       line-height: 1;
     }
 
     .frac-blank .fb-line {
-      width: 38px;
+      width: calc(38px * var(--font-scale, 1));
       height: 2px;
       background: #444;
-      margin: 2px 0;
+      margin: calc(2px * var(--font-scale, 1)) 0;
     }
 
     .relation-table {
@@ -1580,29 +1587,37 @@ const PDF_GENERATORS = {
   },
 };
 
-const PAGE_GRID_RATIO = 0.7;
+const SHEET_GRID_BOUNDS = { width: 172, height: 238 };
 
 const PDF_LAYOUTS = {
-  add_2d:   { type: 'addsub', minCols: 2, maxCols: 4, maxRows: 5, targetAspect: 0.82, baseGap: [12, 8] },
-  add_3d:   { type: 'addsub', minCols: 2, maxCols: 3, maxRows: 5, targetAspect: 0.8,  baseGap: [12, 8] },
-  sub_2d:   { type: 'addsub', minCols: 2, maxCols: 4, maxRows: 5, targetAspect: 0.82, baseGap: [12, 8] },
-  sub_3d:   { type: 'addsub', minCols: 2, maxCols: 3, maxRows: 5, targetAspect: 0.8,  baseGap: [12, 8] },
-  mul_2d1d: { type: 'mul_s',  minCols: 2, maxCols: 3, maxRows: 5, targetAspect: 0.8,  baseGap: [12, 8] },
-  mul_2d2d: { type: 'mul_l',  minCols: 2, maxCols: 3, maxRows: 4, targetAspect: 0.72, baseGap: [10, 8] },
-  mul_3d2d: { type: 'mul_l',  minCols: 2, maxCols: 3, maxRows: 4, targetAspect: 0.7,  baseGap: [10, 8] },
-  div_2d1d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 4, targetAspect: 0.74, baseGap: [10, 8] },
-  div_3d1d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 3, targetAspect: 0.72, baseGap: [10, 8] },
-  div_3d2d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 3, targetAspect: 0.72, baseGap: [10, 8] },
+  add_2d:   { type: 'addsub', minCols: 2, maxCols: 4, maxRows: 5, targetCellAspect: 0.7, minCellWidth: 28, minCellHeight: 35, baseGap: [12, 8] },
+  add_3d:   { type: 'addsub', minCols: 2, maxCols: 3, maxRows: 5, targetCellAspect: 0.66, minCellWidth: 32, minCellHeight: 35, baseGap: [12, 8] },
+  sub_2d:   { type: 'addsub', minCols: 2, maxCols: 4, maxRows: 5, targetCellAspect: 0.7, minCellWidth: 28, minCellHeight: 35, baseGap: [12, 8] },
+  sub_3d:   { type: 'addsub', minCols: 2, maxCols: 3, maxRows: 5, targetCellAspect: 0.66, minCellWidth: 32, minCellHeight: 35, baseGap: [12, 8] },
+  mul_2d1d: { type: 'mul_s',  minCols: 2, maxCols: 3, maxRows: 5, targetCellAspect: 0.68, minCellWidth: 32, minCellHeight: 36, baseGap: [12, 8] },
+  mul_2d2d: { type: 'mul_l',  minCols: 2, maxCols: 3, maxRows: 4, targetCellAspect: 0.62, minCellWidth: 34, minCellHeight: 48, baseGap: [10, 8] },
+  mul_3d2d: { type: 'mul_l',  minCols: 2, maxCols: 3, maxRows: 4, targetCellAspect: 0.58, minCellWidth: 36, minCellHeight: 48, baseGap: [10, 8] },
+  div_2d1d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 4, targetCellAspect: 0.72, minCellWidth: 38, minCellHeight: 48, baseGap: [10, 8] },
+  div_3d1d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 3, targetCellAspect: 0.78, minCellWidth: 40, minCellHeight: 58, baseGap: [10, 8] },
+  div_3d2d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 3, targetCellAspect: 0.78, minCellWidth: 42, minCellHeight: 58, baseGap: [10, 8] },
 };
 
 const GRID_LAYOUTS = {
-  standard: { minCols: 2, maxCols: 4, maxRows: 5, targetAspect: 0.9,  baseGap: [12, 8] },
-  practice: { minCols: 2, maxCols: 3, maxRows: 5, targetAspect: 1.02, baseGap: [12, 8] },
-  dense:    { minCols: 2, maxCols: 4, maxRows: 9, targetAspect: 0.78, baseGap: [6, 5] },
-  divgrid:  { minCols: 2, maxCols: 3, maxRows: 4, targetAspect: 0.82, baseGap: [12, 8] },
-  concept:  { minCols: 1, maxCols: 2, maxRows: 5, targetAspect: 1.12, baseGap: [14, 14] },
-  wide:     { minCols: 1, maxCols: 2, maxRows: 4, targetAspect: 1.24, baseGap: [16, 16] },
+  standard: { minCols: 2, maxCols: 4, maxRows: 5, targetCellAspect: 1.45, minCellWidth: 48, minCellHeight: 26, widthPriority: 1.2, baseGap: [12, 8] },
+  practice: { minCols: 2, maxCols: 3, maxRows: 5, targetCellAspect: 1.32, minCellWidth: 52, minCellHeight: 28, widthPriority: 1.25, baseGap: [12, 8] },
+  dense:    { minCols: 2, maxCols: 4, maxRows: 9, targetCellAspect: 1.12, minCellWidth: 36, minCellHeight: 16, widthPriority: 0.8, baseGap: [6, 5] },
+  divgrid:  { minCols: 2, maxCols: 3, maxRows: 4, targetCellAspect: 1.0,  minCellWidth: 50, minCellHeight: 30, widthPriority: 1.0, baseGap: [12, 8] },
+  concept:  { minCols: 1, maxCols: 2, maxRows: 5, targetCellAspect: 1.05, minCellWidth: 72, minCellHeight: 44, widthPriority: 0.9, baseGap: [14, 14] },
+  wide:     { minCols: 1, maxCols: 2, maxRows: 4, targetCellAspect: 1.08, minCellWidth: 78, minCellHeight: 66, widthPriority: 0.8, baseGap: [16, 16] },
 };
+
+const THREE_PLUS_HORIZONTAL_IDS = new Set([
+  'u1_main_addsub',
+  'u1_main_muldiv',
+  'u1_main_addsubmul',
+  'u1_main_addsubdiv',
+  'u1_main_mix',
+]);
 
 function isPdfWorksheet(item) {
   return Boolean(PDF_WORKSHEET_MAP[item.id]);
@@ -1618,7 +1633,7 @@ function getPdfLimit(item) {
 }
 
 function getHtmlLimit(item) {
-  const cfg = GRID_LAYOUTS[item.grid];
+  const cfg = getHtmlLayoutConfig(item);
   return cfg ? cfg.maxCols * cfg.maxRows : 40;
 }
 
@@ -1626,14 +1641,32 @@ function getWorksheetLimit(item) {
   return isPdfWorksheet(item) ? getPdfLimit(item) : getHtmlLimit(item);
 }
 
+function getHtmlLayoutConfig(item) {
+  const base = GRID_LAYOUTS[item.grid];
+  if (!base) return null;
+  if (!THREE_PLUS_HORIZONTAL_IDS.has(item.id)) return base;
+  return {
+    ...base,
+    minCols: 2,
+    maxCols: 2,
+    widthPriority: 2,
+    minCellWidth: Math.max(base.minCellWidth || 0, 78),
+  };
+}
+
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function resolveGridLayout(config, count) {
+function resolveGridLayout(config, count, fontScale = 1) {
   const safeCount = Math.max(1, count);
+  const scale = Math.max(0.8, Number(fontScale) || 1);
   const maxCols = Math.min(config.maxCols, safeCount);
   const minCols = Math.min(config.minCols || 1, maxCols);
+  const usableWidth = config.usableWidth || SHEET_GRID_BOUNDS.width;
+  const usableHeight = config.usableHeight || SHEET_GRID_BOUNDS.height;
+  const requiredWidth = (config.minCellWidth || 40) * scale;
+  const requiredHeight = (config.minCellHeight || 28) * Math.min(scale, 1.2);
   let best = null;
 
   for (let cols = minCols; cols <= maxCols; cols++) {
@@ -1643,24 +1676,32 @@ function resolveGridLayout(config, count) {
     const cells = cols * rows;
     const emptyRatio = (cells - safeCount) / cells;
     const fullness = safeCount / (config.maxCols * config.maxRows);
+    const cellWidth = usableWidth / cols;
+    const cellHeight = usableHeight / rows;
+    const cellAspect = cellWidth / cellHeight;
+    const widthFit = cellWidth / requiredWidth;
+    const heightFit = cellHeight / requiredHeight;
     const preferredCols = clamp(
-      Math.round(config.maxCols * Math.pow(fullness, 0.35)),
+      Math.round(config.maxCols * Math.pow(fullness, 0.35) - ((scale - 1) * (config.widthPriority || 0))),
       minCols,
       maxCols
     );
-    const cellAspect = PAGE_GRID_RATIO * (rows / cols);
     let score = 100;
 
-    score -= Math.abs(cellAspect - config.targetAspect) * 28;
+    score -= Math.abs(cellAspect - (config.targetCellAspect || 1)) * 18;
     score -= emptyRatio * 18;
     score -= Math.abs(cols - preferredCols) * 4 * (1 - fullness);
     score -= (rows / config.maxRows) * 6;
+    if (widthFit < 1) score -= (1 - widthFit) * 140;
+    else score += Math.min(widthFit - 1, 0.45) * 12;
+    if (heightFit < 1) score -= (1 - heightFit) * 110;
+    else score += Math.min(heightFit - 1, 0.5) * 8;
 
     if (rows === 1 && safeCount > 2) score -= 8;
     if (cols === 1 && (config.minCols || 1) > 1) score -= 12;
 
     if (!best || score > best.score) {
-      best = { cols, rows, score };
+      best = { cols, rows, score, widthFit, heightFit };
     }
   }
 
@@ -1878,12 +1919,12 @@ function renderItem(problem, idx) {
   return `<div class="problem-item${itemClass}">${num}<div class="${layoutClass}">${problem.html}</div></div>`;
 }
 
-function createSheet(item, countOverride) {
+function createSheet(item, countOverride, fontScale = 1) {
   if (isPdfWorksheet(item)) {
     const opType = getPdfOpType(item);
     const cfg = PDF_LAYOUTS[opType];
     const count = countOverride || item.count;
-    const layout = resolveGridLayout(cfg, count);
+    const layout = resolveGridLayout(cfg, count, fontScale);
     const sheet = document.createElement('div');
     sheet.className = 'sheet';
 
@@ -1915,8 +1956,8 @@ function createSheet(item, countOverride) {
   }
 
   const count = countOverride || item.count;
-  const layoutCfg = GRID_LAYOUTS[item.grid] || { minCols: 1, maxCols: 4, maxRows: 10, targetAspect: 0.9, baseGap: [12, 8] };
-  const layout = resolveGridLayout(layoutCfg, count);
+  const layoutCfg = getHtmlLayoutConfig(item) || { minCols: 1, maxCols: 4, maxRows: 10, targetCellAspect: 1, minCellWidth: 44, minCellHeight: 28, baseGap: [12, 8] };
+  const layout = resolveGridLayout(layoutCfg, count, fontScale);
   const sheet = document.createElement('div');
   sheet.className = 'sheet';
 
@@ -1969,12 +2010,14 @@ function updateSelectedMeta() {
   const section = document.getElementById('selectedSection');
   const lesson = document.getElementById('selectedLesson');
   const countInput = document.getElementById('problemCount');
+  const limit = getWorksheetLimit(item);
+  const defaultCount = Math.min(item.count, limit);
   section.textContent = `${UNIT_META[item.unit].short} · ${item.section}`;
   lesson.textContent = `교과 차시: ${item.lessonRef}`;
-  countInput.placeholder = item.count;
-  countInput.max = getWorksheetLimit(item);
+  countInput.placeholder = defaultCount;
+  countInput.max = limit;
   if (countInput.value) {
-    countInput.value = Math.min(parseInt(countInput.value, 10) || item.count, getWorksheetLimit(item));
+    countInput.value = Math.min(parseInt(countInput.value, 10) || defaultCount, limit);
   }
 }
 
@@ -1982,13 +2025,19 @@ let answerShown = false;
 
 function generate(mode) {
   const container = document.getElementById('sheets-container');
+  const problemCountInput = document.getElementById('problemCount');
   const worksheetId = document.getElementById('worksheetSelect').value;
   const pageCount = Math.min(20, Math.max(1, parseInt(document.getElementById('pageCount').value, 10) || 1));
   const item = catalogMap[worksheetId];
 
-  const customCount = parseInt(document.getElementById('problemCount').value, 10);
+  const customCount = parseInt(problemCountInput.value, 10);
   const maxCount = getWorksheetLimit(item);
-  const effectiveCount = (customCount > 0) ? Math.min(maxCount, customCount) : item.count;
+  const defaultCount = Math.min(item.count, maxCount);
+  const effectiveCount = (customCount > 0) ? Math.min(maxCount, customCount) : defaultCount;
+
+  if (customCount > maxCount) {
+    problemCountInput.value = effectiveCount;
+  }
 
   const fontScale = document.getElementById('fontScale').value;
   container.style.setProperty('--font-scale', fontScale);
@@ -2000,7 +2049,7 @@ function generate(mode) {
   answerShown = false;
 
   for (let i = 0; i < pageCount; i++) {
-    container.appendChild(createSheet(item, effectiveCount));
+    container.appendChild(createSheet(item, effectiveCount, parseFloat(fontScale)));
   }
 }
 
