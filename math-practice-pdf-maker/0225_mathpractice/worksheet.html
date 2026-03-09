@@ -208,9 +208,9 @@
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      font-size: 22px;
+      font-size: calc(22px * var(--font-scale, 1));
       letter-spacing: 2px;
-      min-width: 90px;
+      min-width: calc(90px * var(--font-scale, 1));
       padding: 4px 10px;
       position: relative;
       background: white;
@@ -228,7 +228,7 @@
     }
 
     .calc-ans {
-      height: 28px;
+      height: calc(28px * var(--font-scale, 1));
       text-align: right;
       width: 100%;
       font-weight: 700;
@@ -240,7 +240,7 @@
     .ldiv-table {
       margin-top: 22px;
       border-collapse: collapse;
-      font-size: 22px;
+      font-size: calc(22px * var(--font-scale, 1));
     }
 
     .ldiv-q-box {
@@ -286,7 +286,7 @@
 
     .frac-row { gap: 8px; }
 
-    .dense .horiz-box { margin-top: 8px; font-size: 16px; gap: 4px; }
+    .dense .horiz-box { margin-top: 8px; font-size: calc(16px * var(--font-scale, 1)); gap: 4px; }
 
     .concept-layout,
     .relation-layout,
@@ -310,7 +310,7 @@
     .concept-question,
     .relation-question,
     .shape-question {
-      font-size: 16px;
+      font-size: calc(16px * var(--font-scale, 1));
       line-height: 1.45;
       word-break: keep-all;
     }
@@ -337,7 +337,7 @@
       flex-direction: column;
       align-items: center;
       vertical-align: middle;
-      font-size: 18px;
+      font-size: calc(18px * var(--font-scale, 1));
       min-width: 30px;
     }
 
@@ -367,7 +367,7 @@
     }
 
     .op-txt,
-    .eq-txt { font-size: 18px; }
+    .eq-txt { font-size: calc(18px * var(--font-scale, 1)); }
 
     .num-blank,
     .text-blank,
@@ -491,6 +491,47 @@
     [data-ans] { color: transparent; }
     .answers-shown [data-ans] { color: #e74c3c; }
 
+    .grid-calc-table {
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: calc(18px * var(--font-scale, 1));
+      font-weight: 500;
+    }
+
+    .grid-calc-table td {
+      width: calc(32px * var(--font-scale, 1));
+      height: calc(30px * var(--font-scale, 1));
+      text-align: center;
+      border: 1.5px solid #aab3c0;
+    }
+
+    .grid-op-cell {
+      width: calc(28px * var(--font-scale, 1));
+      font-weight: 700;
+      border: 1.5px solid #aab3c0;
+      background: transparent;
+    }
+
+    .grid-header-cell {
+      font-size: calc(12px * var(--font-scale, 1));
+      font-weight: 700;
+      background: #e8ecf2;
+      color: #4a5568;
+    }
+
+    .grid-num1-row .grid-digit-cell { background: #fff9db; }
+    .grid-num2-row .grid-digit-cell { background: #d3f9d8; }
+    .grid-num2-row .grid-digit-cell,
+    .grid-num2-row .grid-op-cell { border-bottom: 2.5px solid #2f3640; }
+    .grid-ans-row .grid-digit-cell { background: #e7f5ff; }
+
+    .grid-operator {
+      font-size: calc(16px * var(--font-scale, 1));
+    }
+
+    .grid-ans-digit { color: transparent; }
+    .answers-shown .grid-ans-digit { color: #e74c3c; }
+
     @media print {
       @page { size: A4; margin: 0; }
 
@@ -552,6 +593,26 @@
   <div class="input-group">
     <label for="pageCount">쪽수</label>
     <input type="number" id="pageCount" value="1" min="1" max="20">
+  </div>
+
+  <div class="input-group">
+    <label for="problemCount">문제 수</label>
+    <input type="number" id="problemCount" value="" min="1" max="40" placeholder="기본">
+  </div>
+
+  <div class="input-group">
+    <label for="fontScale">글자 크기</label>
+    <select id="fontScale">
+      <option value="0.8">작게</option>
+      <option value="1" selected>보통</option>
+      <option value="1.2">크게</option>
+      <option value="1.5">아주 크게</option>
+    </select>
+  </div>
+
+  <div class="input-group" id="gridPatternGroup" style="display:none;">
+    <label for="gridPattern">격자무늬</label>
+    <input type="checkbox" id="gridPattern">
   </div>
 
   <button class="btn-refresh" onclick="generate('replace')">
@@ -1445,6 +1506,63 @@ function buildSheetTitle(item) {
   };
 }
 
+const PLACE_NAMES = ['일', '십', '백', '천', '만'];
+
+function splitDigits(num, totalCols) {
+  const digits = String(Math.abs(num)).split('').map(Number);
+  while (digits.length < totalCols) digits.unshift(null);
+  return digits;
+}
+
+function getMaxDigits(num1, num2, ans) {
+  return Math.max(
+    String(Math.abs(num1)).length,
+    String(Math.abs(num2)).length,
+    String(Math.abs(ans)).length
+  );
+}
+
+function getPlaceHeaders(totalCols) {
+  return PLACE_NAMES.slice(0, totalCols).reverse();
+}
+
+function renderGridPattern(problem, idx) {
+  const num = `<div class="problem-num">${idx}</div>`;
+  const maxDigits = getMaxDigits(problem.num1, problem.num2, problem.ans);
+  const headers = getPlaceHeaders(maxDigits);
+  const d1 = splitDigits(problem.num1, maxDigits);
+  const d2 = splitDigits(problem.num2, maxDigits);
+  const dAns = splitDigits(problem.ans, maxDigits);
+
+  const headerRow = `<tr class="grid-header-row">
+    <td class="grid-op-cell"></td>
+    ${headers.map(h => `<td class="grid-header-cell">${h}</td>`).join('')}
+  </tr>`;
+
+  const num1Row = `<tr class="grid-num1-row">
+    <td class="grid-op-cell"></td>
+    ${d1.map(d => `<td class="grid-digit-cell">${d !== null ? d : ''}</td>`).join('')}
+  </tr>`;
+
+  const num2Row = `<tr class="grid-num2-row">
+    <td class="grid-op-cell grid-operator">${problem.op}</td>
+    ${d2.map(d => `<td class="grid-digit-cell">${d !== null ? d : ''}</td>`).join('')}
+  </tr>`;
+
+  const ansRow = `<tr class="grid-ans-row">
+    <td class="grid-op-cell"></td>
+    ${dAns.map(d => `<td class="grid-digit-cell grid-ans-digit" data-ans="${d !== null ? d : ''}">${d !== null ? d : ''}</td>`).join('')}
+  </tr>`;
+
+  return `<div class="problem-item">${num}
+    <div class="calc-wrapper">
+      <table class="grid-calc-table">
+        ${headerRow}${num1Row}${num2Row}${ansRow}
+      </table>
+    </div>
+  </div>`;
+}
+
 function renderItem(problem, idx) {
   const num = `<div class="problem-num">${idx}</div>`;
 
@@ -1479,7 +1597,10 @@ function renderItem(problem, idx) {
   return `<div class="problem-item${itemClass}">${num}<div class="${layoutClass}">${problem.html}</div></div>`;
 }
 
-function createSheet(item) {
+const GRID_COLS = { standard: 4, practice: 3, dense: 4, divgrid: 3, concept: 2, wide: 2 };
+
+function createSheet(item, countOverride) {
+  const count = countOverride || item.count;
   const sheet = document.createElement('div');
   sheet.className = 'sheet';
 
@@ -1500,8 +1621,15 @@ function createSheet(item) {
   const grid = document.createElement('div');
   grid.className = `problem-grid ${item.grid}`;
 
-  for (let i = 1; i <= item.count; i++) {
-    grid.insertAdjacentHTML('beforeend', renderItem(item.generator(), i));
+  const cols = GRID_COLS[item.grid] || 4;
+  const rows = Math.ceil(count / cols);
+  grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+  const useGrid = document.getElementById('gridPattern')?.checked && item.kind === 'vertical';
+
+  for (let i = 1; i <= count; i++) {
+    const problem = item.generator();
+    grid.insertAdjacentHTML('beforeend', useGrid ? renderGridPattern(problem, i) : renderItem(problem, i));
   }
 
   sheet.appendChild(grid);
@@ -1531,6 +1659,9 @@ function updateSelectedMeta() {
   const lesson = document.getElementById('selectedLesson');
   section.textContent = `${UNIT_META[item.unit].short} · ${item.section}`;
   lesson.textContent = `교과 차시: ${item.lessonRef}`;
+  document.getElementById('problemCount').placeholder = item.count;
+  document.getElementById('gridPatternGroup').style.display =
+    item.kind === 'vertical' ? '' : 'none';
 }
 
 let answerShown = false;
@@ -1541,13 +1672,19 @@ function generate(mode) {
   const pageCount = Math.min(20, Math.max(1, parseInt(document.getElementById('pageCount').value, 10) || 1));
   const item = catalogMap[worksheetId];
 
+  const customCount = parseInt(document.getElementById('problemCount').value, 10);
+  const effectiveCount = (customCount > 0) ? Math.min(40, customCount) : item.count;
+
+  const fontScale = document.getElementById('fontScale').value;
+  container.style.setProperty('--font-scale', fontScale);
+
   if (mode === 'replace') container.innerHTML = '';
 
   container.classList.remove('answers-shown');
   answerShown = false;
 
   for (let i = 0; i < pageCount; i++) {
-    container.appendChild(createSheet(item));
+    container.appendChild(createSheet(item, effectiveCount));
   }
 }
 
@@ -1563,6 +1700,15 @@ document.getElementById('unitSelect').addEventListener('change', (event) => {
 
 document.getElementById('worksheetSelect').addEventListener('change', () => {
   updateSelectedMeta();
+  generate('replace');
+});
+
+document.getElementById('fontScale').addEventListener('change', () => {
+  const container = document.getElementById('sheets-container');
+  container.style.setProperty('--font-scale', document.getElementById('fontScale').value);
+});
+
+document.getElementById('gridPattern').addEventListener('change', () => {
   generate('replace');
 });
 
