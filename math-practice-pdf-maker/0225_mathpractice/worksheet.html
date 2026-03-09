@@ -167,6 +167,7 @@
       display: grid;
       flex-grow: 1;
       gap: 12px 8px;
+      align-content: stretch;
     }
 
     .problem-grid.standard { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr); }
@@ -183,6 +184,15 @@
       justify-content: flex-start;
       padding-top: 8px;
       position: relative;
+    }
+
+    .problem-grid[data-layout-mode="spacious"] {
+      align-content: center;
+    }
+
+    .problem-grid[data-layout-mode="spacious"] .problem-item {
+      justify-content: center;
+      padding-top: 16px;
     }
 
     .problem-num {
@@ -1570,17 +1580,28 @@ const PDF_GENERATORS = {
   },
 };
 
+const PAGE_GRID_RATIO = 0.7;
+
 const PDF_LAYOUTS = {
-  add_2d:   { type: 'addsub', gridCols: 4, gridRows: 5 },
-  add_3d:   { type: 'addsub', gridCols: 3, gridRows: 5 },
-  sub_2d:   { type: 'addsub', gridCols: 4, gridRows: 5 },
-  sub_3d:   { type: 'addsub', gridCols: 3, gridRows: 5 },
-  mul_2d1d: { type: 'mul_s',  gridCols: 3, gridRows: 5 },
-  mul_2d2d: { type: 'mul_l',  gridCols: 3, gridRows: 4 },
-  mul_3d2d: { type: 'mul_l',  gridCols: 3, gridRows: 4 },
-  div_2d1d: { type: 'div',    gridCols: 3, gridRows: 4 },
-  div_3d1d: { type: 'div',    gridCols: 3, gridRows: 3 },
-  div_3d2d: { type: 'div',    gridCols: 3, gridRows: 3 },
+  add_2d:   { type: 'addsub', minCols: 2, maxCols: 4, maxRows: 5, targetAspect: 0.82, baseGap: [12, 8] },
+  add_3d:   { type: 'addsub', minCols: 2, maxCols: 3, maxRows: 5, targetAspect: 0.8,  baseGap: [12, 8] },
+  sub_2d:   { type: 'addsub', minCols: 2, maxCols: 4, maxRows: 5, targetAspect: 0.82, baseGap: [12, 8] },
+  sub_3d:   { type: 'addsub', minCols: 2, maxCols: 3, maxRows: 5, targetAspect: 0.8,  baseGap: [12, 8] },
+  mul_2d1d: { type: 'mul_s',  minCols: 2, maxCols: 3, maxRows: 5, targetAspect: 0.8,  baseGap: [12, 8] },
+  mul_2d2d: { type: 'mul_l',  minCols: 2, maxCols: 3, maxRows: 4, targetAspect: 0.72, baseGap: [10, 8] },
+  mul_3d2d: { type: 'mul_l',  minCols: 2, maxCols: 3, maxRows: 4, targetAspect: 0.7,  baseGap: [10, 8] },
+  div_2d1d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 4, targetAspect: 0.74, baseGap: [10, 8] },
+  div_3d1d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 3, targetAspect: 0.72, baseGap: [10, 8] },
+  div_3d2d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 3, targetAspect: 0.72, baseGap: [10, 8] },
+};
+
+const GRID_LAYOUTS = {
+  standard: { minCols: 2, maxCols: 4, maxRows: 5, targetAspect: 0.9,  baseGap: [12, 8] },
+  practice: { minCols: 2, maxCols: 3, maxRows: 5, targetAspect: 1.02, baseGap: [12, 8] },
+  dense:    { minCols: 2, maxCols: 4, maxRows: 9, targetAspect: 0.78, baseGap: [6, 5] },
+  divgrid:  { minCols: 2, maxCols: 3, maxRows: 4, targetAspect: 0.82, baseGap: [12, 8] },
+  concept:  { minCols: 1, maxCols: 2, maxRows: 5, targetAspect: 1.12, baseGap: [14, 14] },
+  wide:     { minCols: 1, maxCols: 2, maxRows: 4, targetAspect: 1.24, baseGap: [16, 16] },
 };
 
 function isPdfWorksheet(item) {
@@ -1593,7 +1614,85 @@ function getPdfOpType(item) {
 
 function getPdfLimit(item) {
   const cfg = PDF_LAYOUTS[getPdfOpType(item)];
-  return cfg.gridCols * cfg.gridRows;
+  return cfg.maxCols * cfg.maxRows;
+}
+
+function getHtmlLimit(item) {
+  const cfg = GRID_LAYOUTS[item.grid];
+  return cfg ? cfg.maxCols * cfg.maxRows : 40;
+}
+
+function getWorksheetLimit(item) {
+  return isPdfWorksheet(item) ? getPdfLimit(item) : getHtmlLimit(item);
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function resolveGridLayout(config, count) {
+  const safeCount = Math.max(1, count);
+  const maxCols = Math.min(config.maxCols, safeCount);
+  const minCols = Math.min(config.minCols || 1, maxCols);
+  let best = null;
+
+  for (let cols = minCols; cols <= maxCols; cols++) {
+    const rows = Math.ceil(safeCount / cols);
+    if (rows > config.maxRows) continue;
+
+    const cells = cols * rows;
+    const emptyRatio = (cells - safeCount) / cells;
+    const fullness = safeCount / (config.maxCols * config.maxRows);
+    const preferredCols = clamp(
+      Math.round(config.maxCols * Math.pow(fullness, 0.35)),
+      minCols,
+      maxCols
+    );
+    const cellAspect = PAGE_GRID_RATIO * (rows / cols);
+    let score = 100;
+
+    score -= Math.abs(cellAspect - config.targetAspect) * 28;
+    score -= emptyRatio * 18;
+    score -= Math.abs(cols - preferredCols) * 4 * (1 - fullness);
+    score -= (rows / config.maxRows) * 6;
+
+    if (rows === 1 && safeCount > 2) score -= 8;
+    if (cols === 1 && (config.minCols || 1) > 1) score -= 12;
+
+    if (!best || score > best.score) {
+      best = { cols, rows, score };
+    }
+  }
+
+  if (!best) {
+    best = {
+      cols: maxCols,
+      rows: Math.min(config.maxRows, Math.ceil(safeCount / maxCols)),
+      score: 0,
+    };
+  }
+
+  const density = safeCount <= Math.max(4, best.cols * 2)
+    ? 'spacious'
+    : (safeCount >= Math.max(best.cols * (config.maxRows - 1), config.maxCols * config.maxRows * 0.75) ? 'dense' : 'regular');
+  const gapFactor = density === 'spacious' ? 1.15 : (density === 'dense' ? 0.9 : 1);
+  const [baseRowGap, baseColGap] = config.baseGap || [12, 8];
+
+  return {
+    cols: best.cols,
+    rows: best.rows,
+    density,
+    rowGap: Math.round(baseRowGap * gapFactor),
+    colGap: Math.round(baseColGap * gapFactor),
+  };
+}
+
+function applyGridLayout(grid, layout) {
+  grid.style.gridTemplateColumns = `repeat(${layout.cols}, minmax(0, 1fr))`;
+  grid.style.gridTemplateRows = `repeat(${layout.rows}, minmax(0, 1fr))`;
+  grid.style.rowGap = `${layout.rowGap}px`;
+  grid.style.columnGap = `${layout.colGap}px`;
+  grid.dataset.layoutMode = layout.density;
 }
 
 function pdfDigits(num, cols) {
@@ -1779,13 +1878,12 @@ function renderItem(problem, idx) {
   return `<div class="problem-item${itemClass}">${num}<div class="${layoutClass}">${problem.html}</div></div>`;
 }
 
-const GRID_COLS = { standard: 4, practice: 3, dense: 4, divgrid: 3, concept: 2, wide: 2 };
-
 function createSheet(item, countOverride) {
   if (isPdfWorksheet(item)) {
     const opType = getPdfOpType(item);
     const cfg = PDF_LAYOUTS[opType];
     const count = countOverride || item.count;
+    const layout = resolveGridLayout(cfg, count);
     const sheet = document.createElement('div');
     sheet.className = 'sheet';
 
@@ -1805,8 +1903,7 @@ function createSheet(item, countOverride) {
 
     const grid = document.createElement('div');
     grid.className = 'problem-grid';
-    grid.style.gridTemplateColumns = `repeat(${cfg.gridCols}, 1fr)`;
-    grid.style.gridTemplateRows = `repeat(${Math.ceil(count / cfg.gridCols)}, 1fr)`;
+    applyGridLayout(grid, layout);
 
     for (let i = 1; i <= count; i++) {
       const problem = PDF_GENERATORS[opType]();
@@ -1818,6 +1915,8 @@ function createSheet(item, countOverride) {
   }
 
   const count = countOverride || item.count;
+  const layoutCfg = GRID_LAYOUTS[item.grid] || { minCols: 1, maxCols: 4, maxRows: 10, targetAspect: 0.9, baseGap: [12, 8] };
+  const layout = resolveGridLayout(layoutCfg, count);
   const sheet = document.createElement('div');
   sheet.className = 'sheet';
 
@@ -1837,10 +1936,7 @@ function createSheet(item, countOverride) {
 
   const grid = document.createElement('div');
   grid.className = `problem-grid ${item.grid}`;
-
-  const cols = GRID_COLS[item.grid] || 4;
-  const rows = Math.ceil(count / cols);
-  grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+  applyGridLayout(grid, layout);
 
   for (let i = 1; i <= count; i++) {
     const problem = item.generator();
@@ -1872,9 +1968,14 @@ function updateSelectedMeta() {
   const item = catalogMap[document.getElementById('worksheetSelect').value];
   const section = document.getElementById('selectedSection');
   const lesson = document.getElementById('selectedLesson');
+  const countInput = document.getElementById('problemCount');
   section.textContent = `${UNIT_META[item.unit].short} · ${item.section}`;
   lesson.textContent = `교과 차시: ${item.lessonRef}`;
-  document.getElementById('problemCount').placeholder = item.count;
+  countInput.placeholder = item.count;
+  countInput.max = getWorksheetLimit(item);
+  if (countInput.value) {
+    countInput.value = Math.min(parseInt(countInput.value, 10) || item.count, getWorksheetLimit(item));
+  }
 }
 
 let answerShown = false;
@@ -1886,7 +1987,7 @@ function generate(mode) {
   const item = catalogMap[worksheetId];
 
   const customCount = parseInt(document.getElementById('problemCount').value, 10);
-  const maxCount = isPdfWorksheet(item) ? getPdfLimit(item) : 40;
+  const maxCount = getWorksheetLimit(item);
   const effectiveCount = (customCount > 0) ? Math.min(maxCount, customCount) : item.count;
 
   const fontScale = document.getElementById('fontScale').value;
