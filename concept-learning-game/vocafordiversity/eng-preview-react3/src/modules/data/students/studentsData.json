@@ -1,0 +1,10 @@
+{
+  "_description": "학생 시드 데이터. PoC용 로컬 JSON.",
+  "students": [
+    { "student_id": "S00001", "name": "김민준", "grade_class": "5-1", "is_multicultural": false },
+    { "student_id": "S00002", "name": "이서연", "grade_class": "5-1", "is_multicultural": true },
+    { "student_id": "S00003", "name": "왕웨이", "grade_class": "5-1", "is_multicultural": true },
+    { "student_id": "S00004", "name": "나타샤", "grade_class": "5-1", "is_multicultural": true },
+    { "student_id": "S00005", "name": "박지호", "grade_class": "5-1", "is_multicultural": false }
+  ]
+}

@@ -1,0 +1,1 @@
+섹션 11-19는 차후 처리한다. 우선작업 website 에 prototype 뛰우기, prototype에 learning_record 저장 및 stage_result caching 등 Data I/O 레이어 구현 먼저 신경 쓰고, 게임 디테일을 구현하려고한다.

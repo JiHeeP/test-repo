@@ -1,0 +1,101 @@
+{
+  "_description": "어휘 데이터셋. cycles[].words[] 구조. (TDD §3.4 FR-V1)",
+  "cycles": [
+    {
+      "cycle_id": "C001",
+      "cycle_name": "과학 탐구 기초",
+      "words": [
+        {
+          "id": "W001", "word": "용액",
+          "zh": "溶液", "ru": "раствор",
+          "meaning": "두 가지 이상의 물질이 골고루 섞여 있는 액체.",
+          "examples": ["소금물은 짠맛이 나는 용액이에요."],
+          "icon": "FlaskConical", "color": "e0f2fe",
+          "relatedWords": ["용매", "용질", "녹이다", "섞다"],
+          "unrelatedWords": ["운동", "그림", "음악", "역사"]
+        },
+        {
+          "id": "W002", "word": "움직임",
+          "zh": "动作", "ru": "движение",
+          "meaning": "멈추어 있지 않고 자세나 위치를 바꾸는 것.",
+          "examples": ["강아지의 움직임이 아주 빨라요."],
+          "icon": "Activity", "color": "fef3c7",
+          "relatedWords": ["동작", "이동", "변화", "흔들림"],
+          "unrelatedWords": ["색깔", "맛", "냄새", "소리"]
+        },
+        {
+          "id": "W003", "word": "번갈다",
+          "zh": "轮流", "ru": "чередоваться",
+          "meaning": "한 번씩 차례를 바꾸다.",
+          "examples": ["친구와 번갈아 그네를 탔어요."],
+          "icon": "ArrowRightLeft", "color": "dcfce7",
+          "relatedWords": ["교대", "차례", "돌아가다", "바꾸다"],
+          "unrelatedWords": ["멈추다", "고정", "한쪽", "직선"]
+        },
+        {
+          "id": "W004", "word": "입자",
+          "zh": "粒子", "ru": "частица",
+          "meaning": "눈에 보이지 않을 만큼 아주 작은 알갱이.",
+          "examples": ["공기 중에는 작은 입자가 떠다녀요."],
+          "icon": "Atom", "color": "f3e8ff",
+          "relatedWords": ["분자", "원자", "알갱이", "먼지"],
+          "unrelatedWords": ["산", "강", "바다", "하늘"]
+        },
+        {
+          "id": "W005", "word": "방식",
+          "zh": "方式", "ru": "способ",
+          "meaning": "어떤 일을 해 나가는 일정한 방법.",
+          "examples": ["문제를 푸는 방식이 서로 달라요."],
+          "icon": "ListOrdered", "color": "ffedd5",
+          "relatedWords": ["방법", "절차", "과정", "수단"],
+          "unrelatedWords": ["결과", "목적", "이유", "원인"]
+        },
+        {
+          "id": "W006", "word": "설명",
+          "zh": "说明", "ru": "объяснение",
+          "meaning": "어떤 내용을 상대방이 잘 알도록 밝혀 말하는 것.",
+          "examples": ["선생님이 놀이 규칙을 설명해 주셨어요."],
+          "icon": "MessageSquareText", "color": "fee2e2",
+          "relatedWords": ["해설", "풀이", "안내", "알려주다"],
+          "unrelatedWords": ["침묵", "비밀", "감추다", "숨기다"]
+        },
+        {
+          "id": "W007", "word": "영향",
+          "zh": "影响", "ru": "влияние",
+          "meaning": "어떤 것의 힘이 다른 것에 미치는 것.",
+          "examples": ["날씨는 우리 생활에 많은 영향을 줘요."],
+          "icon": "Waves", "color": "e0e7ff",
+          "relatedWords": ["효과", "작용", "미치다", "변화"],
+          "unrelatedWords": ["무관", "독립", "분리", "단절"]
+        },
+        {
+          "id": "W008", "word": "관찰",
+          "zh": "观察", "ru": "наблюдение",
+          "meaning": "사물이나 현상을 주의 깊게 자세히 살펴보는 것.",
+          "examples": ["개미가 움직이는 것을 관찰했어요."],
+          "icon": "Search", "color": "ccfbf1",
+          "relatedWords": ["살펴보다", "탐구", "조사", "기록"],
+          "unrelatedWords": ["무시", "지나치다", "방치", "외면"]
+        },
+        {
+          "id": "W009", "word": "환경",
+          "zh": "环境", "ru": "окружающая среда",
+          "meaning": "생물이 살아가는 데 영향을 주는 주변의 모든 것.",
+          "examples": ["우리는 깨끗한 환경을 보호해야 해요."],
+          "icon": "Trees", "color": "d1fae5",
+          "relatedWords": ["자연", "생태", "오염", "보호"],
+          "unrelatedWords": ["기계", "로봇", "컴퓨터", "공장"]
+        },
+        {
+          "id": "W010", "word": "주제",
+          "zh": "主题", "ru": "тема",
+          "meaning": "대화나 글의 중심이 되는 문제나 생각.",
+          "examples": ["오늘 토론의 주제는 '급식'입니다."],
+          "icon": "BookOpen", "color": "fce7f3",
+          "relatedWords": ["제목", "화제", "논점", "핵심"],
+          "unrelatedWords": ["부록", "참고", "각주", "여백"]
+        }
+      ]
+    }
+  ]
+}

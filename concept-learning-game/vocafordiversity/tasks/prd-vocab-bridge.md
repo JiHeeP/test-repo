@@ -74,6 +74,7 @@ Nation(2013)의 수용→산출 프레임워크에 근거하여 학습도구어�
 
 **Acceptance Criteria:**
 - [ ] `.env` 파일에 Firebase 설정값 분리 (`VITE_FIREBASE_API_KEY` 등 6개 변수)
+- [ ] `.env` 파일에 학습 설정값 포함: `VITE_MIN_SAVE_STEP=3` (학습 기록 저장 최소 단계, 2~5 범위)
 - [ ] `.env.example` 파일 제공 (실제 값 제외, 키 이름과 설명만 포함)
 - [ ] `.gitignore`에 `.env` 추가 확인 (커밋 방지)
 - [ ] 앱 실행 시 환경변수 누락이면 콘솔에 명확한 에러 메시지 표시
@@ -267,6 +268,80 @@ _접근 제한_
 
 ---
 
+### [채점 및 학습 기록 저장] ← **Step 게임보다 우선 구현**
+
+#### US-015: 학습 기록 저장 기준 단계 설정
+**Description:** 개발자로서 몇 단계 이상 완료해야 학습 기록이 저장되는지 기준을 환경 설정 파일에서 관리하여, 불완전한 학습 데이터가 리포트에 섞이지 않게 하고 싶다.
+
+**Acceptance Criteria:**
+- [ ] `.env` 파일에 `VITE_MIN_SAVE_STEP=3` 환경 변수로 최소 저장 단계를 설정 (기본값: 3, 범위: 2~5)
+- [ ] `.env.example`에 해당 변수와 설명 포함: `VITE_MIN_SAVE_STEP=3  # 학습 기록 저장 최소 단계 (2~5)`
+- [ ] 앱 초기화 시 `import.meta.env.VITE_MIN_SAVE_STEP`을 파싱하여 앱 전역에서 참조
+- [ ] 값이 2~5 범위를 벗어나면 콘솔에 경고 메시지 표시 후 기본값 3 적용
+- [ ] Typecheck 통과
+
+#### US-015-S: 학습 기록 Firestore 저장
+**Description:** 개발자로서 최소 단계 도달 후 각 Step이 완료될 때마다 채점 결과를 Firestore에 저장하여 리포트 근거 데이터를 쌓고 싶다.
+
+**Acceptance Criteria:**
+- [ ] 학생이 `min_save_step` 이상의 Step을 완료하는 순간 최초 저장 실행 (i.e. technical approach: accumulate stage results to memory, then flush to Firestore when min_save_step threshold is reached)
+- [ ] 이후 Step이 완료될 때마다 해당 결과를 기존 `learning_records` 문서에 누적 업데이트
+- [ ] 저장 문서 구조:
+  ```json
+  {
+    "record_id": "자동 생성",
+    "student_id": "S001",
+    "cycle_id": "C001",
+    "word_id": "W001",
+    "stage_results": [
+      {
+        "stage": 1,
+        "score": 8,
+        "time_spent": 45,
+        "additional_datapoint": {
+          "unknownWords": ["용액", "입자"],
+          "historical_results": [
+            {"trial_index": 1, "result": true},
+            {"trial_index": 2, "result": false}
+          ]
+        }
+      },
+      {
+        "stage": 3,
+        "score": 1,
+        "time_spent": 32,
+        "additional_datapoint": {
+          "historical_results": [
+            {"trial_index": 1, "result": false},
+            {"trial_index": 2, "result": true}
+          ]
+        }
+      },
+      {
+        "stage": 4,
+        "score": 2,
+        "time_spent": 28
+      }
+    ],
+    "error_rate": 30.0,
+    "tier": "development",
+    "completed_at": "ISO 타임스탬프"
+  }
+  ```
+- [ ] 각 `stage_results` 항목에 `time_spent` (초 단위) 포함 — 해당 Step 소요 시간 기록
+- [ ] 각 `stage_results` 항목에 선택적 `additional_datapoint` 포함:
+  - Step 1: `unknownWords` (몰랐던 단어 목록) + `historical_results`
+  - Step 2~5: `historical_results` (각 시도별 정오답 이력, `first_try_rate` 산출 근거)
+  - Step 6: 총점만 기록 (additional_datapoint 없음)
+- [ ] `historical_results`: `[{"trial_index": 1, "result": boolean}, ...]` — 1차 시도 정답 여부로 `first_try_rate` 사후 산출 가능
+- [ ] `error_rate = (1 - 획득점수 / 만점) * 100`으로 계산
+- [ ] tier 자동 분류: 0~20% → "mastered" / 20~35% → "development" / 35~50% → "tier2" / 50% 초과 → "tier3"
+- [ ] Step 1: 다른 stage와 동일하게 점수 산출. `score = (totalWords - unknownWords.length) / totalWords * 만점`으로 계산. 부가 데이터로 `additional_datapoint: { unknownWords: [...] }`를 해당 stage_results 항목에 포함하여 교사가 어떤 단어를 몰랐는지 확인 가능
+- [ ] Step 6: 총점만 기록
+- [ ] Firestore에 실제 저장 확인
+
+---
+
 ### [Step 1: 멀티모달 카드]
 
 #### US-005: 언어 선택 온보딩
@@ -418,58 +493,6 @@ _접근 제한_
 
 ---
 
-### [채점 및 학습 기록 저장]
-
-#### US-015: 학습 기록 저장 기준 단계 설정
-**Description:** 교사로서 몇 단계 이상 완료해야 학습 기록이 저장되는지 기준을 설정하여, 불완전한 학습 데이터가 리포트에 섞이지 않게 하고 싶다.
-
-**Acceptance Criteria:**
-
-_교사 설정 UI_
-- [ ] 교사 대시보드 설정 화면에 **"학습 기록 저장 최소 단계"** 옵션 제공
-- [ ] 선택지: Step 2 / Step 3 / Step 4 / Step 5 (기본값: **Step 3**)
-- [ ] 선택값은 Firestore `class_settings` 문서에 저장:
-  ```json
-  {
-    "teacher_id": "교사 UID",
-    "min_save_step": 3
-  }
-  ```
-- [ ] 설정 변경 즉시 반영 (저장 버튼 별도 불필요, 선택과 동시에 Firestore 업데이트)
-- [ ] 설정 화면에 안내 문구 표시: "이 단계 이상 완료한 학습만 리포트에 반영됩니다."
-- [ ] Typecheck 통과
-- [ ] 브라우저에서 설정 변경 → Firestore 반영 확인
-
-#### US-015-S: 학습 기록 Firestore 저장
-**Description:** 개발자로서 최소 단계 도달 후 각 Step이 완료될 때마다 채점 결과를 Firestore에 저장하여 리포트 근거 데이터를 쌓고 싶다.
-
-**Acceptance Criteria:**
-- [ ] 학생이 `min_save_step` 이상의 Step을 완료하는 순간 최초 저장 실행
-- [ ] 이후 Step이 완료될 때마다 해당 결과를 기존 `learning_records` 문서에 누적 업데이트
-- [ ] 저장 문서 구조:
-  ```json
-  {
-    "record_id": "자동 생성",
-    "student_id": "S001",
-    "cycle_id": "C001",
-    "word_id": "W001",
-    "stage_results": [
-      {"stage": 3, "score": 1},
-      {"stage": 4, "score": 2}
-    ],
-    "error_rate": 30.0,
-    "tier": "development",
-    "completed_at": "ISO 타임스탬프"
-  }
-  ```
-- [ ] `error_rate = (1 - 획득점수 / 만점) * 100`으로 계산
-- [ ] tier 자동 분류: 0~20% → "mastered" / 20~35% → "development" / 35~50% → "tier2" / 50% 초과 → "tier3"
-- [ ] Step 1: `min_save_step`에 관계없이 unknownDeck 단어 목록만 별도 기록
-- [ ] Step 6: 총점만 기록
-- [ ] Firestore에 실제 저장 확인
-
----
-
 ### [교사 대시보드]
 
 #### US-016: 실시간 학급 현황 대시보드
@@ -495,7 +518,7 @@ _교사 설정 UI_
 
 **Acceptance Criteria:**
 - [ ] 주간 범위 필터로 `learning_records` 집계
-- [ ] 섹션: 종합 성취도 / 단계별 수행률 / 단어별 상세(오류율 높은 순 정렬)
+- [ ] 섹션: 종합 성취도 / 단계별 수행률 / 단어별 상세(오류율 높은 순 정렬) / 평균 소요 시간(`time_spent` 기반) / 1차 정답률(`historical_results` 기반)
 - [ ] Step 3 이상 완료 기록만 유효 (Step 1~2만 완료 시 "학습 중" 표시)
 - [ ] 화면 출력 + PDF 다운로드 버튼
 - [ ] PDF: A4 세로, 한글 폰트, 헤더(학교/학급/기간/생성일시), 푸터(페이지 번호)
@@ -545,7 +568,7 @@ _교사 설정 UI_
 
 ## 기능 요구사항 (Functional Requirements)
 
-> **우선순위 순서:** 배포·호스팅(FR-D*) → 인증(FR-1~2) → 데이터·학습(FR-3~12) → 리포트(FR-9) → 기타
+> **우선순위 순서:** 배포·호스팅(FR-D*) → 인증(FR-1~2) → 채점·저장(FR-3~7) → 학습 게임(FR-11~16) → 리포트(FR-9) → 기타
 
 ### 배포·호스팅 (최우선)
 - FR-D1: `npm run build` 시 Vite가 `dist/` 에 정적 파일을 생성하며, 빌드 에러가 없어야 한다.
@@ -561,18 +584,23 @@ _교사 설정 UI_
 - FR-2a: 학생 정보 수정 기능은 프로토타입 범위에서 제외한다. 오입력 수정은 학생 삭제(US-003-D) 후 재등록(US-003)으로 수행한다.
 - FR-2b: 학생 삭제 시 Firestore `students` 문서만 제거하며, `learning_records`는 보존한다 (2차 정리 예정).
 - FR-2c: 삭제 작업은 반드시 확인 다이얼로그를 거쳐야 하며, 단번에 되돌릴 수 없다.
-- FR-3: Step 1은 자기평가(알아요/몰라요) 방식으로 별도 채점 없이 unknownDeck 반복 루프를 제공한다.
+
+### 채점 및 학습 기록 (Step 게임보다 우선)
+- FR-3: Step 1은 자기평가(알아요/몰라요) 방식으로 unknownDeck 반복 루프를 제공한다. 채점은 `(totalWords - unknownWords.length) / totalWords * 만점`으로 다른 stage와 동일하게 점수를 산출하며, unknownWords 목록은 `additional_datapoint`로 stage_results에 부가 저장한다.
 - FR-4: Step 2~5는 공통 채점 규칙을 적용한다: 힌트 없이 정답 2점, 힌트 후 정답 1점, 최종 오답 0점.
 - FR-5: Step 6은 Canvas 기반 낙하 게임, 제한 시간 80초, 콤보 시스템을 유지한다.
 - FR-6: 오류율 계산: `(1 - 획득점수 / 만점) * 100`. 판정은 소수 원본값 기준, 화면 표시는 소수 1자리 반올림.
 - FR-7: Tier 분류: 0~20% 습득완료, 20~35% 발달중, 35~50% Tier 2, 50% 초과 Tier 3.
+- FR-12: 학습 기록은 `.env`의 `VITE_MIN_SAVE_STEP` 값 이상의 Step이 완료된 시점부터 Firestore에 저장하며, 이후 각 Step 완료 시마다 동일 문서에 누적 업데이트한다. min_save_step 미달 시에는 메모리에 stage_results를 누적하다가 threshold 도달 시 일괄 flush한다.
+- FR-12a: `VITE_MIN_SAVE_STEP` 기본값은 3이며, `.env` 파일에서 2~5 범위로 설정 가능하다. (교사 대시보드 UI 설정은 2차 이관)
+- FR-12b: `min_save_step` 미만 단계만 완료한 학습은 Firestore에 저장하지 않으며, 리포트에서 "학습 중"으로 표시한다.
+- FR-12c: 각 stage_results 항목에 `time_spent`(초 단위)를 기록한다. Step 2~5는 선택적으로 `additional_datapoint.historical_results`에 시도별 정오답 이력을 저장하여 `first_try_rate` 사후 산출을 지원한다.
+
+### 학습 게임
 - FR-8: 실시간 대시보드는 Firestore onSnapshot으로 구독하여 자동 갱신한다.
 - FR-9: 리포트 PDF는 A4 세로, 한글 폰트, 헤더/푸터 포함, 생성 5초 이내를 만족한다.
 - FR-10: TTS는 항상 `ko-KR`로 재생한다. 번역어는 텍스트 표시만 제공한다 (번역 TTS 없음).
 - FR-11: 모든 학습 입력은 터치/탭 기반으로 설계하며, 키보드 타이핑을 학습 과정에서 배제한다.
-- FR-12: 학습 기록은 교사가 설정한 `min_save_step` 이상의 Step이 완료된 시점부터 Firestore에 저장하며, 이후 각 Step 완료 시마다 동일 문서에 누적 업데이트한다.
-- FR-12a: `min_save_step` 기본값은 Step 3이며, 교사가 대시보드에서 Step 2~5 중 선택 가능하다.
-- FR-12b: `min_save_step` 미만 단계만 완료한 학습은 Firestore에 저장하지 않으며, 리포트에서 "학습 중"으로 표시한다.
 - FR-13: Step 1~6 순차 진행 원칙. 1차 출시는 소프트 잠금 (이전 미완료 시 경고만, 강제 차단 없음).
 - FR-14: Step 3 미만 완료 중간 종료 시 해당 주 리포트에서 "학습 중"으로 표시한다.
 - FR-15: TTS 중복 방지: 카드 전환 시 기존 `speechSynthesis.cancel()` 후 새 발화를 시작한다.
@@ -588,6 +616,7 @@ _교사 설정 UI_
 - 적응형 난이도 자동 조정 (2차 이관)
 - 학생 스스로 계정 생성 (교사 수동 등록만 지원)
 - 교사 단어 추가/편집 UI (2차 이관 — 1차는 개발자가 `vocabData.json`에 직접 세팅)
+- 교사 대시보드에서 `min_save_step` 설정 UI (2차 이관 — 1차는 `.env` 파일에서 설정)
 - 번역어 TTS
 - 소셜 로그인
 
@@ -609,10 +638,10 @@ _교사 설정 UI_
 - **Canvas (Step 6):** touchstart/touchend + mousedown 이벤트 모두 처리.
 - **PDF:** `jsPDF` + `html2canvas` 조합 권장. 한글 폰트 base64 임베드 필요.
 - **Firestore onSnapshot:** 컴포넌트 unmount 시 반드시 unsubscribe() 호출.
-- **학습 저장 트리거:** 각 Step `onComplete()` 시점에 `min_save_step`과 현재 Step 번호를 비교한다. 최소 단계 도달 시 `setDoc`으로 레코드 생성, 이후는 `updateDoc` + `arrayUnion`으로 `stage_results`에 누적한다.
+- **학습 저장 트리거:** 각 Step `onComplete()` 시점에 stage_results를 메모리에 누적한다. `min_save_step` 도달 시 `setDoc`으로 레코드 생성(메모리 누적분 일괄 flush), 이후는 `updateDoc` + `arrayUnion`으로 `stage_results`에 누적한다.
 - **어휘 데이터 1차:** `src/data/vocabData.json`으로 퀴즈 사이클 구조를 관리한다. 추후 Firestore `words` 컬렉션으로 마이그레이션하여 교사 단어 추가 UI를 지원할 예정.
 - **퀴즈 사이클 라우팅:** 학생 홈(`/student/home`)에서 사이클 목록을 표시하고, 사이클 선택 시 Step 1부터 순차 진행. 각 Step 컴포넌트는 현재 사이클의 `words` 배열을 props로 받는다.
-- **환경 변수:** Firebase 설정값은 `.env`에 분리 (`VITE_FIREBASE_API_KEY` 등).
+- **환경 변수:** Firebase 설정값 + `VITE_MIN_SAVE_STEP`은 `.env`에 분리.
 
 ---
 
@@ -633,6 +662,7 @@ _교사 설정 UI_
 - [ ] Step 2~5: 공통 채점 규칙(2/1/0점) 정확히 적용
 - [ ] Step 6: Canvas 낙하 게임 + 80초 타이머 + 콤보 정상 동작
 - [ ] Step 완료 시 Firestore `learning_records` 저장 및 오류율 자동 계산 확인
+- [ ] `time_spent` 및 `historical_results` 정상 기록 확인
 - [ ] Tier 분류 경계값 테스트 통과 (20%, 35%, 50% 경계 포함)
 - [ ] Tier 2/3 학생이 교사 대시보드 상단에 자동 노출
 - [ ] 학생 개인 주간 리포트 PDF 출력 정상 (생성 5초 이내)

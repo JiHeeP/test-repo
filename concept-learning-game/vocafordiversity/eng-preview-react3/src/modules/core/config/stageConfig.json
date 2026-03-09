@@ -1,0 +1,11 @@
+{
+  "_description": "Stage별 채점 규칙. 교사가 직접 수정 가능. 변경 후 재배포 필요.",
+  "stages": {
+    "1": { "wordCount": 10, "maxScore": 10, "scorePerCorrect": 1,  "scorePerHintedCorrect": 1,  "scorePerWrong": 0 },
+    "2": { "wordCount": 10, "maxScore": 20, "scorePerCorrect": 2,  "scorePerHintedCorrect": 1,  "scorePerWrong": 0 },
+    "3": { "wordCount":  9, "maxScore": 18, "scorePerCorrect": 2,  "scorePerHintedCorrect": 1,  "scorePerWrong": 0 },
+    "4": { "wordCount":  8, "maxScore": 16, "scorePerCorrect": 2,  "scorePerHintedCorrect": 1,  "scorePerWrong": 0 },
+    "5": { "wordCount": 10, "maxScore": 30, "scorePerCorrect": 2,  "scorePerHintedCorrect": 1,  "scorePerWrong": 0 },
+    "6": { "wordCount":  9, "maxScore": 90, "scorePerCorrect": 10, "scorePerHintedCorrect": 10, "scorePerWrong": -10 }
+  }
+}
