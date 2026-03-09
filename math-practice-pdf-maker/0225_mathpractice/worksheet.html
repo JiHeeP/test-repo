@@ -491,46 +491,47 @@
     [data-ans] { color: transparent; }
     .answers-shown [data-ans] { color: #e74c3c; }
 
-    .grid-calc-table {
+    .pdf-grid-table {
       border-collapse: collapse;
-      margin-top: 8px;
-      font-size: calc(18px * var(--font-scale, 1));
+      margin-top: 6px;
+      font-size: calc(17px * var(--pdf-scale, 1));
       font-weight: 500;
     }
 
-    .grid-calc-table td {
-      width: calc(32px * var(--font-scale, 1));
-      height: calc(30px * var(--font-scale, 1));
+    .pdf-grid-table td {
+      width: calc(26px * var(--pdf-scale, 1));
+      height: calc(26px * var(--pdf-scale, 1));
       text-align: center;
-      border: 1.5px solid #aab3c0;
+      vertical-align: middle;
+      border: 1.5px solid #555;
+      padding: 0;
     }
 
-    .grid-op-cell {
-      width: calc(28px * var(--font-scale, 1));
-      font-weight: 700;
-      border: 1.5px solid #aab3c0;
-      background: transparent;
+    .pdf-grid-table .pdf-op-cell { font-weight: 700; }
+    .pdf-grid-table .pdf-sep-bottom { border-bottom: 3px solid #2f3640; }
+    .pdf-grid-table .ans-digit { color: transparent; }
+    .answers-shown .pdf-grid-table .ans-digit { color: #e74c3c; }
+
+    .pdf-div-table {
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: calc(17px * var(--pdf-scale, 1));
+      font-weight: 500;
     }
 
-    .grid-header-cell {
-      font-size: calc(12px * var(--font-scale, 1));
-      font-weight: 700;
-      background: #e8ecf2;
-      color: #4a5568;
+    .pdf-div-table td {
+      width: calc(26px * var(--pdf-scale, 1));
+      height: calc(26px * var(--pdf-scale, 1));
+      text-align: center;
+      vertical-align: middle;
+      padding: 0;
     }
 
-    .grid-num1-row .grid-digit-cell { background: #fff9db; }
-    .grid-num2-row .grid-digit-cell { background: #d3f9d8; }
-    .grid-num2-row .grid-digit-cell,
-    .grid-num2-row .grid-op-cell { border-bottom: 2.5px solid #2f3640; }
-    .grid-ans-row .grid-digit-cell { background: #e7f5ff; }
-
-    .grid-operator {
-      font-size: calc(16px * var(--font-scale, 1));
-    }
-
-    .grid-ans-digit { color: transparent; }
-    .answers-shown .grid-ans-digit { color: #e74c3c; }
+    .pdf-div-table .pdf-b { border: 1.5px solid #555; }
+    .pdf-div-table .pdf-quot-border { border-bottom: 2.5px solid #2f3640; }
+    .pdf-div-table .pdf-dvsr-border { border-right: 2.5px solid #2f3640; }
+    .pdf-div-table .ans-digit { color: transparent; }
+    .answers-shown .pdf-div-table .ans-digit { color: #e74c3c; }
 
     @media print {
       @page { size: A4; margin: 0; }
@@ -608,11 +609,6 @@
       <option value="1.2">크게</option>
       <option value="1.5">아주 크게</option>
     </select>
-  </div>
-
-  <div class="input-group" id="gridPatternGroup" style="display:none;">
-    <label for="gridPattern">격자무늬</label>
-    <input type="checkbox" id="gridPattern">
   </div>
 
   <button class="btn-refresh" onclick="generate('replace')">
@@ -1427,17 +1423,17 @@ const UNIT_META = {
 };
 
 const WORKSHEET_CATALOG = [
-  { id: 'u1_pre_add_2d', unit: 'u1', section: '선수학습', label: '두 자리 수 덧셈 (받아올림)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreAdd2d },
-  { id: 'u1_pre_sub_2d', unit: 'u1', section: '선수학습', label: '두 자리 수 뺄셈 (받아내림)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreSub2d },
-  { id: 'u1_pre_mul_2d1d', unit: 'u1', section: '선수학습', label: '두 자리 수 × 한 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreMul2d1d },
-  { id: 'u1_pre_div_2d1d', unit: 'u1', section: '선수학습', label: '두 자리 수 ÷ 한 자리 수 (가로셈)', lessonRef: '선수학습', kind: 'html', grid: 'standard', count: 20, generator: genU1PreDiv2d1d },
-  { id: 'u1_pre_add', unit: 'u1', section: '선수학습', label: '세 자리 수 덧셈 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreAdd },
-  { id: 'u1_pre_sub', unit: 'u1', section: '선수학습', label: '세 자리 수 뺄셈 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreSub },
-  { id: 'u1_pre_mul', unit: 'u1', section: '선수학습', label: '두 자리 수 곱셈 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreMul },
-  { id: 'u1_pre_mul_3x2', unit: 'u1', section: '선수학습', label: '세 자리 수 × 두 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'vertical', grid: 'standard', count: 20, generator: genU1PreMul3x2 },
+  { id: 'u1_pre_add_2d', unit: 'u1', section: '선수학습', label: '두 자리 수 덧셈', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 20, generator: genU1PreAdd2d },
+  { id: 'u1_pre_sub_2d', unit: 'u1', section: '선수학습', label: '두 자리 수 뺄셈', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 20, generator: genU1PreSub2d },
+  { id: 'u1_pre_mul_2d1d', unit: 'u1', section: '선수학습', label: '두 자리 수 × 한 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 15, generator: genU1PreMul2d1d },
+  { id: 'u1_pre_div_2d1d', unit: 'u1', section: '선수학습', label: '두 자리 수 ÷ 한 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 12, generator: genU1PreDiv2d1d },
+  { id: 'u1_pre_add', unit: 'u1', section: '선수학습', label: '세 자리 수 덧셈', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 15, generator: genU1PreAdd },
+  { id: 'u1_pre_sub', unit: 'u1', section: '선수학습', label: '세 자리 수 뺄셈', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 15, generator: genU1PreSub },
+  { id: 'u1_pre_mul', unit: 'u1', section: '선수학습', label: '두 자리 수 × 두 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 12, generator: genU1PreMul },
+  { id: 'u1_pre_mul_3x2', unit: 'u1', section: '선수학습', label: '세 자리 수 × 두 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 12, generator: genU1PreMul3x2 },
   { id: 'u1_pre_div', unit: 'u1', section: '선수학습', label: '두 자리 수 나눗셈 (가로셈)', lessonRef: '선수학습', kind: 'html', grid: 'standard', count: 20, generator: genU1PreDiv },
-  { id: 'u1_pre_div_3d2', unit: 'u1', section: '선수학습', label: '세 자리 수 ÷ 두 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'longdiv', grid: 'divgrid', count: 12, generator: genDiv3d2 },
-  { id: 'u1_pre_div_3d1', unit: 'u1', section: '선수학습', label: '세 자리 수 ÷ 한 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'longdiv', grid: 'divgrid', count: 12, generator: genDiv3d1 },
+  { id: 'u1_pre_div_3d2', unit: 'u1', section: '선수학습', label: '세 자리 수 ÷ 두 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'divgrid', count: 9, generator: genDiv3d2 },
+  { id: 'u1_pre_div_3d1', unit: 'u1', section: '선수학습', label: '세 자리 수 ÷ 한 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'divgrid', count: 9, generator: genDiv3d1 },
   { id: 'u1_main_addsub', unit: 'u1', section: '본단원', label: '덧셈·뺄셈 혼합', lessonRef: '1차시 덧셈과 뺄셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubMix },
   { id: 'u1_main_muldiv', unit: 'u1', section: '본단원', label: '곱셈·나눗셈 혼합', lessonRef: '2차시 곱셈과 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMulDivMix },
   { id: 'u1_main_addsubmul', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·곱셈 혼합', lessonRef: '3차시 덧셈, 뺄셈, 곱셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubMul },
@@ -1506,61 +1502,247 @@ function buildSheetTitle(item) {
   };
 }
 
-const PLACE_NAMES = ['일', '십', '백', '천', '만'];
+const PDF_WORKSHEET_MAP = {
+  u1_pre_add_2d: 'add_2d',
+  u1_pre_add: 'add_3d',
+  u1_pre_sub_2d: 'sub_2d',
+  u1_pre_sub: 'sub_3d',
+  u1_pre_mul_2d1d: 'mul_2d1d',
+  u1_pre_mul: 'mul_2d2d',
+  u1_pre_mul_3x2: 'mul_3d2d',
+  u1_pre_div_2d1d: 'div_2d1d',
+  u1_pre_div_3d1: 'div_3d1d',
+  u1_pre_div_3d2: 'div_3d2d',
+};
 
-function splitDigits(num, totalCols) {
+const PDF_GENERATORS = {
+  add_2d() {
+    const a = rand(11, 89);
+    const b = rand(11, 99 - a);
+    return { num1: a, num2: b, op: '+', ans: a + b };
+  },
+  add_3d() {
+    const a = rand(100, 499);
+    const b = rand(100, 400);
+    return { num1: a, num2: b, op: '+', ans: a + b };
+  },
+  sub_2d() {
+    const b = rand(11, 49);
+    const a = b + rand(10, 50);
+    return { num1: a, num2: b, op: '−', ans: a - b };
+  },
+  sub_3d() {
+    const b = rand(100, 399);
+    const a = b + rand(10, 300);
+    return { num1: a, num2: b, op: '−', ans: a - b };
+  },
+  mul_2d1d() {
+    const a = rand(12, 99);
+    const b = rand(2, 9);
+    return { num1: a, num2: b, op: '×', ans: a * b };
+  },
+  mul_2d2d() {
+    const a = rand(12, 45);
+    const b = rand(11, 25);
+    return { num1: a, num2: b, op: '×', ans: a * b };
+  },
+  mul_3d2d() {
+    const a = rand(100, 399);
+    const b = rand(11, 25);
+    return { num1: a, num2: b, op: '×', ans: a * b };
+  },
+  div_2d1d() {
+    const dvsr = rand(2, 9);
+    const dvnd = rand(10, 99);
+    return { dvsr, dvnd, quot: Math.floor(dvnd / dvsr), rem: dvnd % dvsr };
+  },
+  div_3d1d() {
+    const dvsr = rand(2, 9);
+    const dvnd = rand(100, 999);
+    return { dvsr, dvnd, quot: Math.floor(dvnd / dvsr), rem: dvnd % dvsr };
+  },
+  div_3d2d() {
+    const dvsr = rand(11, 30);
+    const dvnd = rand(100, 999);
+    const quot = Math.floor(dvnd / dvsr);
+    if (quot < 10) return PDF_GENERATORS.div_3d2d();
+    return { dvsr, dvnd, quot, rem: dvnd % dvsr };
+  },
+};
+
+const PDF_LAYOUTS = {
+  add_2d:   { type: 'addsub', gridCols: 4, gridRows: 5 },
+  add_3d:   { type: 'addsub', gridCols: 3, gridRows: 5 },
+  sub_2d:   { type: 'addsub', gridCols: 4, gridRows: 5 },
+  sub_3d:   { type: 'addsub', gridCols: 3, gridRows: 5 },
+  mul_2d1d: { type: 'mul_s',  gridCols: 3, gridRows: 5 },
+  mul_2d2d: { type: 'mul_l',  gridCols: 3, gridRows: 4 },
+  mul_3d2d: { type: 'mul_l',  gridCols: 3, gridRows: 4 },
+  div_2d1d: { type: 'div',    gridCols: 3, gridRows: 4 },
+  div_3d1d: { type: 'div',    gridCols: 3, gridRows: 3 },
+  div_3d2d: { type: 'div',    gridCols: 3, gridRows: 3 },
+};
+
+function isPdfWorksheet(item) {
+  return Boolean(PDF_WORKSHEET_MAP[item.id]);
+}
+
+function getPdfOpType(item) {
+  return PDF_WORKSHEET_MAP[item.id];
+}
+
+function getPdfLimit(item) {
+  const cfg = PDF_LAYOUTS[getPdfOpType(item)];
+  return cfg.gridCols * cfg.gridRows;
+}
+
+function pdfDigits(num, cols) {
   const digits = String(Math.abs(num)).split('').map(Number);
-  while (digits.length < totalCols) digits.unshift(null);
+  while (digits.length < cols) digits.unshift(null);
   return digits;
 }
 
-function getMaxDigits(num1, num2, ans) {
-  return Math.max(
-    String(Math.abs(num1)).length,
-    String(Math.abs(num2)).length,
-    String(Math.abs(ans)).length
+function pdfCell(digit) {
+  return digit !== null ? digit : '';
+}
+
+function renderPdfAddSub(problem, idx) {
+  const cols = Math.max(
+    String(problem.num1).length,
+    String(problem.num2).length,
+    String(Math.abs(problem.ans)).length
   );
+  const d1 = pdfDigits(problem.num1, cols);
+  const d2 = pdfDigits(problem.num2, cols);
+  const da = pdfDigits(problem.ans, cols);
+
+  let rows = '';
+  rows += '<tr>' + '<td></td>' + d1.map((digit) => `<td>${pdfCell(digit)}</td>`).join('') + '</tr>';
+  rows += '<tr>' + `<td class="pdf-op-cell pdf-sep-bottom">${problem.op}</td>` + d2.map((digit) => `<td class="pdf-sep-bottom">${pdfCell(digit)}</td>`).join('') + '</tr>';
+  rows += '<tr>' + '<td></td>' + da.map((digit) => `<td class="ans-digit">${pdfCell(digit)}</td>`).join('') + '</tr>';
+
+  return `<div class="problem-item"><div class="problem-num">${idx}</div><table class="pdf-grid-table">${rows}</table></div>`;
 }
 
-function getPlaceHeaders(totalCols) {
-  return PLACE_NAMES.slice(0, totalCols).reverse();
+function renderPdfMulShort(problem, idx) {
+  const cols = Math.max(
+    String(problem.num1).length,
+    String(problem.num2).length,
+    String(problem.ans).length
+  );
+  const d1 = pdfDigits(problem.num1, cols);
+  const d2 = pdfDigits(problem.num2, cols);
+  const da = pdfDigits(problem.ans, cols);
+
+  let rows = '';
+  rows += '<tr>' + '<td></td>' + d1.map((digit) => `<td>${pdfCell(digit)}</td>`).join('') + '</tr>';
+  rows += '<tr>' + '<td class="pdf-op-cell pdf-sep-bottom">×</td>' + d2.map((digit) => `<td class="pdf-sep-bottom">${pdfCell(digit)}</td>`).join('') + '</tr>';
+  rows += '<tr>' + '<td></td>' + da.map((digit) => `<td class="ans-digit">${pdfCell(digit)}</td>`).join('') + '</tr>';
+
+  return `<div class="problem-item"><div class="problem-num">${idx}</div><table class="pdf-grid-table">${rows}</table></div>`;
 }
 
-function renderGridPattern(problem, idx) {
-  const num = `<div class="problem-num">${idx}</div>`;
-  const maxDigits = getMaxDigits(problem.num1, problem.num2, problem.ans);
-  const headers = getPlaceHeaders(maxDigits);
-  const d1 = splitDigits(problem.num1, maxDigits);
-  const d2 = splitDigits(problem.num2, maxDigits);
-  const dAns = splitDigits(problem.ans, maxDigits);
+function renderPdfMulLong(problem, idx) {
+  const ones = problem.num2 % 10;
+  const tens = Math.floor(problem.num2 / 10);
+  const partial1 = problem.num1 * ones;
+  const partial2 = problem.num1 * tens;
+  const cols = Math.max(
+    String(problem.num1).length,
+    String(problem.num2).length,
+    String(partial1).length,
+    String(partial2).length + 1,
+    String(problem.ans).length
+  );
 
-  const headerRow = `<tr class="grid-header-row">
-    <td class="grid-op-cell"></td>
-    ${headers.map(h => `<td class="grid-header-cell">${h}</td>`).join('')}
-  </tr>`;
+  const d1 = pdfDigits(problem.num1, cols);
+  const d2 = pdfDigits(problem.num2, cols);
+  const dp1 = pdfDigits(partial1, cols);
+  const dp2 = [];
+  const p2Digits = String(partial2).split('').map(Number);
+  while (dp2.length + p2Digits.length + 1 < cols) dp2.push(null);
+  dp2.push(...p2Digits);
+  dp2.push(null);
+  const da = pdfDigits(problem.ans, cols);
 
-  const num1Row = `<tr class="grid-num1-row">
-    <td class="grid-op-cell"></td>
-    ${d1.map(d => `<td class="grid-digit-cell">${d !== null ? d : ''}</td>`).join('')}
-  </tr>`;
+  let rows = '';
+  rows += '<tr>' + '<td></td>' + d1.map((digit) => `<td>${pdfCell(digit)}</td>`).join('') + '</tr>';
+  rows += '<tr>' + '<td class="pdf-op-cell pdf-sep-bottom">×</td>' + d2.map((digit) => `<td class="pdf-sep-bottom">${pdfCell(digit)}</td>`).join('') + '</tr>';
+  rows += '<tr>' + '<td></td>' + dp1.map((digit) => `<td class="ans-digit">${pdfCell(digit)}</td>`).join('') + '</tr>';
+  rows += '<tr>' + '<td class="pdf-sep-bottom"></td>' + dp2.map((digit) => `<td class="ans-digit pdf-sep-bottom">${pdfCell(digit)}</td>`).join('') + '</tr>';
+  rows += '<tr>' + '<td></td>' + da.map((digit) => `<td class="ans-digit">${pdfCell(digit)}</td>`).join('') + '</tr>';
 
-  const num2Row = `<tr class="grid-num2-row">
-    <td class="grid-op-cell grid-operator">${problem.op}</td>
-    ${d2.map(d => `<td class="grid-digit-cell">${d !== null ? d : ''}</td>`).join('')}
-  </tr>`;
+  return `<div class="problem-item"><div class="problem-num">${idx}</div><table class="pdf-grid-table">${rows}</table></div>`;
+}
 
-  const ansRow = `<tr class="grid-ans-row">
-    <td class="grid-op-cell"></td>
-    ${dAns.map(d => `<td class="grid-digit-cell grid-ans-digit" data-ans="${d !== null ? d : ''}">${d !== null ? d : ''}</td>`).join('')}
-  </tr>`;
+function simulatePdfDivision(dvsr, dvnd) {
+  const digits = String(dvnd);
+  const steps = [];
+  let current = 0;
+  let started = false;
 
-  return `<div class="problem-item">${num}
-    <div class="calc-wrapper">
-      <table class="grid-calc-table">
-        ${headerRow}${num1Row}${num2Row}${ansRow}
-      </table>
-    </div>
-  </div>`;
+  for (let i = 0; i < digits.length; i++) {
+    current = (current * 10) + parseInt(digits[i], 10);
+    const quotientDigit = Math.floor(current / dvsr);
+    if (quotientDigit > 0 || started) {
+      started = true;
+      const sub = quotientDigit * dvsr;
+      steps.push({ sub, rem: current - sub });
+      current -= sub;
+    }
+  }
+
+  return steps;
+}
+
+function renderPdfDiv(problem, idx) {
+  const divisorCols = String(problem.dvsr).length;
+  const workCols = String(problem.dvnd).length;
+  const quotientDigits = pdfDigits(problem.quot, workCols);
+  const divisorDigits = pdfDigits(problem.dvsr, divisorCols);
+  const dividendDigits = pdfDigits(problem.dvnd, workCols);
+  const steps = simulatePdfDivision(problem.dvsr, problem.dvnd);
+  const workRowCount = Math.max(steps.length, 1);
+
+  let html = '<tr>';
+  for (let c = 0; c < divisorCols; c++) html += '<td></td>';
+  for (let c = 0; c < workCols; c++) html += `<td class="pdf-b pdf-quot-border ans-digit">${pdfCell(quotientDigits[c])}</td>`;
+  html += '</tr>';
+
+  html += '<tr>';
+  for (let c = 0; c < divisorCols; c++) {
+    const cls = c === divisorCols - 1 ? 'pdf-dvsr-border' : '';
+    html += `<td class="${cls}">${pdfCell(divisorDigits[c])}</td>`;
+  }
+  for (let c = 0; c < workCols; c++) html += `<td class="pdf-b">${pdfCell(dividendDigits[c])}</td>`;
+  html += '</tr>';
+
+  for (let row = 0; row < workRowCount; row++) {
+    html += '<tr>';
+    for (let c = 0; c < divisorCols; c++) html += '<td></td>';
+    for (let c = 0; c < workCols; c++) html += '<td class="pdf-b"></td>';
+    html += '</tr>';
+
+    html += '<tr>';
+    for (let c = 0; c < divisorCols; c++) html += '<td></td>';
+    for (let c = 0; c < workCols; c++) html += '<td class="pdf-b" style="border-top:2.5px solid #2f3640;"></td>';
+    html += '</tr>';
+  }
+
+  html += '<tr>';
+  for (let c = 0; c < divisorCols; c++) html += '<td></td>';
+  for (let c = 0; c < workCols; c++) html += '<td class="pdf-b"></td>';
+  html += '</tr>';
+
+  return `<div class="problem-item"><div class="problem-num">${idx}</div><table class="pdf-div-table">${html}</table></div>`;
+}
+
+function renderPdfProblem(opType, problem, idx) {
+  const type = PDF_LAYOUTS[opType].type;
+  if (type === 'addsub') return renderPdfAddSub(problem, idx);
+  if (type === 'mul_s') return renderPdfMulShort(problem, idx);
+  if (type === 'mul_l') return renderPdfMulLong(problem, idx);
+  return renderPdfDiv(problem, idx);
 }
 
 function renderItem(problem, idx) {
@@ -1600,6 +1782,41 @@ function renderItem(problem, idx) {
 const GRID_COLS = { standard: 4, practice: 3, dense: 4, divgrid: 3, concept: 2, wide: 2 };
 
 function createSheet(item, countOverride) {
+  if (isPdfWorksheet(item)) {
+    const opType = getPdfOpType(item);
+    const cfg = PDF_LAYOUTS[opType];
+    const count = countOverride || item.count;
+    const sheet = document.createElement('div');
+    sheet.className = 'sheet';
+
+    const titleWrap = document.createElement('div');
+    titleWrap.className = 'sheet-title';
+
+    const title = buildSheetTitle(item);
+    const main = document.createElement('div');
+    main.className = 'sheet-title-main';
+    main.textContent = title.main;
+    const sub = document.createElement('div');
+    sub.className = 'sheet-title-sub';
+    sub.textContent = title.sub;
+    titleWrap.appendChild(main);
+    titleWrap.appendChild(sub);
+    sheet.appendChild(titleWrap);
+
+    const grid = document.createElement('div');
+    grid.className = 'problem-grid';
+    grid.style.gridTemplateColumns = `repeat(${cfg.gridCols}, 1fr)`;
+    grid.style.gridTemplateRows = `repeat(${Math.ceil(count / cfg.gridCols)}, 1fr)`;
+
+    for (let i = 1; i <= count; i++) {
+      const problem = PDF_GENERATORS[opType]();
+      grid.insertAdjacentHTML('beforeend', renderPdfProblem(opType, problem, i));
+    }
+
+    sheet.appendChild(grid);
+    return sheet;
+  }
+
   const count = countOverride || item.count;
   const sheet = document.createElement('div');
   sheet.className = 'sheet';
@@ -1625,11 +1842,9 @@ function createSheet(item, countOverride) {
   const rows = Math.ceil(count / cols);
   grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-  const useGrid = document.getElementById('gridPattern')?.checked && item.kind === 'vertical';
-
   for (let i = 1; i <= count; i++) {
     const problem = item.generator();
-    grid.insertAdjacentHTML('beforeend', useGrid ? renderGridPattern(problem, i) : renderItem(problem, i));
+    grid.insertAdjacentHTML('beforeend', renderItem(problem, i));
   }
 
   sheet.appendChild(grid);
@@ -1660,8 +1875,6 @@ function updateSelectedMeta() {
   section.textContent = `${UNIT_META[item.unit].short} · ${item.section}`;
   lesson.textContent = `교과 차시: ${item.lessonRef}`;
   document.getElementById('problemCount').placeholder = item.count;
-  document.getElementById('gridPatternGroup').style.display =
-    item.kind === 'vertical' ? '' : 'none';
 }
 
 let answerShown = false;
@@ -1673,10 +1886,12 @@ function generate(mode) {
   const item = catalogMap[worksheetId];
 
   const customCount = parseInt(document.getElementById('problemCount').value, 10);
-  const effectiveCount = (customCount > 0) ? Math.min(40, customCount) : item.count;
+  const maxCount = isPdfWorksheet(item) ? getPdfLimit(item) : 40;
+  const effectiveCount = (customCount > 0) ? Math.min(maxCount, customCount) : item.count;
 
   const fontScale = document.getElementById('fontScale').value;
   container.style.setProperty('--font-scale', fontScale);
+  container.style.setProperty('--pdf-scale', fontScale);
 
   if (mode === 'replace') container.innerHTML = '';
 
@@ -1705,11 +1920,9 @@ document.getElementById('worksheetSelect').addEventListener('change', () => {
 
 document.getElementById('fontScale').addEventListener('change', () => {
   const container = document.getElementById('sheets-container');
-  container.style.setProperty('--font-scale', document.getElementById('fontScale').value);
-});
-
-document.getElementById('gridPattern').addEventListener('change', () => {
-  generate('replace');
+  const scale = document.getElementById('fontScale').value;
+  container.style.setProperty('--font-scale', scale);
+  container.style.setProperty('--pdf-scale', scale);
 });
 
 populateUnitSelect();
