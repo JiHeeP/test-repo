@@ -898,6 +898,22 @@ function genU1PreDiv2d1d() {
   return horizProblem(`${a} ÷ ${b}`, numBlank(q));
 }
 
+function genU1PreDiv2d1dNoRem() {
+  const b = rand(2, 9);
+  const q = rand(3, Math.floor(99 / b));
+  const a = b * q;
+  return { kind: 'vertical', dvsr: b, dvnd: a, quot: q, rem: 0 };
+}
+
+function genU1PreDiv2d1dRem() {
+  const b = rand(2, 9);
+  const q = rand(3, Math.floor((99 - b + 1) / b));
+  const r = rand(1, b - 1);
+  const a = b * q + r;
+  if (a > 99) return genU1PreDiv2d1dRem();
+  return { kind: 'vertical', dvsr: b, dvnd: a, quot: q, rem: r };
+}
+
 function genU1PreAdd() {
   const a = rand(100, 499);
   const b = rand(100, 400);
@@ -1444,6 +1460,8 @@ const WORKSHEET_CATALOG = [
   { id: 'u1_pre_sub_2d', unit: 'u1', section: '선수학습', label: '두 자리 수 뺄셈', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 20, generator: genU1PreSub2d },
   { id: 'u1_pre_mul_2d1d', unit: 'u1', section: '선수학습', label: '두 자리 수 × 한 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 15, generator: genU1PreMul2d1d },
   { id: 'u1_pre_div_2d1d', unit: 'u1', section: '선수학습', label: '두 자리 수 ÷ 한 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 12, generator: genU1PreDiv2d1d },
+  { id: 'u1_pre_div_2d1d_norem', unit: 'u1', section: '선수학습', label: '두 자리 수 ÷ 한 자리 수 (나머지 없음)', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 12, generator: genU1PreDiv2d1dNoRem },
+  { id: 'u1_pre_div_2d1d_rem', unit: 'u1', section: '선수학습', label: '두 자리 수 ÷ 한 자리 수 (나머지 있음)', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 12, generator: genU1PreDiv2d1dRem },
   { id: 'u1_pre_add', unit: 'u1', section: '선수학습', label: '세 자리 수 덧셈', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 15, generator: genU1PreAdd },
   { id: 'u1_pre_sub', unit: 'u1', section: '선수학습', label: '세 자리 수 뺄셈', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 15, generator: genU1PreSub },
   { id: 'u1_pre_mul', unit: 'u1', section: '선수학습', label: '두 자리 수 × 두 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'standard', count: 12, generator: genU1PreMul },
@@ -1528,6 +1546,8 @@ const PDF_WORKSHEET_MAP = {
   u1_pre_mul: 'mul_2d2d',
   u1_pre_mul_3x2: 'mul_3d2d',
   u1_pre_div_2d1d: 'div_2d1d',
+  u1_pre_div_2d1d_norem: 'div_2d1d_norem',
+  u1_pre_div_2d1d_rem: 'div_2d1d_rem',
   u1_pre_div_3d1: 'div_3d1d',
   u1_pre_div_3d2: 'div_3d2d',
 };
@@ -1573,6 +1593,20 @@ const PDF_GENERATORS = {
     const dvnd = rand(10, 99);
     return { dvsr, dvnd, quot: Math.floor(dvnd / dvsr), rem: dvnd % dvsr };
   },
+  div_2d1d_norem() {
+    const dvsr = rand(2, 9);
+    const q = rand(3, Math.floor(99 / dvsr));
+    const dvnd = dvsr * q;
+    return { dvsr, dvnd, quot: q, rem: 0 };
+  },
+  div_2d1d_rem() {
+    const dvsr = rand(2, 9);
+    const q = rand(3, Math.floor((99 - dvsr + 1) / dvsr));
+    const r = rand(1, dvsr - 1);
+    const dvnd = dvsr * q + r;
+    if (dvnd > 99) return PDF_GENERATORS.div_2d1d_rem();
+    return { dvsr, dvnd, quot: q, rem: r };
+  },
   div_3d1d() {
     const dvsr = rand(2, 9);
     const dvnd = rand(100, 999);
@@ -1598,6 +1632,8 @@ const PDF_LAYOUTS = {
   mul_2d2d: { type: 'mul_l',  minCols: 2, maxCols: 3, maxRows: 4, targetCellAspect: 0.62, minCellWidth: 34, minCellHeight: 48, baseGap: [10, 8] },
   mul_3d2d: { type: 'mul_l',  minCols: 2, maxCols: 3, maxRows: 4, targetCellAspect: 0.58, minCellWidth: 36, minCellHeight: 48, baseGap: [10, 8] },
   div_2d1d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 4, targetCellAspect: 0.72, minCellWidth: 38, minCellHeight: 48, baseGap: [10, 8] },
+  div_2d1d_norem: { type: 'div', minCols: 2, maxCols: 3, maxRows: 4, targetCellAspect: 0.72, minCellWidth: 38, minCellHeight: 48, baseGap: [10, 8] },
+  div_2d1d_rem: { type: 'div', minCols: 2, maxCols: 3, maxRows: 4, targetCellAspect: 0.72, minCellWidth: 38, minCellHeight: 48, baseGap: [10, 8] },
   div_3d1d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 3, targetCellAspect: 0.78, minCellWidth: 40, minCellHeight: 58, baseGap: [10, 8] },
   div_3d2d: { type: 'div',    minCols: 2, maxCols: 3, maxRows: 3, targetCellAspect: 0.78, minCellWidth: 42, minCellHeight: 58, baseGap: [10, 8] },
 };
