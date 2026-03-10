@@ -1038,8 +1038,8 @@ function genU2MainFactorConcept() {
 
 function genU2MainMultipleConcept() {
   const n = rand(3, 9);
-  const answer = multiplesOf(n, 4).join(', ');
-  return conceptProblem(`${n}의 배수를 작은 수부터 네 개 써 보세요.`, textBlank(answer, 135), `${n}씩 커지는 수를 찾으면 됩니다.`);
+  const answer = multiplesOf(n, 5).join(', ');
+  return conceptProblem(`${n}의 배수를 작은 수부터 다섯 개 써 보세요.`, textBlank(answer, 150), `${n}씩 커지는 수를 찾으면 됩니다.`);
 }
 
 function genU2MainCommonFactorConcept() {
@@ -1065,8 +1065,8 @@ function genU2MainCommonMultipleConcept() {
   const a = rand(2, 7);
   const b = rand(2, 7);
   const base = lcm(a, b);
-  const answer = [base, base * 2, base * 3].join(', ');
-  return conceptProblem(`${a}와 ${b}의 공배수 중 작은 수부터 세 개 써 보세요.`, textBlank(answer, 150), '최소공배수의 배수를 이용하면 쉽게 찾을 수 있습니다.');
+  const answer = [base, base * 2, base * 3, base * 4, base * 5].join(', ');
+  return conceptProblem(`${a}와 ${b}의 공배수 중 작은 수부터 다섯 개 써 보세요.`, textBlank(answer, 190), '최소공배수의 배수를 이용하면 쉽게 찾을 수 있습니다.');
 }
 
 function genU2MainLcm() {
@@ -1175,6 +1175,26 @@ function genU4MainEquivMake() {
   return htmlProblem('frac-row', `${fracD(num, den)} <span class="eq-txt">=</span> <span class="frac-blank"><span class="fb-top">${num * multiplier}</span><span class="fb-line"></span><span class="fb-bot" data-ans="${den * multiplier}">${den * multiplier}</span></span>`);
 }
 
+function genU4MainRedProcess() {
+  let n;
+  let d;
+  let g;
+  do {
+    g = rand(2, 6);
+    n = rand(1, 7);
+    d = rand(n + 1, 9);
+  } while (gcd(n, d) > 1);
+  const num = n * g;
+  const den = d * g;
+  return htmlProblem('concept-layout', `
+    <div class="concept-card">
+      <div class="concept-question">${fracD(num, den)} 를 약분해 보세요.</div>
+      <div class="concept-answer">${fracD(`${num} ÷ ${g}`, `${den} ÷ ${g}`)} <span class="eq-txt">=</span> ${fracBlank(n, d)}</div>
+      <div class="small-note">분자와 분모를 같은 수로 나눕니다.</div>
+    </div>
+  `);
+}
+
 function genU4MainRed() {
   let n;
   let d;
@@ -1185,6 +1205,30 @@ function genU4MainRed() {
     d = rand(n + 1, 9);
   } while (gcd(n, d) > 1);
   return htmlProblem('frac-row', `${fracD(n * g, d * g)} <span class="eq-txt">=</span> ${fracBlank(n, d)}`);
+}
+
+function genU4MainLcdProcess() {
+  let d1;
+  let d2;
+  do {
+    d1 = rand(2, 6);
+    d2 = rand(2, 6);
+  } while (d1 === d2);
+
+  const n1 = rand(1, d1 - 1);
+  const n2 = rand(1, d2 - 1);
+  const common = lcm(d1, d2);
+  const m1 = common / d1;
+  const m2 = common / d2;
+
+  return htmlProblem('concept-layout', `
+    <div class="concept-card">
+      <div class="concept-question">${fracD(n1, d1)} 와 ${fracD(n2, d2)} 를 통분해 보세요.</div>
+      <div class="concept-answer">${fracD(`${n1} × ${m1}`, `${d1} × ${m1}`)} <span class="eq-txt">=</span> ${fracBlank(n1 * m1, common)}</div>
+      <div class="concept-answer">${fracD(`${n2} × ${m2}`, `${d2} × ${m2}`)} <span class="eq-txt">=</span> ${fracBlank(n2 * m2, common)}</div>
+      <div class="small-note">같은 분모를 만들기 위해 분자와 분모에 같은 수를 곱합니다.</div>
+    </div>
+  `);
 }
 
 function genU4MainLcd() {
@@ -1495,7 +1539,9 @@ const WORKSHEET_CATALOG = [
   { id: 'u4_pre_conv', unit: 'u4', section: '선수학습', label: '가분수 → 대분수 변환', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU4PreConv },
   { id: 'u4_main_equiv_find', unit: 'u4', section: '본단원', label: '크기가 같은 분수 찾기', lessonRef: '1차시 크기가 같은 분수 알아보기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainEquivFind },
   { id: 'u4_main_equiv_make', unit: 'u4', section: '본단원', label: '크기가 같은 분수 만들기', lessonRef: '2차시 크기가 같은 분수를 만드는 방법 알아보기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainEquivMake },
+  { id: 'u4_main_red_process', unit: 'u4', section: '본단원', label: '약분 (과정 연습)', lessonRef: '3차시 약분 알아보기', kind: 'html', grid: 'concept', count: 8, generator: genU4MainRedProcess },
   { id: 'u4_main_red', unit: 'u4', section: '본단원', label: '약분', lessonRef: '3차시 약분 알아보기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainRed },
+  { id: 'u4_main_lcd_process', unit: 'u4', section: '본단원', label: '통분 (과정 연습)', lessonRef: '4차시 통분 알아보기', kind: 'html', grid: 'concept', count: 8, generator: genU4MainLcdProcess },
   { id: 'u4_main_lcd', unit: 'u4', section: '본단원', label: '통분', lessonRef: '4차시 통분 알아보기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainLcd },
   { id: 'u4_main_cmp', unit: 'u4', section: '본단원', label: '분수 크기 비교', lessonRef: '5차시 분수의 크기 비교하기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainCmp },
   { id: 'u4_main_dec_cmp', unit: 'u4', section: '본단원', label: '분수와 소수 크기 비교', lessonRef: '6차시 분수와 소수의 크기 비교하기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainDecCmp },
@@ -1655,6 +1701,11 @@ const THREE_PLUS_HORIZONTAL_IDS = new Set([
   'u1_main_mix',
 ]);
 
+const TWO_COLUMN_WORKSHEET_IDS = new Set([
+  'u4_main_red_process',
+  'u4_main_lcd_process',
+]);
+
 function isPdfWorksheet(item) {
   return Boolean(PDF_WORKSHEET_MAP[item.id]);
 }
@@ -1680,6 +1731,17 @@ function getWorksheetLimit(item) {
 function getHtmlLayoutConfig(item) {
   const base = GRID_LAYOUTS[item.grid];
   if (!base) return null;
+
+  if (TWO_COLUMN_WORKSHEET_IDS.has(item.id)) {
+    return {
+      ...base,
+      minCols: 2,
+      maxCols: 2,
+      widthPriority: 1.5,
+      minCellWidth: Math.max(base.minCellWidth || 0, 76),
+    };
+  }
+
   if (!THREE_PLUS_HORIZONTAL_IDS.has(item.id)) return base;
   return {
     ...base,
