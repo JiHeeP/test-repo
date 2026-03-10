@@ -1184,13 +1184,13 @@ function genU4MainRedProcess() {
     n = rand(1, 7);
     d = rand(n + 1, 9);
   } while (gcd(n, d) > 1);
+
   const num = n * g;
   const den = d * g;
+
   return htmlProblem('concept-layout', `
     <div class="concept-card">
-      <div class="concept-question">${fracD(num, den)} 를 약분해 보세요.</div>
-      <div class="concept-answer">${fracD(`${num} ÷ ${g}`, `${den} ÷ ${g}`)} <span class="eq-txt">=</span> ${fracBlank(n, d)}</div>
-      <div class="small-note">분자와 분모를 같은 수로 나눕니다.</div>
+      <div class="concept-answer">${fracD(num, den)} <span class="eq-txt">=</span> ${fracD(`${num} ÷ ${numBlank(g)}`, `${den} ÷ ${numBlank(g)}`)} <span class="eq-txt">=</span> ${fracBlank(n, d)}</div>
     </div>
   `);
 }
@@ -1223,10 +1223,8 @@ function genU4MainLcdProcess() {
 
   return htmlProblem('concept-layout', `
     <div class="concept-card">
-      <div class="concept-question">${fracD(n1, d1)} 와 ${fracD(n2, d2)} 를 통분해 보세요.</div>
-      <div class="concept-answer">${fracD(`${n1} × ${m1}`, `${d1} × ${m1}`)} <span class="eq-txt">=</span> ${fracBlank(n1 * m1, common)}</div>
-      <div class="concept-answer">${fracD(`${n2} × ${m2}`, `${d2} × ${m2}`)} <span class="eq-txt">=</span> ${fracBlank(n2 * m2, common)}</div>
-      <div class="small-note">같은 분모를 만들기 위해 분자와 분모에 같은 수를 곱합니다.</div>
+      <div class="concept-answer">${fracD(n1, d1)} <span class="eq-txt">=</span> ${fracD(`${n1} × ${numBlank(m1)}`, `${d1} × ${numBlank(m1)}`)} <span class="eq-txt">=</span> ${fracBlank(n1 * m1, common)}</div>
+      <div class="concept-answer">${fracD(n2, d2)} <span class="eq-txt">=</span> ${fracD(`${n2} × ${numBlank(m2)}`, `${d2} × ${numBlank(m2)}`)} <span class="eq-txt">=</span> ${fracBlank(n2 * m2, common)}</div>
     </div>
   `);
 }
