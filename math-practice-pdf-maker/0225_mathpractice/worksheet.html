@@ -392,6 +392,16 @@
       padding-left: 10px;
     }
 
+    .frac-step-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      flex-wrap: wrap;
+      font-size: calc(15px * var(--font-scale, 1));
+      line-height: 1.6;
+    }
+
     .frac-d {
       display: inline-flex;
       flex-direction: column;
@@ -1755,21 +1765,159 @@ function genU5PreSub() {
   return htmlProblem('frac-row', `${fracD(a, d)} <span class="op-txt">−</span> ${fracD(b, d)} <span class="eq-txt">=</span> ${formulaResultHtml(a - b, d)}`);
 }
 
-function lcdProcessHtml(n1, d1, n2, d2) {
+/* ── U5 inline step-by-step expansion helpers ── */
+
+function fracExpand(n, d, m) {
+  return fracD(`${n} × ${numBlank(m)}`, `${d} × ${numBlank(m)}`);
+}
+
+function inlineFracAdd(n1, d1, n2, d2) {
   const common = lcm(d1, d2);
   const m1 = common / d1;
   const m2 = common / d2;
-  return `<div class="lcd-process-row"><span class="lcd-label">통분</span> ${fracD(n1, d1)} <span class="eq-txt">=</span> ${fracBlank(n1 * m1, common)} <span class="op-txt">,</span> ${fracD(n2, d2)} <span class="eq-txt">=</span> ${fracBlank(n2 * m2, common)}</div>`;
+  const cn1 = n1 * m1;
+  const cn2 = n2 * m2;
+  const total = cn1 + cn2;
+  let steps = `${fracD(n1, d1)} <span class="op-txt">+</span> ${fracD(n2, d2)}`;
+  if (m1 !== 1 || m2 !== 1) {
+    steps += ` <span class="eq-txt">=</span> ${fracExpand(n1, d1, m1)} <span class="op-txt">+</span> ${fracExpand(n2, d2, m2)}`;
+    steps += ` <span class="eq-txt">=</span> ${fracD(numBlank(cn1), common)} <span class="op-txt">+</span> ${fracD(numBlank(cn2), common)}`;
+  }
+  steps += ` <span class="eq-txt">=</span> ${formulaResultHtml(total, common)}`;
+  return steps;
 }
 
-function fracOpWithLcd(left, op, right, resultHtml, n1, d1, n2, d2) {
+function inlineFracSub(n1, d1, n2, d2) {
+  const common = lcm(d1, d2);
+  const m1 = common / d1;
+  const m2 = common / d2;
+  const cn1 = n1 * m1;
+  const cn2 = n2 * m2;
+  const diff = cn1 - cn2;
+  let steps = `${fracD(n1, d1)} <span class="op-txt">−</span> ${fracD(n2, d2)}`;
+  if (m1 !== 1 || m2 !== 1) {
+    steps += ` <span class="eq-txt">=</span> ${fracExpand(n1, d1, m1)} <span class="op-txt">−</span> ${fracExpand(n2, d2, m2)}`;
+    steps += ` <span class="eq-txt">=</span> ${fracD(numBlank(cn1), common)} <span class="op-txt">−</span> ${fracD(numBlank(cn2), common)}`;
+  }
+  steps += ` <span class="eq-txt">=</span> ${formulaResultHtml(diff, common)}`;
+  return steps;
+}
+
+function inlineMixedAddImproper(w1, n1, d1, w2, n2, d2) {
+  const imp1 = w1 * d1 + n1;
+  const imp2 = w2 * d2 + n2;
+  const common = lcm(d1, d2);
+  const m1 = common / d1;
+  const m2 = common / d2;
+  const cn1 = imp1 * m1;
+  const cn2 = imp2 * m2;
+  const total = cn1 + cn2;
+  let steps = `${mixedD(w1, n1, d1)} <span class="op-txt">+</span> ${mixedD(w2, n2, d2)}`;
+  steps += ` <span class="eq-txt">=</span> ${fracD(numBlank(imp1), d1)} <span class="op-txt">+</span> ${fracD(numBlank(imp2), d2)}`;
+  if (m1 !== 1 || m2 !== 1) {
+    steps += ` <span class="eq-txt">=</span> ${fracD(numBlank(cn1), common)} <span class="op-txt">+</span> ${fracD(numBlank(cn2), common)}`;
+  }
+  steps += ` <span class="eq-txt">=</span> ${formulaResultHtml(total, common)}`;
+  return steps;
+}
+
+function inlineMixedAddSeparate(w1, n1, d1, w2, n2, d2) {
+  const common = lcm(d1, d2);
+  const m1 = common / d1;
+  const m2 = common / d2;
+  const cn1 = n1 * m1;
+  const cn2 = n2 * m2;
+  const fracSum = cn1 + cn2;
+  const wholeSum = w1 + w2;
+  let steps = `${mixedD(w1, n1, d1)} <span class="op-txt">+</span> ${mixedD(w2, n2, d2)}`;
+  steps += ` <span class="eq-txt">=</span> (${numBlank(w1)} + ${numBlank(w2)}) + (${fracExpand(n1, d1, m1)} <span class="op-txt">+</span> ${fracExpand(n2, d2, m2)})`;
+  steps += ` <span class="eq-txt">=</span> ${numBlank(wholeSum)} + ${fracD(numBlank(fracSum), common)}`;
+  if (fracSum >= common) {
+    const extraWhole = Math.floor(fracSum / common);
+    const remain = fracSum % common;
+    const finalWhole = wholeSum + extraWhole;
+    if (remain === 0) {
+      steps += ` <span class="eq-txt">=</span> ${numBlank(finalWhole)}`;
+    } else {
+      const [sn, sd] = simplify(remain, common);
+      steps += ` <span class="eq-txt">=</span> ${mixedBlank(finalWhole, sn, sd)}`;
+    }
+  } else {
+    const [sn, sd] = simplify(fracSum, common);
+    steps += ` <span class="eq-txt">=</span> ${mixedBlank(wholeSum, sn, sd)}`;
+  }
+  return steps;
+}
+
+function inlineMixedSubImproper(w1, n1, d1, w2, n2, d2) {
+  const imp1 = w1 * d1 + n1;
+  const imp2 = w2 * d2 + n2;
+  const common = lcm(d1, d2);
+  const m1 = common / d1;
+  const m2 = common / d2;
+  const cn1 = imp1 * m1;
+  const cn2 = imp2 * m2;
+  const diff = cn1 - cn2;
+  let steps = `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)}`;
+  steps += ` <span class="eq-txt">=</span> ${fracD(numBlank(imp1), d1)} <span class="op-txt">−</span> ${fracD(numBlank(imp2), d2)}`;
+  if (m1 !== 1 || m2 !== 1) {
+    steps += ` <span class="eq-txt">=</span> ${fracD(numBlank(cn1), common)} <span class="op-txt">−</span> ${fracD(numBlank(cn2), common)}`;
+  }
+  steps += ` <span class="eq-txt">=</span> ${formulaResultHtml(diff, common)}`;
+  return steps;
+}
+
+function inlineMixedSubSeparate(w1, n1, d1, w2, n2, d2) {
+  const common = lcm(d1, d2);
+  const m1 = common / d1;
+  const m2 = common / d2;
+  const cn1 = n1 * m1;
+  const cn2 = n2 * m2;
+  let steps = `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)}`;
+  if (cn1 >= cn2) {
+    const fracDiff = cn1 - cn2;
+    const wholeDiff = w1 - w2;
+    steps += ` <span class="eq-txt">=</span> (${numBlank(w1)} − ${numBlank(w2)}) + (${fracExpand(n1, d1, m1)} <span class="op-txt">−</span> ${fracExpand(n2, d2, m2)})`;
+    steps += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)} + ${fracD(numBlank(fracDiff), common)}`;
+    if (fracDiff === 0) {
+      steps += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)}`;
+    } else {
+      const [sn, sd] = simplify(fracDiff, common);
+      if (wholeDiff === 0) {
+        steps += ` <span class="eq-txt">=</span> ${fracBlank(sn, sd)}`;
+      } else {
+        steps += ` <span class="eq-txt">=</span> ${mixedBlank(wholeDiff, sn, sd)}`;
+      }
+    }
+  } else {
+    const borrowedN1 = cn1 + common;
+    const fracDiff = borrowedN1 - cn2;
+    const wholeDiff = w1 - w2 - 1;
+    steps += ` <span class="eq-txt">=</span> (${numBlank(w1 - 1)} − ${numBlank(w2)}) + (${fracD(numBlank(borrowedN1), common)} <span class="op-txt">−</span> ${fracD(numBlank(cn2), common)})`;
+    steps += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)} + ${fracD(numBlank(fracDiff), common)}`;
+    if (fracDiff === 0) {
+      steps += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)}`;
+    } else {
+      const [sn, sd] = simplify(fracDiff, common);
+      if (wholeDiff === 0) {
+        steps += ` <span class="eq-txt">=</span> ${fracBlank(sn, sd)}`;
+      } else {
+        steps += ` <span class="eq-txt">=</span> ${mixedBlank(wholeDiff, sn, sd)}`;
+      }
+    }
+  }
+  return steps;
+}
+
+function fracStepProblem(stepsHtml) {
   return htmlProblem('concept-layout', `
-    <div class="concept-card frac-two-col">
-      <div class="frac-col-left"><div class="concept-answer">${left} <span class="op-txt">${op}</span> ${right} <span class="eq-txt">=</span> ${resultHtml}</div></div>
-      <div class="frac-col-right">${lcdProcessHtml(n1, d1, n2, d2)}</div>
+    <div class="concept-card">
+      <div class="concept-answer frac-step-flow">${stepsHtml}</div>
     </div>
   `);
 }
+
+/* ── U5 generators (진분수) ── */
 
 function genU5MainAdd() {
   let d1, d2, n1, n2, total, common;
@@ -1781,7 +1929,7 @@ function genU5MainAdd() {
     common = lcm(d1, d2);
     total = (n1 * (common / d1)) + (n2 * (common / d2));
   } while (total >= common || d1 === d2);
-  return fracOpWithLcd(fracD(n1, d1), '+', fracD(n2, d2), formulaResultHtml(total, common), n1, d1, n2, d2);
+  return fracStepProblem(inlineFracAdd(n1, d1, n2, d2));
 }
 
 function genU5MainAddGe1() {
@@ -1794,22 +1942,7 @@ function genU5MainAddGe1() {
     common = lcm(d1, d2);
     total = (n1 * (common / d1)) + (n2 * (common / d2));
   } while (total < common || d1 === d2);
-  return fracOpWithLcd(fracD(n1, d1), '+', fracD(n2, d2), formulaResultHtml(total, common), n1, d1, n2, d2);
-}
-
-function genU5MainMixedAdd() {
-  let d1, d2;
-  do {
-    d1 = rand(2, 5);
-    d2 = rand(2, 5);
-  } while (d1 === d2);
-  const w1 = rand(1, 3);
-  const w2 = rand(1, 3);
-  const n1 = rand(1, d1 - 1);
-  const n2 = rand(1, d2 - 1);
-  const common = lcm(d1, d2);
-  const total = ((w1 * d1) + n1) * (common / d1) + (((w2 * d2) + n2) * (common / d2));
-  return fracOpWithLcd(mixedD(w1, n1, d1), '+', mixedD(w2, n2, d2), formulaResultHtml(total, common), n1, d1, n2, d2);
+  return fracStepProblem(inlineFracAdd(n1, d1, n2, d2));
 }
 
 function genU5MainSub() {
@@ -1822,10 +1955,52 @@ function genU5MainSub() {
     common = lcm(d1, d2);
     diff = (n1 * (common / d1)) - (n2 * (common / d2));
   } while (diff <= 0 || d1 === d2);
-  return fracOpWithLcd(fracD(n1, d1), '−', fracD(n2, d2), formulaResultHtml(diff, common), n1, d1, n2, d2);
+  return fracStepProblem(inlineFracSub(n1, d1, n2, d2));
 }
 
-function genU5MainMixedSubNoBorrow() {
+/* ── U5 generators: 대분수 덧셈 (가분수 방법) ── */
+
+function genU5MainMixedAddImproper() {
+  let d1, d2;
+  do {
+    d1 = rand(2, 5);
+    d2 = rand(2, 5);
+  } while (d1 === d2);
+  const w1 = rand(1, 3);
+  const w2 = rand(1, 3);
+  const n1 = rand(1, d1 - 1);
+  const n2 = rand(1, d2 - 1);
+  const common = lcm(d1, d2);
+  const cn1 = n1 * (common / d1);
+  const cn2 = n2 * (common / d2);
+  const fracSum = cn1 + cn2;
+  if (fracSum >= common) return genU5MainMixedAddImproper();
+  return fracStepProblem(inlineMixedAddImproper(w1, n1, d1, w2, n2, d2));
+}
+
+/* ── U5 generators: 대분수 덧셈 (자연수/분수 따로) ── */
+
+function genU5MainMixedAddSeparate() {
+  let d1, d2;
+  do {
+    d1 = rand(2, 5);
+    d2 = rand(2, 5);
+  } while (d1 === d2);
+  const w1 = rand(1, 3);
+  const w2 = rand(1, 3);
+  const n1 = rand(1, d1 - 1);
+  const n2 = rand(1, d2 - 1);
+  const common = lcm(d1, d2);
+  const cn1 = n1 * (common / d1);
+  const cn2 = n2 * (common / d2);
+  const fracSum = cn1 + cn2;
+  if (fracSum >= common) return genU5MainMixedAddSeparate();
+  return fracStepProblem(inlineMixedAddSeparate(w1, n1, d1, w2, n2, d2));
+}
+
+/* ── U5 generators: 대분수 뺄셈 (가분수 방법) ── */
+
+function genU5MainMixedSubImproperNoBorrow() {
   const d1 = rand(2, 6);
   const d2 = rand(2, 6);
   const common = lcm(d1, d2);
@@ -1833,16 +2008,13 @@ function genU5MainMixedSubNoBorrow() {
   const n2c = n2 * (common / d2);
   const n1c = rand(n2c, common - 1);
   const n1 = n1c / (common / d1);
-  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1 || d1 === d2) return genU5MainMixedSubNoBorrow();
+  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1 || d1 === d2) return genU5MainMixedSubImproperNoBorrow();
   const w2 = rand(1, 3);
   const w1 = w2 + rand(1, 3);
-  const total1 = (w1 * d1) + n1;
-  const total2 = (w2 * d2) + n2;
-  const diff = (total1 * (common / d1)) - (total2 * (common / d2));
-  return fracOpWithLcd(mixedD(w1, n1, d1), '−', mixedD(w2, n2, d2), formulaResultHtml(diff, common), n1, d1, n2, d2);
+  return fracStepProblem(inlineMixedSubImproper(w1, n1, d1, w2, n2, d2));
 }
 
-function genU5MainMixedSubBorrow() {
+function genU5MainMixedSubImproperBorrow() {
   const d1 = rand(2, 6);
   const d2 = rand(2, 6);
   const common = lcm(d1, d2);
@@ -1850,23 +2022,102 @@ function genU5MainMixedSubBorrow() {
   const n2c = n2 * (common / d2);
   const n1c = rand(1, Math.max(1, n2c - 1));
   const n1 = n1c / (common / d1);
-  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1 || d1 === d2) return genU5MainMixedSubBorrow();
+  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1 || d1 === d2) return genU5MainMixedSubImproperBorrow();
   const w2 = rand(1, 3);
   const w1 = w2 + rand(1, 3);
-  const total1 = (w1 * d1) + n1;
-  const total2 = (w2 * d2) + n2;
-  const diff = (total1 * (common / d1)) - (total2 * (common / d2));
-  return fracOpWithLcd(mixedD(w1, n1, d1), '−', mixedD(w2, n2, d2), formulaResultHtml(diff, common), n1, d1, n2, d2);
+  return fracStepProblem(inlineMixedSubImproper(w1, n1, d1, w2, n2, d2));
+}
+
+/* ── U5 generators: 대분수 뺄셈 (자연수/분수 따로) ── */
+
+function genU5MainMixedSubSeparateNoBorrow() {
+  const d1 = rand(2, 6);
+  const d2 = rand(2, 6);
+  const common = lcm(d1, d2);
+  const n2 = rand(1, d2 - 1);
+  const n2c = n2 * (common / d2);
+  const n1c = rand(n2c, common - 1);
+  const n1 = n1c / (common / d1);
+  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1 || d1 === d2) return genU5MainMixedSubSeparateNoBorrow();
+  const w2 = rand(1, 3);
+  const w1 = w2 + rand(1, 3);
+  return fracStepProblem(inlineMixedSubSeparate(w1, n1, d1, w2, n2, d2));
+}
+
+function genU5MainMixedSubSeparateBorrow() {
+  const d1 = rand(2, 6);
+  const d2 = rand(2, 6);
+  const common = lcm(d1, d2);
+  const n2 = rand(1, d2 - 1);
+  const n2c = n2 * (common / d2);
+  const n1c = rand(1, Math.max(1, n2c - 1));
+  const n1 = n1c / (common / d1);
+  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1 || d1 === d2) return genU5MainMixedSubSeparateBorrow();
+  const w2 = rand(1, 3);
+  const w1 = w2 + rand(1, 3);
+  return fracStepProblem(inlineMixedSubSeparate(w1, n1, d1, w2, n2, d2));
+}
+
+/* ── U5 generators: 받아올림 있는 대분수 덧셈 ── */
+
+function genU5MainMixedAddCarryImproper() {
+  let d1, d2;
+  do {
+    d1 = rand(2, 5);
+    d2 = rand(2, 5);
+  } while (d1 === d2);
+  const w1 = rand(1, 3);
+  const w2 = rand(1, 3);
+  const n1 = rand(1, d1 - 1);
+  const n2 = rand(1, d2 - 1);
+  const common = lcm(d1, d2);
+  const cn1 = n1 * (common / d1);
+  const cn2 = n2 * (common / d2);
+  const fracSum = cn1 + cn2;
+  if (fracSum < common) return genU5MainMixedAddCarryImproper();
+  return fracStepProblem(inlineMixedAddImproper(w1, n1, d1, w2, n2, d2));
+}
+
+function genU5MainMixedAddCarrySeparate() {
+  let d1, d2;
+  do {
+    d1 = rand(2, 5);
+    d2 = rand(2, 5);
+  } while (d1 === d2);
+  const w1 = rand(1, 3);
+  const w2 = rand(1, 3);
+  const n1 = rand(1, d1 - 1);
+  const n2 = rand(1, d2 - 1);
+  const common = lcm(d1, d2);
+  const cn1 = n1 * (common / d1);
+  const cn2 = n2 * (common / d2);
+  const fracSum = cn1 + cn2;
+  if (fracSum < common) return genU5MainMixedAddCarrySeparate();
+  return fracStepProblem(inlineMixedAddSeparate(w1, n1, d1, w2, n2, d2));
+}
+
+/* ── backward-compatible wrappers ── */
+
+function genU5MainMixedAdd() {
+  return genU5MainMixedAddImproper();
+}
+
+function genU5MainMixedSubNoBorrow() {
+  return genU5MainMixedSubImproperNoBorrow();
+}
+
+function genU5MainMixedSubBorrow() {
+  return genU5MainMixedSubImproperBorrow();
 }
 
 function genU5MainMix() {
   return randChoice([
     genU5MainAdd,
     genU5MainAddGe1,
-    genU5MainMixedAdd,
+    genU5MainMixedAddImproper,
     genU5MainSub,
-    genU5MainMixedSubNoBorrow,
-    genU5MainMixedSubBorrow,
+    genU5MainMixedSubImproperNoBorrow,
+    genU5MainMixedSubImproperBorrow,
   ])();
 }
 
@@ -2035,10 +2286,15 @@ const WORKSHEET_CATALOG = [
   { id: 'u5_pre_sub', unit: 'u5', section: '선수학습', label: '분모 같은 분수의 뺄셈', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU5PreSub },
   { id: 'u5_main_add', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 덧셈 (합이 1 미만)', lessonRef: '1~2차시 (진분수)+(진분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainAdd },
   { id: 'u5_main_add_ge1', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 덧셈 (합이 1 이상)', lessonRef: '1~2차시 (진분수)+(진분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainAddGe1 },
-  { id: 'u5_main_mixed_add', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 덧셈', lessonRef: '3차시 (대분수)+(대분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedAdd },
+  { id: 'u5_main_mixed_add_improper', unit: 'u5', section: '본단원', label: '대분수 덧셈 (가분수 변환)', lessonRef: '3차시 (대분수)+(대분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedAddImproper },
+  { id: 'u5_main_mixed_add_separate', unit: 'u5', section: '본단원', label: '대분수 덧셈 (자연수·분수 따로)', lessonRef: '3차시 (대분수)+(대분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedAddSeparate },
   { id: 'u5_main_sub', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 뺄셈', lessonRef: '4차시 (진분수)-(진분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainSub },
-  { id: 'u5_main_mixed_sub_no_borrow', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 뺄셈 (받아내림 없음)', lessonRef: '5차시 (대분수)-(대분수) 계산하기(1)', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedSubNoBorrow },
-  { id: 'u5_main_mixed_sub_borrow', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 뺄셈 (받아내림 있음)', lessonRef: '6차시 (대분수)-(대분수) 계산하기(2)', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedSubBorrow },
+  { id: 'u5_main_mixed_sub_no_borrow_improper', unit: 'u5', section: '본단원', label: '대분수 뺄셈 - 받아내림 없음 (가분수 변환)', lessonRef: '5차시 (대분수)-(대분수) 계산하기(1)', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedSubImproperNoBorrow },
+  { id: 'u5_main_mixed_sub_no_borrow_separate', unit: 'u5', section: '본단원', label: '대분수 뺄셈 - 받아내림 없음 (자연수·분수 따로)', lessonRef: '5차시 (대분수)-(대분수) 계산하기(1)', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedSubSeparateNoBorrow },
+  { id: 'u5_main_mixed_sub_borrow_improper', unit: 'u5', section: '본단원', label: '대분수 뺄셈 - 받아내림 있음 (가분수 변환)', lessonRef: '6차시 (대분수)-(대분수) 계산하기(2)', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedSubImproperBorrow },
+  { id: 'u5_main_mixed_sub_borrow_separate', unit: 'u5', section: '본단원', label: '대분수 뺄셈 - 받아내림 있음 (자연수·분수 따로)', lessonRef: '6차시 (대분수)-(대분수) 계산하기(2)', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedSubSeparateBorrow },
+  { id: 'u5_main_mixed_add_carry_improper', unit: 'u5', section: '본단원', label: '받아올림 대분수 덧셈 (가분수 변환)', lessonRef: '3차시 (대분수)+(대분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedAddCarryImproper },
+  { id: 'u5_main_mixed_add_carry_separate', unit: 'u5', section: '본단원', label: '받아올림 대분수 덧셈 (자연수·분수 따로)', lessonRef: '3차시 (대분수)+(대분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedAddCarrySeparate },
   { id: 'u5_main_mix', unit: 'u5', section: '본단원', label: '분수 덧셈·뺄셈 혼합', lessonRef: '1~6차시 분수의 덧셈과 뺄셈 혼합', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMix },
 
   { id: 'u6_pre_unit', unit: 'u6', section: '선수학습', label: '단위 변환 (cm, m, km)', lessonRef: '선수학습', kind: 'html', grid: 'standard', count: 20, generator: genU6PreUnit },
