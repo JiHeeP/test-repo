@@ -402,17 +402,6 @@
       line-height: 1.6;
     }
 
-    .frac-multi-line {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .frac-multi-line .concept-answer {
-      margin-top: 0;
-    }
-
     .frac-d {
       display: inline-flex;
       flex-direction: column;
@@ -1840,26 +1829,24 @@ function inlineMixedAddSeparate(w1, n1, d1, w2, n2, d2) {
   const cn2 = n2 * m2;
   const fracSum = cn1 + cn2;
   const wholeSum = w1 + w2;
-
-  const line1 = `${mixedD(w1, n1, d1)} <span class="op-txt">+</span> ${mixedD(w2, n2, d2)}`;
-  const line2 = `<span class="eq-txt">=</span> (${numBlank(w1)} + ${numBlank(w2)}) + (${fracExpand(n1, d1, m1)} <span class="op-txt">+</span> ${fracExpand(n2, d2, m2)})`;
-
-  let line3 = `<span class="eq-txt">=</span> ${numBlank(wholeSum)} + ${fracD(numBlank(fracSum), common)}`;
+  let steps = `${mixedD(w1, n1, d1)} <span class="op-txt">+</span> ${mixedD(w2, n2, d2)}`;
+  steps += ` <span class="eq-txt">=</span> (${numBlank(w1)} + ${numBlank(w2)}) + (${fracExpand(n1, d1, m1)} <span class="op-txt">+</span> ${fracExpand(n2, d2, m2)})`;
+  steps += ` <span class="eq-txt">=</span> ${numBlank(wholeSum)} + ${fracD(numBlank(fracSum), common)}`;
   if (fracSum >= common) {
     const extraWhole = Math.floor(fracSum / common);
     const remain = fracSum % common;
     const finalWhole = wholeSum + extraWhole;
     if (remain === 0) {
-      line3 += ` <span class="eq-txt">=</span> ${numBlank(finalWhole)}`;
+      steps += ` <span class="eq-txt">=</span> ${numBlank(finalWhole)}`;
     } else {
       const [sn, sd] = simplify(remain, common);
-      line3 += ` <span class="eq-txt">=</span> ${mixedBlank(finalWhole, sn, sd)}`;
+      steps += ` <span class="eq-txt">=</span> ${mixedBlank(finalWhole, sn, sd)}`;
     }
   } else {
     const [sn, sd] = simplify(fracSum, common);
-    line3 += ` <span class="eq-txt">=</span> ${mixedBlank(wholeSum, sn, sd)}`;
+    steps += ` <span class="eq-txt">=</span> ${mixedBlank(wholeSum, sn, sd)}`;
   }
-  return { line1, line2, line3 };
+  return steps;
 }
 
 function inlineMixedSubImproper(w1, n1, d1, w2, n2, d2) {
@@ -1886,59 +1873,46 @@ function inlineMixedSubSeparate(w1, n1, d1, w2, n2, d2) {
   const m2 = common / d2;
   const cn1 = n1 * m1;
   const cn2 = n2 * m2;
-
-  const line1 = `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)}`;
-  let line2, line3;
-
+  let steps = `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)}`;
   if (cn1 >= cn2) {
     const fracDiff = cn1 - cn2;
     const wholeDiff = w1 - w2;
-    line2 = `<span class="eq-txt">=</span> (${numBlank(w1)} − ${numBlank(w2)}) + (${fracExpand(n1, d1, m1)} <span class="op-txt">−</span> ${fracExpand(n2, d2, m2)})`;
-    line3 = `<span class="eq-txt">=</span> ${numBlank(wholeDiff)} + ${fracD(numBlank(fracDiff), common)}`;
+    steps += ` <span class="eq-txt">=</span> (${numBlank(w1)} − ${numBlank(w2)}) + (${fracExpand(n1, d1, m1)} <span class="op-txt">−</span> ${fracExpand(n2, d2, m2)})`;
+    steps += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)} + ${fracD(numBlank(fracDiff), common)}`;
     if (fracDiff === 0) {
-      line3 += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)}`;
+      steps += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)}`;
     } else {
       const [sn, sd] = simplify(fracDiff, common);
       if (wholeDiff === 0) {
-        line3 += ` <span class="eq-txt">=</span> ${fracBlank(sn, sd)}`;
+        steps += ` <span class="eq-txt">=</span> ${fracBlank(sn, sd)}`;
       } else {
-        line3 += ` <span class="eq-txt">=</span> ${mixedBlank(wholeDiff, sn, sd)}`;
+        steps += ` <span class="eq-txt">=</span> ${mixedBlank(wholeDiff, sn, sd)}`;
       }
     }
   } else {
     const borrowedN1 = cn1 + common;
     const fracDiff = borrowedN1 - cn2;
     const wholeDiff = w1 - w2 - 1;
-    line2 = `<span class="eq-txt">=</span> (${numBlank(w1 - 1)} − ${numBlank(w2)}) + (${fracD(numBlank(borrowedN1), common)} <span class="op-txt">−</span> ${fracD(numBlank(cn2), common)})`;
-    line3 = `<span class="eq-txt">=</span> ${numBlank(wholeDiff)} + ${fracD(numBlank(fracDiff), common)}`;
+    steps += ` <span class="eq-txt">=</span> (${numBlank(w1 - 1)} − ${numBlank(w2)}) + (${fracD(numBlank(borrowedN1), common)} <span class="op-txt">−</span> ${fracD(numBlank(cn2), common)})`;
+    steps += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)} + ${fracD(numBlank(fracDiff), common)}`;
     if (fracDiff === 0) {
-      line3 += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)}`;
+      steps += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)}`;
     } else {
       const [sn, sd] = simplify(fracDiff, common);
       if (wholeDiff === 0) {
-        line3 += ` <span class="eq-txt">=</span> ${fracBlank(sn, sd)}`;
+        steps += ` <span class="eq-txt">=</span> ${fracBlank(sn, sd)}`;
       } else {
-        line3 += ` <span class="eq-txt">=</span> ${mixedBlank(wholeDiff, sn, sd)}`;
+        steps += ` <span class="eq-txt">=</span> ${mixedBlank(wholeDiff, sn, sd)}`;
       }
     }
   }
-  return { line1, line2, line3 };
+  return steps;
 }
 
 function fracStepProblem(stepsHtml) {
   return htmlProblem('concept-layout', `
     <div class="concept-card">
       <div class="concept-answer frac-step-flow">${stepsHtml}</div>
-    </div>
-  `);
-}
-
-function fracStepProblemMultiLine({ line1, line2, line3 }) {
-  return htmlProblem('concept-layout', `
-    <div class="concept-card frac-multi-line">
-      <div class="concept-answer frac-step-flow">${line1}</div>
-      <div class="concept-answer frac-step-flow">${line2}</div>
-      <div class="concept-answer frac-step-flow">${line3}</div>
     </div>
   `);
 }
@@ -2021,7 +1995,7 @@ function genU5MainMixedAddSeparate() {
   const cn2 = n2 * (common / d2);
   const fracSum = cn1 + cn2;
   if (fracSum >= common) return genU5MainMixedAddSeparate();
-  return fracStepProblemMultiLine(inlineMixedAddSeparate(w1, n1, d1, w2, n2, d2));
+  return fracStepProblem(inlineMixedAddSeparate(w1, n1, d1, w2, n2, d2));
 }
 
 /* ── U5 generators: 대분수 뺄셈 (가분수 방법) ── */
@@ -2067,7 +2041,7 @@ function genU5MainMixedSubSeparateNoBorrow() {
   if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1 || d1 === d2) return genU5MainMixedSubSeparateNoBorrow();
   const w2 = rand(1, 3);
   const w1 = w2 + rand(1, 3);
-  return fracStepProblemMultiLine(inlineMixedSubSeparate(w1, n1, d1, w2, n2, d2));
+  return fracStepProblem(inlineMixedSubSeparate(w1, n1, d1, w2, n2, d2));
 }
 
 function genU5MainMixedSubSeparateBorrow() {
@@ -2081,7 +2055,7 @@ function genU5MainMixedSubSeparateBorrow() {
   if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1 || d1 === d2) return genU5MainMixedSubSeparateBorrow();
   const w2 = rand(1, 3);
   const w1 = w2 + rand(1, 3);
-  return fracStepProblemMultiLine(inlineMixedSubSeparate(w1, n1, d1, w2, n2, d2));
+  return fracStepProblem(inlineMixedSubSeparate(w1, n1, d1, w2, n2, d2));
 }
 
 /* ── U5 generators: 받아올림 있는 대분수 덧셈 ── */
@@ -2119,7 +2093,7 @@ function genU5MainMixedAddCarrySeparate() {
   const cn2 = n2 * (common / d2);
   const fracSum = cn1 + cn2;
   if (fracSum < common) return genU5MainMixedAddCarrySeparate();
-  return fracStepProblemMultiLine(inlineMixedAddSeparate(w1, n1, d1, w2, n2, d2));
+  return fracStepProblem(inlineMixedAddSeparate(w1, n1, d1, w2, n2, d2));
 }
 
 /* ── backward-compatible wrappers ── */
