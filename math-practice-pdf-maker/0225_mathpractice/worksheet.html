@@ -413,6 +413,12 @@
       margin-top: 0;
     }
 
+    .nat-calc {
+      margin-left: 18px;
+      padding-left: 18px;
+      border-left: 1.5px dashed #b0b8c4;
+    }
+
     .frac-d {
       display: inline-flex;
       flex-direction: column;
@@ -1841,8 +1847,8 @@ function inlineMixedAddSeparate(w1, n1, d1, w2, n2, d2) {
   const fracSum = cn1 + cn2;
   const wholeSum = w1 + w2;
 
-  const line1 = `${mixedD(w1, n1, d1)} <span class="op-txt">+</span> ${mixedD(w2, n2, d2)}`;
-  const line2 = `<span class="eq-txt">=</span> (${numBlank(w1)} + ${numBlank(w2)}) + (${fracExpand(n1, d1, m1)} <span class="op-txt">+</span> ${fracExpand(n2, d2, m2)})`;
+  const line1 = `${mixedD(w1, n1, d1)} <span class="op-txt">+</span> ${mixedD(w2, n2, d2)} <span class="nat-calc">${numBlank(w1)} + ${numBlank(w2)} = ${numBlank(wholeSum)}</span>`;
+  const line2 = `<span class="eq-txt">=</span> ${numBlank(wholeSum)} + (${fracExpand(n1, d1, m1)} <span class="op-txt">+</span> ${fracExpand(n2, d2, m2)})`;
 
   let line3 = `<span class="eq-txt">=</span> ${numBlank(wholeSum)} + ${fracD(numBlank(fracSum), common)}`;
   if (fracSum >= common) {
@@ -1887,13 +1893,13 @@ function inlineMixedSubSeparate(w1, n1, d1, w2, n2, d2) {
   const cn1 = n1 * m1;
   const cn2 = n2 * m2;
 
-  const line1 = `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)}`;
-  let line2, line3;
+  let line1, line2, line3;
 
   if (cn1 >= cn2) {
     const fracDiff = cn1 - cn2;
     const wholeDiff = w1 - w2;
-    line2 = `<span class="eq-txt">=</span> (${numBlank(w1)} − ${numBlank(w2)}) + (${fracExpand(n1, d1, m1)} <span class="op-txt">−</span> ${fracExpand(n2, d2, m2)})`;
+    line1 = `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)} <span class="nat-calc">${numBlank(w1)} − ${numBlank(w2)} = ${numBlank(wholeDiff)}</span>`;
+    line2 = `<span class="eq-txt">=</span> ${numBlank(wholeDiff)} + (${fracExpand(n1, d1, m1)} <span class="op-txt">−</span> ${fracExpand(n2, d2, m2)})`;
     line3 = `<span class="eq-txt">=</span> ${numBlank(wholeDiff)} + ${fracD(numBlank(fracDiff), common)}`;
     if (fracDiff === 0) {
       line3 += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)}`;
@@ -1909,7 +1915,8 @@ function inlineMixedSubSeparate(w1, n1, d1, w2, n2, d2) {
     const borrowedN1 = cn1 + common;
     const fracDiff = borrowedN1 - cn2;
     const wholeDiff = w1 - w2 - 1;
-    line2 = `<span class="eq-txt">=</span> (${numBlank(w1 - 1)} − ${numBlank(w2)}) + (${fracD(numBlank(borrowedN1), common)} <span class="op-txt">−</span> ${fracD(numBlank(cn2), common)})`;
+    line1 = `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)} <span class="nat-calc">${numBlank(w1 - 1)} − ${numBlank(w2)} = ${numBlank(wholeDiff)}</span>`;
+    line2 = `<span class="eq-txt">=</span> ${numBlank(wholeDiff)} + (${fracD(numBlank(borrowedN1), common)} <span class="op-txt">−</span> ${fracD(numBlank(cn2), common)})`;
     line3 = `<span class="eq-txt">=</span> ${numBlank(wholeDiff)} + ${fracD(numBlank(fracDiff), common)}`;
     if (fracDiff === 0) {
       line3 += ` <span class="eq-txt">=</span> ${numBlank(wholeDiff)}`;
