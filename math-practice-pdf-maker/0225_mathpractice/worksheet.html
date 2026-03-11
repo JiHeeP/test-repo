@@ -349,6 +349,49 @@
       line-height: 1.35;
     }
 
+    .lcd-process-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: calc(6px * var(--font-scale, 1));
+      margin-top: 6px;
+      font-size: calc(14px * var(--font-scale, 1));
+      flex-wrap: wrap;
+    }
+
+    .lcd-label {
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 1px 8px;
+      border-radius: 8px;
+      font-size: calc(12px * var(--font-scale, 1));
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .frac-two-col {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .frac-col-left {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .frac-col-right {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-left: 1.5px dashed #d7dee8;
+      padding-left: 10px;
+    }
+
     .frac-d {
       display: inline-flex;
       flex-direction: column;
@@ -1101,57 +1144,224 @@ function genU1MainAddSubParenOrder() {
   return rand(1, 2) === 1 ? genU1MainAddSubOrder() : genU1MainAddSubParen();
 }
 
-function genU1MainMulDivMix() {
-  const a = rand(2, 9);
-  const c = rand(2, 8);
-  const k = rand(2, 6);
-  const b = c * k;
-  return horizProblem(`${a} × ${b} ÷ ${c}`, numBlank(a * k));
+function genU1MainMulDivOrder() {
+  const type = rand(1, 3);
+  if (type === 1) {
+    const a = rand(2, 9);
+    const c = rand(2, 8);
+    const k = rand(2, 6);
+    const b = c * k;
+    return horizProblem(`${a} × ${b} ÷ ${c}`, numBlank(a * k));
+  } else if (type === 2) {
+    const d = rand(2, 9);
+    const q = rand(2, 9);
+    const c = rand(2, 9);
+    return horizProblem(`${q * d} ÷ ${d} × ${c}`, numBlank(q * c));
+  } else {
+    const a = rand(2, 6);
+    const b = rand(2, 6);
+    const c = rand(2, 8);
+    const k = rand(2, 5);
+    const d = c * k;
+    return horizProblem(`${a} × ${b} × ${d} ÷ ${c}`, numBlank(a * b * k));
+  }
 }
 
-function genU1MainAddSubMul() {
-  if (rand(1, 2) === 1) {
+function genU1MainMulDivParen() {
+  const type = rand(1, 3);
+  if (type === 1) {
+    const a = rand(2, 6);
+    const b = rand(2, 6);
+    const c = rand(2, 8);
+    const k = rand(2, 5);
+    return horizProblem(`${a} × (${b} × ${k * c}) ÷ ${c}`, numBlank(a * b * k));
+  } else if (type === 2) {
+    const a = rand(10, 50);
+    const b = rand(2, 9);
+    const c = rand(2, 9);
+    return horizProblem(`(${a * b} ÷ ${b}) × ${c}`, numBlank(a * c));
+  } else {
+    const d = rand(2, 8);
+    const q1 = rand(2, 6);
+    const q2 = rand(2, 6);
+    return horizProblem(`${q1 * d} ÷ (${d} × ${q2}) × ${q2}`, numBlank(q1));
+  }
+}
+
+function genU1MainMulDivMix() {
+  return rand(1, 2) === 1 ? genU1MainMulDivOrder() : genU1MainMulDivParen();
+}
+
+function genU1MainAddSubMulOrder() {
+  const type = rand(1, 4);
+  if (type === 1) {
     const a = rand(10, 60);
     const b = rand(2, 9);
     const c = rand(2, 9);
     return horizProblem(`${a} + ${b} × ${c}`, numBlank(a + (b * c)));
+  } else if (type === 2) {
+    const a = rand(3, 9);
+    const b = rand(4, 9);
+    const c = rand(5, (a * b) - 1);
+    return horizProblem(`${a} × ${b} − ${c}`, numBlank((a * b) - c));
+  } else if (type === 3) {
+    const a = rand(2, 9);
+    const b = rand(2, 9);
+    const c = rand(10, 50);
+    return horizProblem(`${a} × ${b} + ${c}`, numBlank(a * b + c));
+  } else {
+    const a = rand(30, 80);
+    const b = rand(2, 9);
+    const c = rand(2, 9);
+    const result = a - b * c;
+    if (result <= 0) return genU1MainAddSubMulOrder();
+    return horizProblem(`${a} − ${b} × ${c}`, numBlank(result));
   }
-  const a = rand(3, 9);
-  const b = rand(4, 9);
-  const c = rand(5, (a * b) - 1);
-  return horizProblem(`${a} × ${b} − ${c}`, numBlank((a * b) - c));
 }
 
-function genU1MainAddSubDiv() {
-  if (rand(1, 2) === 1) {
+function genU1MainAddSubMulParen() {
+  const type = rand(1, 3);
+  if (type === 1) {
+    const a = rand(10, 40);
+    const b = rand(10, 40);
+    const c = rand(2, 6);
+    return horizProblem(`(${a} + ${b}) × ${c}`, numBlank((a + b) * c));
+  } else if (type === 2) {
+    const a = rand(20, 60);
+    const b = rand(10, a - 1);
+    const c = rand(2, 6);
+    return horizProblem(`(${a} − ${b}) × ${c}`, numBlank((a - b) * c));
+  } else {
+    const a = rand(2, 9);
+    const b = rand(10, 40);
+    const c = rand(10, 40);
+    return horizProblem(`${a} × (${b} + ${c})`, numBlank(a * (b + c)));
+  }
+}
+
+function genU1MainAddSubMulParenOrder() {
+  return rand(1, 2) === 1 ? genU1MainAddSubMulOrder() : genU1MainAddSubMulParen();
+}
+
+function genU1MainAddSubMul() {
+  return genU1MainAddSubMulParenOrder();
+}
+
+function genU1MainAddSubDivOrder() {
+  const type = rand(1, 4);
+  if (type === 1) {
     const a = rand(30, 90);
     const b = rand(10, 40);
     const d = rand(2, 9);
     const q = rand(2, 9);
     return horizProblem(`${a} + ${b} − ${q * d} ÷ ${d}`, numBlank(a + b - q));
+  } else if (type === 2) {
+    const a = rand(50, 90);
+    const b = rand(10, 30);
+    const d = rand(2, 9);
+    const q = rand(2, 8);
+    return horizProblem(`${a} − ${b} + ${q * d} ÷ ${d}`, numBlank(a - b + q));
+  } else if (type === 3) {
+    const a = rand(20, 60);
+    const d = rand(2, 9);
+    const q = rand(2, 9);
+    return horizProblem(`${a} + ${q * d} ÷ ${d}`, numBlank(a + q));
+  } else {
+    const a = rand(50, 99);
+    const d = rand(2, 9);
+    const q = rand(2, 9);
+    return horizProblem(`${a} − ${q * d} ÷ ${d}`, numBlank(a - q));
   }
-  const a = rand(50, 90);
-  const b = rand(10, 30);
-  const d = rand(2, 9);
-  const q = rand(2, 8);
-  return horizProblem(`${a} − ${b} + ${q * d} ÷ ${d}`, numBlank(a - b + q));
 }
 
-function genU1MainMix() {
-  if (rand(1, 2) === 1) {
+function genU1MainAddSubDivParen() {
+  const type = rand(1, 3);
+  if (type === 1) {
+    const d = rand(2, 9);
+    const q = rand(3, 12);
+    const split1 = rand(1, q * d - 1);
+    const split2 = q * d - split1;
+    return horizProblem(`(${split1} + ${split2}) ÷ ${d}`, numBlank(q));
+  } else if (type === 2) {
+    const d = rand(2, 9);
+    const q = rand(2, 10);
+    const b = rand(1, 30);
+    const a = q * d + b;
+    return horizProblem(`(${a} − ${b}) ÷ ${d}`, numBlank(q));
+  } else {
+    const d = rand(2, 8);
+    const q1 = rand(2, 9);
+    const q2 = rand(2, 9);
+    return horizProblem(`${q1 * d} ÷ ${d} + ${q2 * d} ÷ ${d}`, numBlank(q1 + q2));
+  }
+}
+
+function genU1MainAddSubDivParenOrder() {
+  return rand(1, 2) === 1 ? genU1MainAddSubDivOrder() : genU1MainAddSubDivParen();
+}
+
+function genU1MainAddSubDiv() {
+  return genU1MainAddSubDivParenOrder();
+}
+
+function genU1MainMixOrder() {
+  const type = rand(1, 3);
+  if (type === 1) {
     const a = rand(20, 60);
     const b = rand(2, 9);
     const c = rand(2, 6);
     const d = rand(2, 8);
     const q = rand(2, 8);
     return horizProblem(`${a} + ${b} × ${c} − ${q * d} ÷ ${d}`, numBlank(a + (b * c) - q));
+  } else if (type === 2) {
+    const b = rand(2, 5);
+    const c = rand(2, 5);
+    const d = rand(2, 8);
+    const q = rand(2, 6);
+    const a = rand(b * c + 1, b * c + 30);
+    return horizProblem(`${a} − ${b} × ${c} + ${q * d} ÷ ${d}`, numBlank(a - (b * c) + q));
+  } else {
+    const a = rand(2, 9);
+    const b = rand(2, 9);
+    const c = rand(2, 8);
+    const k = rand(2, 5);
+    const d = rand(1, Math.max(1, a * b + k - 1));
+    return horizProblem(`${a} × ${b} + ${k * c} ÷ ${c} − ${d}`, numBlank(a * b + k - d));
   }
-  const a = rand(6, 20);
-  const b = rand(5, 18);
-  const c = rand(2, 5);
-  const d = rand(2, 7);
-  const q = rand(2, 6);
-  return horizProblem(`(${a} + ${b}) × ${c} − ${q * d} ÷ ${d}`, numBlank((a + b) * c - q));
+}
+
+function genU1MainMixParen() {
+  const type = rand(1, 3);
+  if (type === 1) {
+    const a = rand(6, 20);
+    const b = rand(5, 18);
+    const c = rand(2, 5);
+    const d = rand(2, 7);
+    const q = rand(2, 6);
+    return horizProblem(`(${a} + ${b}) × ${c} − ${q * d} ÷ ${d}`, numBlank((a + b) * c - q));
+  } else if (type === 2) {
+    const a = rand(2, 6);
+    const b = rand(2, 6);
+    const c = rand(10, 30);
+    const d = rand(2, 8);
+    const q = rand(2, 6);
+    return horizProblem(`${a} × ${b} − (${c} − ${q * d} ÷ ${d})`, numBlank(a * b - (c - q)));
+  } else {
+    const a = rand(10, 30);
+    const b = rand(10, 20);
+    const c = rand(2, 5);
+    const d = rand(2, 7);
+    const q = rand(2, 6);
+    return horizProblem(`(${a} + ${b}) × ${c} + ${q * d} ÷ ${d}`, numBlank((a + b) * c + q));
+  }
+}
+
+function genU1MainMixParenOrder() {
+  return rand(1, 2) === 1 ? genU1MainMixOrder() : genU1MainMixParen();
+}
+
+function genU1MainMix() {
+  return genU1MainMixParenOrder();
 }
 
 function genU2PreMul() {
@@ -1463,9 +1673,35 @@ function genU4MainCmp() {
   } while (d1 === d2);
   const n1 = rand(1, d1 - 1);
   const n2 = rand(1, d2 - 1);
+  const common = lcm(d1, d2);
+  const m1 = common / d1;
+  const m2 = common / d2;
+  const cn1 = n1 * m1;
+  const cn2 = n2 * m2;
   const left = n1 / d1;
   const right = n2 / d2;
-  return htmlProblem('frac-row', `${fracD(n1, d1)} ${symBlank(left > right ? '>' : '<')} ${fracD(n2, d2)}`);
+  return htmlProblem('concept-layout', `
+    <div class="concept-card">
+      <div class="concept-answer">${fracD(n1, d1)} ${symBlank(left > right ? '>' : '<')} ${fracD(n2, d2)}</div>
+      <div class="lcd-process-row">
+        <span class="lcd-label">통분</span>
+        ${fracD(n1, d1)} <span class="eq-txt">=</span> ${fracBlank(cn1, common)}
+        <span class="op-txt">,</span>
+        ${fracD(n2, d2)} <span class="eq-txt">=</span> ${fracBlank(cn2, common)}
+      </div>
+    </div>
+  `);
+}
+
+function decToFrac(dec) {
+  const str = String(dec);
+  const dotIdx = str.indexOf('.');
+  if (dotIdx === -1) return { n: Number(dec), d: 1 };
+  const decimals = str.length - dotIdx - 1;
+  const d = Math.pow(10, decimals);
+  const n = Math.round(dec * d);
+  const g = gcd(n, d);
+  return { n: n / g, d: d / g };
 }
 
 function genU4MainDecCmp() {
@@ -1475,9 +1711,34 @@ function genU4MainDecCmp() {
     { n: 2, d: 5, dec: '0.5' },
     { n: 7, d: 10, dec: '0.6' },
     { n: 1, d: 4, dec: '0.3' },
+    { n: 3, d: 5, dec: '0.8' },
+    { n: 1, d: 5, dec: '0.3' },
+    { n: 3, d: 10, dec: '0.4' },
+    { n: 4, d: 5, dec: '0.7' },
+    { n: 9, d: 10, dec: '0.8' },
   ]);
   const answer = (set.n / set.d) > parseFloat(set.dec) ? '>' : '<';
-  return htmlProblem('frac-row', `${fracD(set.n, set.d)} ${symBlank(answer)} <span class="text-blank" style="border:none; background:none; min-width:0; color:#2f3640;">${set.dec}</span>`);
+  const decFrac = decToFrac(parseFloat(set.dec));
+  const common = lcm(set.d, decFrac.d);
+  const m1 = common / set.d;
+  const m2 = common / decFrac.d;
+  const cn1 = set.n * m1;
+  const cn2 = decFrac.n * m2;
+  const needExtraLcd = set.d !== common || decFrac.d !== common;
+
+  let processHtml = '';
+  processHtml += `<div class="lcd-process-row"><span class="lcd-label">소수→분수</span> ${set.dec} <span class="eq-txt">=</span> ${fracBlank(decFrac.n, decFrac.d)}</div>`;
+
+  if (needExtraLcd && decFrac.d !== set.d) {
+    processHtml += `<div class="lcd-process-row"><span class="lcd-label">통분</span> ${fracD(set.n, set.d)} <span class="eq-txt">=</span> ${fracBlank(cn1, common)} <span class="op-txt">,</span> ${fracD(decFrac.n, decFrac.d)} <span class="eq-txt">=</span> ${fracBlank(cn2, common)}</div>`;
+  }
+
+  return htmlProblem('concept-layout', `
+    <div class="concept-card">
+      <div class="concept-answer">${fracD(set.n, set.d)} ${symBlank(answer)} <span style="color:#2f3640;">${set.dec}</span></div>
+      ${processHtml}
+    </div>
+  `);
 }
 
 function genU5PreAdd() {
@@ -1494,13 +1755,24 @@ function genU5PreSub() {
   return htmlProblem('frac-row', `${fracD(a, d)} <span class="op-txt">−</span> ${fracD(b, d)} <span class="eq-txt">=</span> ${formulaResultHtml(a - b, d)}`);
 }
 
+function lcdProcessHtml(n1, d1, n2, d2) {
+  const common = lcm(d1, d2);
+  const m1 = common / d1;
+  const m2 = common / d2;
+  return `<div class="lcd-process-row"><span class="lcd-label">통분</span> ${fracD(n1, d1)} <span class="eq-txt">=</span> ${fracBlank(n1 * m1, common)} <span class="op-txt">,</span> ${fracD(n2, d2)} <span class="eq-txt">=</span> ${fracBlank(n2 * m2, common)}</div>`;
+}
+
+function fracOpWithLcd(left, op, right, resultHtml, n1, d1, n2, d2) {
+  return htmlProblem('concept-layout', `
+    <div class="concept-card frac-two-col">
+      <div class="frac-col-left"><div class="concept-answer">${left} <span class="op-txt">${op}</span> ${right} <span class="eq-txt">=</span> ${resultHtml}</div></div>
+      <div class="frac-col-right">${lcdProcessHtml(n1, d1, n2, d2)}</div>
+    </div>
+  `);
+}
+
 function genU5MainAdd() {
-  let d1;
-  let d2;
-  let n1;
-  let n2;
-  let total;
-  let common;
+  let d1, d2, n1, n2, total, common;
   do {
     d1 = rand(2, 8);
     d2 = rand(2, 8);
@@ -1508,17 +1780,12 @@ function genU5MainAdd() {
     n2 = rand(1, d2 - 1);
     common = lcm(d1, d2);
     total = (n1 * (common / d1)) + (n2 * (common / d2));
-  } while (total >= common);
-  return htmlProblem('frac-row', `${fracD(n1, d1)} <span class="op-txt">+</span> ${fracD(n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(total, common)}`);
+  } while (total >= common || d1 === d2);
+  return fracOpWithLcd(fracD(n1, d1), '+', fracD(n2, d2), formulaResultHtml(total, common), n1, d1, n2, d2);
 }
 
 function genU5MainAddGe1() {
-  let d1;
-  let d2;
-  let n1;
-  let n2;
-  let total;
-  let common;
+  let d1, d2, n1, n2, total, common;
   do {
     d1 = rand(2, 6);
     d2 = rand(2, 6);
@@ -1526,29 +1793,27 @@ function genU5MainAddGe1() {
     n2 = rand(1, d2 - 1);
     common = lcm(d1, d2);
     total = (n1 * (common / d1)) + (n2 * (common / d2));
-  } while (total < common);
-  return htmlProblem('frac-row', `${fracD(n1, d1)} <span class="op-txt">+</span> ${fracD(n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(total, common)}`);
+  } while (total < common || d1 === d2);
+  return fracOpWithLcd(fracD(n1, d1), '+', fracD(n2, d2), formulaResultHtml(total, common), n1, d1, n2, d2);
 }
 
 function genU5MainMixedAdd() {
-  const d1 = rand(2, 5);
-  const d2 = rand(2, 5);
+  let d1, d2;
+  do {
+    d1 = rand(2, 5);
+    d2 = rand(2, 5);
+  } while (d1 === d2);
   const w1 = rand(1, 3);
   const w2 = rand(1, 3);
   const n1 = rand(1, d1 - 1);
   const n2 = rand(1, d2 - 1);
   const common = lcm(d1, d2);
   const total = ((w1 * d1) + n1) * (common / d1) + (((w2 * d2) + n2) * (common / d2));
-  return htmlProblem('frac-row', `${mixedD(w1, n1, d1)} <span class="op-txt">+</span> ${mixedD(w2, n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(total, common)}`);
+  return fracOpWithLcd(mixedD(w1, n1, d1), '+', mixedD(w2, n2, d2), formulaResultHtml(total, common), n1, d1, n2, d2);
 }
 
 function genU5MainSub() {
-  let d1;
-  let d2;
-  let n1;
-  let n2;
-  let diff;
-  let common;
+  let d1, d2, n1, n2, diff, common;
   do {
     d1 = rand(3, 8);
     d2 = rand(2, 7);
@@ -1556,8 +1821,8 @@ function genU5MainSub() {
     n2 = rand(1, d2 - 1);
     common = lcm(d1, d2);
     diff = (n1 * (common / d1)) - (n2 * (common / d2));
-  } while (diff <= 0);
-  return htmlProblem('frac-row', `${fracD(n1, d1)} <span class="op-txt">−</span> ${fracD(n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(diff, common)}`);
+  } while (diff <= 0 || d1 === d2);
+  return fracOpWithLcd(fracD(n1, d1), '−', fracD(n2, d2), formulaResultHtml(diff, common), n1, d1, n2, d2);
 }
 
 function genU5MainMixedSubNoBorrow() {
@@ -1568,13 +1833,13 @@ function genU5MainMixedSubNoBorrow() {
   const n2c = n2 * (common / d2);
   const n1c = rand(n2c, common - 1);
   const n1 = n1c / (common / d1);
-  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1) return genU5MainMixedSubNoBorrow();
+  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1 || d1 === d2) return genU5MainMixedSubNoBorrow();
   const w2 = rand(1, 3);
   const w1 = w2 + rand(1, 3);
   const total1 = (w1 * d1) + n1;
   const total2 = (w2 * d2) + n2;
   const diff = (total1 * (common / d1)) - (total2 * (common / d2));
-  return htmlProblem('frac-row', `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(diff, common)}`);
+  return fracOpWithLcd(mixedD(w1, n1, d1), '−', mixedD(w2, n2, d2), formulaResultHtml(diff, common), n1, d1, n2, d2);
 }
 
 function genU5MainMixedSubBorrow() {
@@ -1585,13 +1850,13 @@ function genU5MainMixedSubBorrow() {
   const n2c = n2 * (common / d2);
   const n1c = rand(1, Math.max(1, n2c - 1));
   const n1 = n1c / (common / d1);
-  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1) return genU5MainMixedSubBorrow();
+  if (!Number.isInteger(n1) || n1 < 1 || n1 >= d1 || d1 === d2) return genU5MainMixedSubBorrow();
   const w2 = rand(1, 3);
   const w1 = w2 + rand(1, 3);
   const total1 = (w1 * d1) + n1;
   const total2 = (w2 * d2) + n2;
   const diff = (total1 * (common / d1)) - (total2 * (common / d2));
-  return htmlProblem('frac-row', `${mixedD(w1, n1, d1)} <span class="op-txt">−</span> ${mixedD(w2, n2, d2)} <span class="eq-txt">=</span> ${formulaResultHtml(diff, common)}`);
+  return fracOpWithLcd(mixedD(w1, n1, d1), '−', mixedD(w2, n2, d2), formulaResultHtml(diff, common), n1, d1, n2, d2);
 }
 
 function genU5MainMix() {
@@ -1726,10 +1991,18 @@ const WORKSHEET_CATALOG = [
   { id: 'u1_main_addsub_order', unit: 'u1', section: '본단원', label: '덧셈·뺄셈 혼합(순서)', lessonRef: '1차시 덧셈과 뺄셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubOrder },
   { id: 'u1_main_addsub_paren', unit: 'u1', section: '본단원', label: '덧셈·뺄셈 혼합(괄호)', lessonRef: '1차시 덧셈과 뺄셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubParen },
   { id: 'u1_main_addsub_mix', unit: 'u1', section: '본단원', label: '덧셈·뺄셈 혼합(괄호, 순서)', lessonRef: '1차시 덧셈과 뺄셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubParenOrder },
-  { id: 'u1_main_muldiv', unit: 'u1', section: '본단원', label: '곱셈·나눗셈 혼합', lessonRef: '2차시 곱셈과 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMulDivMix },
-  { id: 'u1_main_addsubmul', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·곱셈 혼합', lessonRef: '3차시 덧셈, 뺄셈, 곱셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubMul },
-  { id: 'u1_main_addsubdiv', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·나눗셈 혼합', lessonRef: '4차시 덧셈, 뺄셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubDiv },
-  { id: 'u1_main_mix', unit: 'u1', section: '본단원', label: '사칙 혼합', lessonRef: '5차시 덧셈, 뺄셈, 곱셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMix },
+  { id: 'u1_main_muldiv_order', unit: 'u1', section: '본단원', label: '곱셈·나눗셈 혼합(순서)', lessonRef: '2차시 곱셈과 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMulDivOrder },
+  { id: 'u1_main_muldiv_paren', unit: 'u1', section: '본단원', label: '곱셈·나눗셈 혼합(괄호)', lessonRef: '2차시 곱셈과 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMulDivParen },
+  { id: 'u1_main_muldiv', unit: 'u1', section: '본단원', label: '곱셈·나눗셈 혼합(괄호, 순서)', lessonRef: '2차시 곱셈과 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMulDivMix },
+  { id: 'u1_main_addsubmul_order', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·곱셈 혼합(순서)', lessonRef: '3차시 덧셈, 뺄셈, 곱셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubMulOrder },
+  { id: 'u1_main_addsubmul_paren', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·곱셈 혼합(괄호)', lessonRef: '3차시 덧셈, 뺄셈, 곱셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubMulParen },
+  { id: 'u1_main_addsubmul', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·곱셈 혼합(괄호, 순서)', lessonRef: '3차시 덧셈, 뺄셈, 곱셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubMul },
+  { id: 'u1_main_addsubdiv_order', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·나눗셈 혼합(순서)', lessonRef: '4차시 덧셈, 뺄셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubDivOrder },
+  { id: 'u1_main_addsubdiv_paren', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·나눗셈 혼합(괄호)', lessonRef: '4차시 덧셈, 뺄셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubDivParen },
+  { id: 'u1_main_addsubdiv', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·나눗셈 혼합(괄호, 순서)', lessonRef: '4차시 덧셈, 뺄셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubDiv },
+  { id: 'u1_main_mix_order', unit: 'u1', section: '본단원', label: '사칙 혼합(순서)', lessonRef: '5차시 덧셈, 뺄셈, 곱셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMixOrder },
+  { id: 'u1_main_mix_paren', unit: 'u1', section: '본단원', label: '사칙 혼합(괄호)', lessonRef: '5차시 덧셈, 뺄셈, 곱셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMixParen },
+  { id: 'u1_main_mix', unit: 'u1', section: '본단원', label: '사칙 혼합(괄호, 순서)', lessonRef: '5차시 덧셈, 뺄셈, 곱셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMix },
 
   { id: 'u2_pre_mul', unit: 'u2', section: '선수학습', label: '곱셈구구', lessonRef: '선수학습', kind: 'html', grid: 'dense', count: 36, generator: genU2PreMul },
   { id: 'u2_pre_div', unit: 'u2', section: '선수학습', label: '나눗셈 (한 자리 나누기)', lessonRef: '선수학습', kind: 'html', grid: 'dense', count: 36, generator: genU2PreDiv },
@@ -1755,18 +2028,18 @@ const WORKSHEET_CATALOG = [
   { id: 'u4_main_red', unit: 'u4', section: '본단원', label: '약분', lessonRef: '3차시 약분 알아보기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainRed },
   { id: 'u4_main_lcd_process', unit: 'u4', section: '본단원', label: '통분 (과정 연습)', lessonRef: '4차시 통분 알아보기', kind: 'html', grid: 'concept', count: 8, generator: genU4MainLcdProcess },
   { id: 'u4_main_lcd', unit: 'u4', section: '본단원', label: '통분', lessonRef: '4차시 통분 알아보기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainLcd },
-  { id: 'u4_main_cmp', unit: 'u4', section: '본단원', label: '분수 크기 비교', lessonRef: '5차시 분수의 크기 비교하기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainCmp },
-  { id: 'u4_main_dec_cmp', unit: 'u4', section: '본단원', label: '분수와 소수 크기 비교', lessonRef: '6차시 분수와 소수의 크기 비교하기', kind: 'html', grid: 'practice', count: 15, generator: genU4MainDecCmp },
+  { id: 'u4_main_cmp', unit: 'u4', section: '본단원', label: '분수 크기 비교', lessonRef: '5차시 분수의 크기 비교하기', kind: 'html', grid: 'concept', count: 8, generator: genU4MainCmp },
+  { id: 'u4_main_dec_cmp', unit: 'u4', section: '본단원', label: '분수와 소수 크기 비교', lessonRef: '6차시 분수와 소수의 크기 비교하기', kind: 'html', grid: 'concept', count: 8, generator: genU4MainDecCmp },
 
   { id: 'u5_pre_add', unit: 'u5', section: '선수학습', label: '분모 같은 분수의 덧셈', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU5PreAdd },
   { id: 'u5_pre_sub', unit: 'u5', section: '선수학습', label: '분모 같은 분수의 뺄셈', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU5PreSub },
-  { id: 'u5_main_add', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 덧셈 (합이 1 미만)', lessonRef: '1~2차시 (진분수)+(진분수) 계산하기', kind: 'html', grid: 'practice', count: 15, generator: genU5MainAdd },
-  { id: 'u5_main_add_ge1', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 덧셈 (합이 1 이상)', lessonRef: '1~2차시 (진분수)+(진분수) 계산하기', kind: 'html', grid: 'practice', count: 15, generator: genU5MainAddGe1 },
-  { id: 'u5_main_mixed_add', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 덧셈', lessonRef: '3차시 (대분수)+(대분수) 계산하기', kind: 'html', grid: 'practice', count: 15, generator: genU5MainMixedAdd },
-  { id: 'u5_main_sub', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 뺄셈', lessonRef: '4차시 (진분수)-(진분수) 계산하기', kind: 'html', grid: 'practice', count: 15, generator: genU5MainSub },
-  { id: 'u5_main_mixed_sub_no_borrow', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 뺄셈 (받아내림 없음)', lessonRef: '5차시 (대분수)-(대분수) 계산하기(1)', kind: 'html', grid: 'practice', count: 15, generator: genU5MainMixedSubNoBorrow },
-  { id: 'u5_main_mixed_sub_borrow', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 뺄셈 (받아내림 있음)', lessonRef: '6차시 (대분수)-(대분수) 계산하기(2)', kind: 'html', grid: 'practice', count: 15, generator: genU5MainMixedSubBorrow },
-  { id: 'u5_main_mix', unit: 'u5', section: '본단원', label: '분수 덧셈·뺄셈 혼합', lessonRef: '1~6차시 분수의 덧셈과 뺄셈 혼합', kind: 'html', grid: 'practice', count: 15, generator: genU5MainMix },
+  { id: 'u5_main_add', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 덧셈 (합이 1 미만)', lessonRef: '1~2차시 (진분수)+(진분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainAdd },
+  { id: 'u5_main_add_ge1', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 덧셈 (합이 1 이상)', lessonRef: '1~2차시 (진분수)+(진분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainAddGe1 },
+  { id: 'u5_main_mixed_add', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 덧셈', lessonRef: '3차시 (대분수)+(대분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedAdd },
+  { id: 'u5_main_sub', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 뺄셈', lessonRef: '4차시 (진분수)-(진분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainSub },
+  { id: 'u5_main_mixed_sub_no_borrow', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 뺄셈 (받아내림 없음)', lessonRef: '5차시 (대분수)-(대분수) 계산하기(1)', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedSubNoBorrow },
+  { id: 'u5_main_mixed_sub_borrow', unit: 'u5', section: '본단원', label: '분모 다른 대분수의 뺄셈 (받아내림 있음)', lessonRef: '6차시 (대분수)-(대분수) 계산하기(2)', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedSubBorrow },
+  { id: 'u5_main_mix', unit: 'u5', section: '본단원', label: '분수 덧셈·뺄셈 혼합', lessonRef: '1~6차시 분수의 덧셈과 뺄셈 혼합', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMix },
 
   { id: 'u6_pre_unit', unit: 'u6', section: '선수학습', label: '단위 변환 (cm, m, km)', lessonRef: '선수학습', kind: 'html', grid: 'standard', count: 20, generator: genU6PreUnit },
   { id: 'u6_pre_len', unit: 'u6', section: '선수학습', label: '길이의 합과 차', lessonRef: '선수학습', kind: 'html', grid: 'standard', count: 20, generator: genU6PreLen },
