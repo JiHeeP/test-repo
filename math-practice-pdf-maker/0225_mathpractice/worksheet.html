@@ -447,6 +447,88 @@
       margin: calc(2px * var(--font-scale, 1)) 0;
     }
 
+    .div-method {
+      display: inline-block;
+      text-align: left;
+      font-size: calc(16px * var(--font-scale, 1));
+    }
+
+    .div-method-title {
+      font-size: calc(15px * var(--font-scale, 1));
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .div-method-row {
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .div-method-divisor {
+      min-width: calc(28px * var(--font-scale, 1));
+      text-align: right;
+      padding-right: 2px;
+      font-weight: 500;
+      color: #2d8a4e;
+    }
+
+    .div-method-paren {
+      font-size: calc(18px * var(--font-scale, 1));
+      margin-right: 2px;
+    }
+
+    .div-method-values {
+      display: flex;
+      gap: calc(16px * var(--font-scale, 1));
+      padding: 3px calc(10px * var(--font-scale, 1));
+      border-bottom: 2px solid #333;
+      min-width: calc(100px * var(--font-scale, 1));
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    .div-method-row:last-child .div-method-values {
+      border-bottom: none;
+      background: #fef9e7;
+      border-radius: 4px;
+      padding: 4px calc(10px * var(--font-scale, 1));
+    }
+
+    .div-method-result {
+      margin-top: 8px;
+      font-size: calc(14px * var(--font-scale, 1));
+      text-align: center;
+    }
+
+    .div-method-result-label {
+      display: inline-block;
+      background: #d5f5e3;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: calc(13px * var(--font-scale, 1));
+      color: #1e7e34;
+    }
+
+    .div-method-note {
+      margin-top: 4px;
+      font-size: calc(12px * var(--font-scale, 1));
+      text-align: center;
+      color: #6c7890;
+    }
+
+    .div-method-coprime {
+      display: inline-block;
+      background: #fdebd0;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: calc(12px * var(--font-scale, 1));
+      color: #856404;
+      margin-top: 2px;
+    }
+
     .relation-table {
       margin: 4px auto 0;
       border-collapse: collapse;
@@ -708,6 +790,10 @@ function symBlank(value) {
   return `<span class="sym-blank" data-ans="${escapeAttr(value)}">${value}</span>`;
 }
 
+function multiBlank(values) {
+  return values.map(v => numBlank(v)).join(' ');
+}
+
 function fracBlank(n, d) {
   return `<span class="frac-blank">
     <span class="fb-top" data-ans="${escapeAttr(n)}">${n}</span>
@@ -965,6 +1051,56 @@ function genU1MainAddSubMix() {
   return horizProblem(`${a} + ${b} − ${c}`, numBlank(a + b - c));
 }
 
+function genU1MainAddSubOrder() {
+  const type = rand(1, 4);
+  if (type === 1) {
+    const a = rand(20, 80);
+    const b = rand(20, 80);
+    const c = rand(10, Math.min(a + b - 1, 99));
+    return horizProblem(`${a} + ${b} − ${c}`, numBlank(a + b - c));
+  } else if (type === 2) {
+    const a = rand(30, 90);
+    const b = rand(10, a - 1);
+    const c = rand(10, 80);
+    return horizProblem(`${a} − ${b} + ${c}`, numBlank(a - b + c));
+  } else if (type === 3) {
+    const a = rand(20, 60);
+    const b = rand(10, 40);
+    const c = rand(10, 40);
+    const d = rand(10, Math.min(a + b + c - 1, 50));
+    return horizProblem(`${a} + ${b} + ${c} − ${d}`, numBlank(a + b + c - d));
+  } else {
+    const a = rand(50, 99);
+    const b = rand(10, 30);
+    const c = rand(10, 30);
+    return horizProblem(`${a} − ${b} − ${c}`, numBlank(a - b - c));
+  }
+}
+
+function genU1MainAddSubParen() {
+  const type = rand(1, 3);
+  if (type === 1) {
+    const b = rand(10, 40);
+    const c = rand(10, 40);
+    const a = rand(b + c, 99);
+    return horizProblem(`${a} − (${b} + ${c})`, numBlank(a - (b + c)));
+  } else if (type === 2) {
+    const a = rand(20, 60);
+    const c = rand(10, 40);
+    const b = rand(c + 1, c + 40);
+    return horizProblem(`${a} + (${b} − ${c})`, numBlank(a + (b - c)));
+  } else {
+    const b = rand(20, 60);
+    const c = rand(10, b - 1);
+    const a = rand(10, 50);
+    return horizProblem(`${a} − (${b} − ${c})`, numBlank(a - (b - c)));
+  }
+}
+
+function genU1MainAddSubParenOrder() {
+  return rand(1, 2) === 1 ? genU1MainAddSubOrder() : genU1MainAddSubParen();
+}
+
 function genU1MainMulDivMix() {
   const a = rand(2, 9);
   const c = rand(2, 8);
@@ -1032,14 +1168,14 @@ function genU2PreDiv() {
 
 function genU2MainFactorConcept() {
   const n = randChoice([12, 14, 15, 16, 18, 20, 24, 28, 30]);
-  const answer = factorsOf(n).join(', ');
-  return conceptProblem(`${n}의 약수를 작은 수부터 모두 써 보세요.`, textBlank(answer, 150), '쉼표로 구분해 보세요.');
+  const factors = factorsOf(n);
+  return conceptProblem(`${n}의 약수`, multiBlank(factors));
 }
 
 function genU2MainMultipleConcept() {
   const n = rand(3, 9);
-  const answer = multiplesOf(n, 5).join(', ');
-  return conceptProblem(`${n}의 배수를 작은 수부터 다섯 개 써 보세요.`, textBlank(answer, 150), `${n}씩 커지는 수를 찾으면 됩니다.`);
+  const multiples = multiplesOf(n, 5);
+  return conceptProblem(`${n}의 배수 5개`, multiBlank(multiples));
 }
 
 function genU2MainCommonFactorConcept() {
@@ -1048,31 +1184,107 @@ function genU2MainCommonFactorConcept() {
   const q = rand(2, 5);
   const a = g * p;
   const b = g * q;
-  const answer = factorsOf(gcd(a, b)).join(', ');
-  return conceptProblem(`${a}와 ${b}의 공약수를 모두 써 보세요.`, textBlank(answer, 130), '두 수를 모두 나누는 수를 찾습니다.');
+  const commonFactors = factorsOf(gcd(a, b));
+  return conceptProblem(`${a}와 ${b}의 공약수`, multiBlank(commonFactors));
+}
+
+function divMethodSteps(a, b) {
+  const steps = [];
+  let x = a, y = b;
+  for (let d = 2; d <= Math.min(x, y); ) {
+    if (x % d === 0 && y % d === 0) {
+      steps.push({ divisor: d, vals: [x, y] });
+      x = x / d;
+      y = y / d;
+    } else {
+      d++;
+    }
+  }
+  steps.push({ divisor: null, vals: [x, y] });
+  return steps;
+}
+
+function buildDivMethodHtml(a, b, mode) {
+  const steps = divMethodSteps(a, b);
+  const divisors = steps.filter(s => s.divisor !== null).map(s => s.divisor);
+  const lastVals = steps[steps.length - 1].vals;
+  const gcdVal = divisors.reduce((acc, d) => acc * d, 1);
+
+  let rowsHtml = '';
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i];
+    if (s.divisor !== null) {
+      rowsHtml += `<div class="div-method-row">
+        <span class="div-method-divisor">${numBlank(s.divisor)}</span>
+        <span class="div-method-paren">)</span>
+        <span class="div-method-values">${s.vals.map(v => `<span data-ans="${v}">${v}</span>`).join('')}</span>
+      </div>`;
+    } else {
+      rowsHtml += `<div class="div-method-row">
+        <span class="div-method-divisor"></span>
+        <span class="div-method-paren" style="visibility:hidden">)</span>
+        <span class="div-method-values">${s.vals.map(v => `<span data-ans="${v}">${v}</span>`).join('')}</span>
+      </div>`;
+    }
+  }
+
+  const divisorStr = divisors.map(String).join(' × ');
+  let resultHtml = '';
+  if (mode === 'gcd') {
+    resultHtml = `<div class="div-method-result">
+      <span class="div-method-result-label">최대공약수는 ${numBlank(divisorStr + ' = ' + gcdVal)}</span>
+    </div>`;
+    if (gcd(lastVals[0], lastVals[1]) === 1) {
+      resultHtml += `<div class="div-method-note"><span class="div-method-coprime">${lastVals[0]}와 ${lastVals[1]}는 서로소이다.</span></div>`;
+    }
+  } else {
+    const lcmVal = gcdVal * lastVals[0] * lastVals[1];
+    const allFactors = [...divisors, ...lastVals];
+    const lcmStr = allFactors.map(String).join(' × ');
+    resultHtml = `<div class="div-method-result">
+      <span class="div-method-result-label">최소공배수는 ${numBlank(lcmStr + ' = ' + lcmVal)}</span>
+    </div>`;
+  }
+
+  return `<div class="div-method">
+    <div class="div-method-title">${a}과 ${b}의 ${mode === 'gcd' ? '최대공약수' : '최소공배수'} 구하기</div>
+    ${rowsHtml}
+    ${resultHtml}
+  </div>`;
 }
 
 function genU2MainGcd() {
-  const g = rand(2, 6);
-  const p = rand(2, 7);
-  const q = rand(2, 7);
+  const g = randChoice([2, 3, 4, 6]);
+  let p, q;
+  do {
+    p = rand(2, 7);
+    q = rand(2, 7);
+  } while (gcd(p, q) !== 1 || p === q);
   const a = g * p;
   const b = g * q;
-  return horizProblem(`최대공약수 (${a}, ${b})`, numBlank(gcd(a, b)));
+  const html = buildDivMethodHtml(a, b, 'gcd');
+  return htmlProblem('concept-layout', `<div class="concept-card">${html}</div>`);
 }
 
 function genU2MainCommonMultipleConcept() {
   const a = rand(2, 7);
   const b = rand(2, 7);
   const base = lcm(a, b);
-  const answer = [base, base * 2, base * 3, base * 4, base * 5].join(', ');
-  return conceptProblem(`${a}와 ${b}의 공배수 중 작은 수부터 다섯 개 써 보세요.`, textBlank(answer, 190), '최소공배수의 배수를 이용하면 쉽게 찾을 수 있습니다.');
+  const multiples = [base, base * 2, base * 3, base * 4, base * 5];
+  return conceptProblem(`${a}와 ${b}의 공배수 5개`, multiBlank(multiples));
 }
 
 function genU2MainLcm() {
-  const a = rand(2, 8);
-  const b = rand(2, 8);
-  return horizProblem(`최소공배수 (${a}, ${b})`, numBlank(lcm(a, b)));
+  const g = randChoice([2, 3, 4, 6]);
+  let p, q;
+  do {
+    p = rand(2, 7);
+    q = rand(2, 7);
+  } while (gcd(p, q) !== 1 || p === q);
+  const a = g * p;
+  const b = g * q;
+  const html = buildDivMethodHtml(a, b, 'lcm');
+  return htmlProblem('concept-layout', `<div class="concept-card">${html}</div>`);
 }
 
 function genU2MainMix() {
@@ -1511,7 +1723,9 @@ const WORKSHEET_CATALOG = [
   { id: 'u1_pre_div', unit: 'u1', section: '선수학습', label: '두 자리 수 나눗셈 (가로셈)', lessonRef: '선수학습', kind: 'html', grid: 'standard', count: 20, generator: genU1PreDiv },
   { id: 'u1_pre_div_3d2', unit: 'u1', section: '선수학습', label: '세 자리 수 ÷ 두 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'divgrid', count: 9, generator: genDiv3d2 },
   { id: 'u1_pre_div_3d1', unit: 'u1', section: '선수학습', label: '세 자리 수 ÷ 한 자리 수 (세로셈)', lessonRef: '선수학습', kind: 'pdf', grid: 'divgrid', count: 9, generator: genDiv3d1 },
-  { id: 'u1_main_addsub', unit: 'u1', section: '본단원', label: '덧셈·뺄셈 혼합', lessonRef: '1차시 덧셈과 뺄셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubMix },
+  { id: 'u1_main_addsub_order', unit: 'u1', section: '본단원', label: '덧셈·뺄셈 혼합(순서)', lessonRef: '1차시 덧셈과 뺄셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubOrder },
+  { id: 'u1_main_addsub_paren', unit: 'u1', section: '본단원', label: '덧셈·뺄셈 혼합(괄호)', lessonRef: '1차시 덧셈과 뺄셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubParen },
+  { id: 'u1_main_addsub_mix', unit: 'u1', section: '본단원', label: '덧셈·뺄셈 혼합(괄호, 순서)', lessonRef: '1차시 덧셈과 뺄셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubParenOrder },
   { id: 'u1_main_muldiv', unit: 'u1', section: '본단원', label: '곱셈·나눗셈 혼합', lessonRef: '2차시 곱셈과 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainMulDivMix },
   { id: 'u1_main_addsubmul', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·곱셈 혼합', lessonRef: '3차시 덧셈, 뺄셈, 곱셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubMul },
   { id: 'u1_main_addsubdiv', unit: 'u1', section: '본단원', label: '덧셈·뺄셈·나눗셈 혼합', lessonRef: '4차시 덧셈, 뺄셈, 나눗셈이 섞여 있는 식 계산하기', kind: 'html', grid: 'standard', count: 20, generator: genU1MainAddSubDiv },
@@ -1522,9 +1736,9 @@ const WORKSHEET_CATALOG = [
   { id: 'u2_main_factor', unit: 'u2', section: '본단원', label: '약수 이해', lessonRef: '1차시 약수 이해하기', kind: 'html', grid: 'concept', count: 10, generator: genU2MainFactorConcept },
   { id: 'u2_main_multiple', unit: 'u2', section: '본단원', label: '배수 이해', lessonRef: '2차시 배수 이해하기', kind: 'html', grid: 'concept', count: 10, generator: genU2MainMultipleConcept },
   { id: 'u2_main_common_factor', unit: 'u2', section: '본단원', label: '공약수 이해', lessonRef: '3차시 공약수와 최대공약수 이해하기', kind: 'html', grid: 'concept', count: 10, generator: genU2MainCommonFactorConcept },
-  { id: 'u2_main_gcd', unit: 'u2', section: '본단원', label: '최대공약수', lessonRef: '4차시 두 수의 최대공약수 구하기', kind: 'html', grid: 'standard', count: 20, generator: genU2MainGcd },
+  { id: 'u2_main_gcd', unit: 'u2', section: '본단원', label: '최대공약수', lessonRef: '4차시 두 수의 최대공약수 구하기', kind: 'html', grid: 'concept', count: 6, generator: genU2MainGcd },
   { id: 'u2_main_common_multiple', unit: 'u2', section: '본단원', label: '공배수 이해', lessonRef: '5차시 공배수와 최소공배수 이해하기', kind: 'html', grid: 'concept', count: 10, generator: genU2MainCommonMultipleConcept },
-  { id: 'u2_main_lcm', unit: 'u2', section: '본단원', label: '최소공배수', lessonRef: '6차시 두 수의 최소공배수 구하기', kind: 'html', grid: 'standard', count: 20, generator: genU2MainLcm },
+  { id: 'u2_main_lcm', unit: 'u2', section: '본단원', label: '최소공배수', lessonRef: '6차시 두 수의 최소공배수 구하기', kind: 'html', grid: 'concept', count: 6, generator: genU2MainLcm },
   { id: 'u2_main_mix', unit: 'u2', section: '본단원', label: '약수·배수 혼합', lessonRef: '3~6차시 약수와 배수 혼합', kind: 'html', grid: 'concept', count: 10, generator: genU2MainMix },
 
   { id: 'u3_main_relation_find1', unit: 'u3', section: '본단원', label: '두 양 사이의 관계 찾기 (1)', lessonRef: '1차시 두 양 사이의 관계 알아보기(1)', kind: 'html', grid: 'concept', count: 10, generator: genU3MainRelationFind1 },
