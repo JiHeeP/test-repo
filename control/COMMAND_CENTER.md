@@ -32,10 +32,10 @@
 - 인간 최종판단: 전략, 민감정보, 최종 발신
 
 ## 5) 문서 역할 맵
+- `AGENTS.md`: 핵심 원칙(짧게)
+- `control/COMMAND_CENTER.md`: 세부 운영 규칙 단일 소스
 - `SOUL.md`: 톤/태도
-- `AGENTS.md`: 운영 규칙
 - `DECISION_BOUNDARY.md`: 인간/에이전트 경계
-- `AGENT_GUIDELINE.md`: 에이전트별 책임
 - `TOOLS.md`: 로컬 환경 메모
 - `USER.md`: 사용자 프로필
 
