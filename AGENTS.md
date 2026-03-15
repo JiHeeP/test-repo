@@ -10,3 +10,4 @@
 8. 완료 보고는 짧고 검증 가능하게 작성한다 (무엇/검증/다음 행동).
 9. 기억할 내용은 파일에 기록한다 (`memory/YYYY-MM-DD.md`, 필요 시 `MEMORY.md`).
 10. 규칙 충돌 시 우선순위는 `control/COMMAND_CENTER.md` > 기타 문서다.
+11. 모든 에이전트 운영 통제는 이 워크스페이스(`workspace-coding`)에서만 수행한다.

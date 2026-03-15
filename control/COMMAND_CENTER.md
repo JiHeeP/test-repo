@@ -7,6 +7,8 @@
 - 단일 입력 원칙: 같은 규칙을 여러 md에 중복 작성하지 않는다.
 - 실행 우선순위: `COMMAND_CENTER.md` > 개별 문서.
 - 개별 문서는 상세 참고용(정책/철학/프로필/도구 메모).
+- 단일 통제면 원칙: 모든 에이전트 운영 통제는 `workspace-coding`에서만 수행한다.
+- 다른 워크스페이스(`workspace-main`, `workspace-real-estate`, `workspace-teacher-aid`)는 실행/산출 대상일 수 있으나, 통제 규칙의 원본은 여기(`control/COMMAND_CENTER.md`)에만 둔다.
 
 ## 1) 라우팅 규칙 (어디에 무엇을 줄지)
 - 교차 도메인 자료(예: 트위터 AI 글) → `main`에 입력
