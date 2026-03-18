@@ -82,3 +82,20 @@
 - 트리거: 메시지가 `[학생기록]` 또는 `[관찰기록]`로 시작하면 forfun intake API(`POST /api/ops/intake-observation`)로 기록 처리한다.
 - 우선 파싱 필드: 학생(번호/이름), 영역(카테고리), 내용, 관찰시각.
 - 필수 필드 누락 시: 누락 항목만 짧게 재질문 후 저장.
+
+## 9) Superpowers 코어 스킬 라우팅 (coding)
+- 로컬 경로: `skills/superpowers-core/`
+- 최소 도입 세트(효율 우선):
+  1) `brainstorming`
+  2) `writing-plans`
+  3) `test-driven-development`
+  4) `systematic-debugging`
+  5) `requesting-code-review`
+  6) `finishing-a-development-branch`
+- 트리거 규칙:
+  - 기능 개발 시작 요청 → `brainstorming` 후 `writing-plans`
+  - 구현 단계 → `test-driven-development`
+  - 버그/원인 불명 장애 → `systematic-debugging`
+  - 작업 중간/완료 점검 → `requesting-code-review`
+  - 브랜치 마무리/PR 준비 → `finishing-a-development-branch`
+- 운영 원칙: 모든 슈퍼파워 스킬은 "전부"가 아니라 위 6개 코어만 우선 적용한다.
