@@ -99,3 +99,8 @@
   - 작업 중간/완료 점검 → `requesting-code-review`
   - 브랜치 마무리/PR 준비 → `finishing-a-development-branch`
 - 운영 원칙: 모든 슈퍼파워 스킬은 "전부"가 아니라 위 6개 코어만 우선 적용한다.
+
+## 10) Kimi × Railway 연동 고정 참조 규칙
+- `external/vocab-bridge-builders`에서 Kimi 연동/장애 대응 작업을 할 때는 아래 런북을 먼저 확인한다.
+  - `docs/kimi-railway-integration-runbook.md`
+- 특히 401/모델ID/베이스URL 이슈는 임의 추정하지 말고 `ai-auth-check`로 먼저 검증한다.
