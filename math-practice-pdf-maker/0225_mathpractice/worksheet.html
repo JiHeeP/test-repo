@@ -849,6 +849,54 @@ function markSheetNumbers(nums) {
   nums.forEach((n) => sheetContext.usedNumbers.add(n));
 }
 
+/* Extract the "input numbers" of a generated problem so we can
+   detect duplicates across problems on the same sheet. For HTML
+   problems, parse visible text nodes while skipping `[data-ans]`
+   elements (those are answer blanks, not inputs). */
+function extractProblemNumbers(problem) {
+  if (!problem || typeof problem !== 'object') return [];
+  if (problem.kind === 'vertical') {
+    const out = [];
+    if (Number.isFinite(problem.num1)) out.push(problem.num1);
+    if (Number.isFinite(problem.num2)) out.push(problem.num2);
+    return out;
+  }
+  if (problem.kind === 'longdiv') {
+    const out = [];
+    if (Number.isFinite(problem.dvsr)) out.push(problem.dvsr);
+    if (Number.isFinite(problem.dvnd)) out.push(problem.dvnd);
+    return out;
+  }
+  if (problem.kind === 'html' && typeof problem.html === 'string') {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = problem.html;
+    tmp.querySelectorAll('[data-ans]').forEach((el) => el.remove());
+    const text = tmp.textContent || '';
+    const matches = text.match(/\d+/g);
+    if (!matches) return [];
+    return matches.map(Number);
+  }
+  return [];
+}
+
+/* Call a generator repeatedly until its produced problem contains no
+   numbers already used on the current sheet. After ~80 failed tries,
+   fall back to accepting a duplicate rather than hanging (some
+   generators have too small a number space for strict uniqueness). */
+function generateWithUnique(generatorFn, maxAttempts = 80) {
+  for (let i = 0; i < maxAttempts; i++) {
+    const problem = generatorFn();
+    const nums = extractProblemNumbers(problem);
+    if (nums.length === 0 || !sheetHasAny(nums)) {
+      markSheetNumbers(nums);
+      return problem;
+    }
+  }
+  const problem = generatorFn();
+  markSheetNumbers(extractProblemNumbers(problem));
+  return problem;
+}
+
 function escapeAttr(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -1509,18 +1557,8 @@ function pickGcdLcmPair() {
   return [g * p, g * q];
 }
 
-function pickUniqueGcdLcmPair() {
-  for (let attempts = 0; attempts < 200; attempts++) {
-    const [a, b] = pickGcdLcmPair();
-    if (!sheetHasAny([a, b])) return [a, b];
-  }
-  // Fallback: space exhausted, accept a duplicate rather than hang
-  return pickGcdLcmPair();
-}
-
 function genU2MainGcd() {
-  const [a, b] = pickUniqueGcdLcmPair();
-  markSheetNumbers([a, b]);
+  const [a, b] = pickGcdLcmPair();
   const html = buildDivMethodHtml(a, b, 'gcd');
   return htmlProblem('concept-layout', `<div class="concept-card">${html}</div>`);
 }
@@ -1534,8 +1572,7 @@ function genU2MainCommonMultipleConcept() {
 }
 
 function genU2MainLcm() {
-  const [a, b] = pickUniqueGcdLcmPair();
-  markSheetNumbers([a, b]);
+  const [a, b] = pickGcdLcmPair();
   const html = buildDivMethodHtml(a, b, 'lcm');
   return htmlProblem('concept-layout', `<div class="concept-card">${html}</div>`);
 }
@@ -2880,7 +2917,7 @@ function createSheet(item, countOverride, fontScale = 1) {
     applyGridLayout(grid, layout);
 
     for (let i = 1; i <= count; i++) {
-      const problem = PDF_GENERATORS[opType]();
+      const problem = generateWithUnique(PDF_GENERATORS[opType]);
       grid.insertAdjacentHTML('beforeend', renderPdfProblem(opType, problem, i));
     }
 
@@ -2913,7 +2950,7 @@ function createSheet(item, countOverride, fontScale = 1) {
   applyGridLayout(grid, layout);
 
   for (let i = 1; i <= count; i++) {
-    const problem = item.generator();
+    const problem = generateWithUnique(item.generator);
     grid.insertAdjacentHTML('beforeend', renderItem(problem, i));
   }
 
