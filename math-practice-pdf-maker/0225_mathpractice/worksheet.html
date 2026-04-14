@@ -828,6 +828,27 @@ function simplify(n, d) {
   return [n / g, d / g];
 }
 
+/* ── sheet-scoped context: tracks numbers used within a single sheet
+   so generators can avoid duplicates across problems ── */
+const sheetContext = {
+  usedNumbers: new Set(),
+};
+
+function resetSheetContext() {
+  sheetContext.usedNumbers.clear();
+}
+
+function sheetHasAny(nums) {
+  for (const n of nums) {
+    if (sheetContext.usedNumbers.has(n)) return true;
+  }
+  return false;
+}
+
+function markSheetNumbers(nums) {
+  nums.forEach((n) => sheetContext.usedNumbers.add(n));
+}
+
 function escapeAttr(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -1478,15 +1499,28 @@ function buildDivMethodHtml(a, b, mode) {
   </div>`;
 }
 
-function genU2MainGcd() {
+function pickGcdLcmPair() {
   const g = randChoice([2, 3, 4, 6]);
   let p, q;
   do {
     p = rand(2, 7);
     q = rand(2, 7);
   } while (gcd(p, q) !== 1 || p === q);
-  const a = g * p;
-  const b = g * q;
+  return [g * p, g * q];
+}
+
+function pickUniqueGcdLcmPair() {
+  for (let attempts = 0; attempts < 200; attempts++) {
+    const [a, b] = pickGcdLcmPair();
+    if (!sheetHasAny([a, b])) return [a, b];
+  }
+  // Fallback: space exhausted, accept a duplicate rather than hang
+  return pickGcdLcmPair();
+}
+
+function genU2MainGcd() {
+  const [a, b] = pickUniqueGcdLcmPair();
+  markSheetNumbers([a, b]);
   const html = buildDivMethodHtml(a, b, 'gcd');
   return htmlProblem('concept-layout', `<div class="concept-card">${html}</div>`);
 }
@@ -1500,14 +1534,8 @@ function genU2MainCommonMultipleConcept() {
 }
 
 function genU2MainLcm() {
-  const g = randChoice([2, 3, 4, 6]);
-  let p, q;
-  do {
-    p = rand(2, 7);
-    q = rand(2, 7);
-  } while (gcd(p, q) !== 1 || p === q);
-  const a = g * p;
-  const b = g * q;
+  const [a, b] = pickUniqueGcdLcmPair();
+  markSheetNumbers([a, b]);
   const html = buildDivMethodHtml(a, b, 'lcm');
   return htmlProblem('concept-layout', `<div class="concept-card">${html}</div>`);
 }
@@ -2824,6 +2852,7 @@ function renderItem(problem, idx) {
 }
 
 function createSheet(item, countOverride, fontScale = 1) {
+  resetSheetContext();
   if (isPdfWorksheet(item)) {
     const opType = getPdfOpType(item);
     const cfg = PDF_LAYOUTS[opType];
