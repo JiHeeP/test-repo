@@ -512,13 +512,53 @@
     }
 
     .div-method {
-      display: inline-block;
-      text-align: left;
       font-size: calc(16px * var(--font-scale, 1));
     }
 
+    .div-method-split {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: calc(14px * var(--font-scale, 1));
+      width: 100%;
+    }
+
+    .div-method-left {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .div-method-right {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-left: 1.5px dashed #d7dee8;
+      padding-left: calc(12px * var(--font-scale, 1));
+      min-width: calc(92px * var(--font-scale, 1));
+    }
+
+    .div-method-answer-label {
+      font-size: calc(13px * var(--font-scale, 1));
+      font-weight: 600;
+      color: #2f3640;
+      margin-bottom: 6px;
+      white-space: nowrap;
+    }
+
+    .div-method-answer-box .num-blank {
+      min-width: calc(70px * var(--font-scale, 1));
+      min-height: calc(38px * var(--font-scale, 1));
+      font-size: calc(18px * var(--font-scale, 1));
+    }
+
     .div-method-title {
-      font-size: calc(15px * var(--font-scale, 1));
+      font-size: calc(14px * var(--font-scale, 1));
       font-weight: 600;
       margin-bottom: 6px;
       text-align: center;
@@ -534,8 +574,16 @@
       min-width: calc(28px * var(--font-scale, 1));
       text-align: right;
       padding-right: 2px;
-      font-weight: 500;
-      color: #2d8a4e;
+    }
+
+    .div-method-divisor-blank {
+      display: inline-block;
+      width: calc(24px * var(--font-scale, 1));
+      height: calc(24px * var(--font-scale, 1));
+      border: 1.2px solid #666;
+      border-radius: 5px;
+      background: white;
+      vertical-align: middle;
     }
 
     .div-method-paren {
@@ -553,44 +601,18 @@
       font-weight: 600;
     }
 
-    .div-method-row:last-child .div-method-values {
+    .div-method-values-final {
       border-bottom: none;
-      background: #fef9e7;
-      border-radius: 4px;
       padding: 4px calc(10px * var(--font-scale, 1));
     }
 
-    .div-method-result {
-      margin-top: 8px;
-      font-size: calc(14px * var(--font-scale, 1));
-      text-align: center;
-    }
-
-    .div-method-result-label {
+    .div-method-val-blank {
       display: inline-block;
-      background: #d5f5e3;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: calc(13px * var(--font-scale, 1));
-      color: #1e7e34;
-    }
-
-    .div-method-note {
-      margin-top: 4px;
-      font-size: calc(12px * var(--font-scale, 1));
-      text-align: center;
-      color: #6c7890;
-    }
-
-    .div-method-coprime {
-      display: inline-block;
-      background: #fdebd0;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: calc(12px * var(--font-scale, 1));
-      color: #856404;
-      margin-top: 2px;
+      width: calc(24px * var(--font-scale, 1));
+      height: calc(24px * var(--font-scale, 1));
+      border: 1.2px solid #666;
+      border-radius: 5px;
+      background: white;
     }
 
     .relation-table {
@@ -1440,47 +1462,44 @@ function buildDivMethodHtml(a, b, mode) {
   const divisors = steps.filter(s => s.divisor !== null).map(s => s.divisor);
   const lastVals = steps[steps.length - 1].vals;
   const gcdVal = divisors.reduce((acc, d) => acc * d, 1);
+  const lcmVal = gcdVal * lastVals[0] * lastVals[1];
 
   let rowsHtml = '';
   for (let i = 0; i < steps.length; i++) {
     const s = steps[i];
-    if (s.divisor !== null) {
+    const isFirst = i === 0;
+    const isLast = s.divisor === null;
+    const valuesHtml = s.vals.map((v) => {
+      if (isFirst) return `<span>${v}</span>`;
+      return `<span class="div-method-val-blank"></span>`;
+    }).join('');
+    if (!isLast) {
       rowsHtml += `<div class="div-method-row">
-        <span class="div-method-divisor">${numBlank(s.divisor)}</span>
+        <span class="div-method-divisor"><span class="div-method-divisor-blank"></span></span>
         <span class="div-method-paren">)</span>
-        <span class="div-method-values">${s.vals.map(v => `<span data-ans="${v}">${v}</span>`).join('')}</span>
+        <span class="div-method-values">${valuesHtml}</span>
       </div>`;
     } else {
       rowsHtml += `<div class="div-method-row">
         <span class="div-method-divisor"></span>
         <span class="div-method-paren" style="visibility:hidden">)</span>
-        <span class="div-method-values">${s.vals.map(v => `<span data-ans="${v}">${v}</span>`).join('')}</span>
+        <span class="div-method-values div-method-values-final">${valuesHtml}</span>
       </div>`;
     }
   }
 
-  const divisorStr = divisors.map(String).join(' × ');
-  let resultHtml = '';
-  if (mode === 'gcd') {
-    resultHtml = `<div class="div-method-result">
-      <span class="div-method-result-label">최대공약수는 ${numBlank(divisorStr + ' = ' + gcdVal)}</span>
-    </div>`;
-    if (gcd(lastVals[0], lastVals[1]) === 1) {
-      resultHtml += `<div class="div-method-note"><span class="div-method-coprime">${lastVals[0]}와 ${lastVals[1]}는 서로소이다.</span></div>`;
-    }
-  } else {
-    const lcmVal = gcdVal * lastVals[0] * lastVals[1];
-    const allFactors = [...divisors, ...lastVals];
-    const lcmStr = allFactors.map(String).join(' × ');
-    resultHtml = `<div class="div-method-result">
-      <span class="div-method-result-label">최소공배수는 ${numBlank(lcmStr + ' = ' + lcmVal)}</span>
-    </div>`;
-  }
+  const answerLabel = mode === 'gcd' ? '최대공약수' : '최소공배수';
+  const answerVal = mode === 'gcd' ? gcdVal : lcmVal;
 
-  return `<div class="div-method">
-    <div class="div-method-title">${a}과 ${b}의 ${mode === 'gcd' ? '최대공약수' : '최소공배수'} 구하기</div>
-    ${rowsHtml}
-    ${resultHtml}
+  return `<div class="div-method div-method-split">
+    <div class="div-method-left">
+      <div class="div-method-title">${a}과 ${b}의 ${answerLabel} 구하기</div>
+      ${rowsHtml}
+    </div>
+    <div class="div-method-right">
+      <div class="div-method-answer-label">${answerLabel}</div>
+      <div class="div-method-answer-box">${numBlank(answerVal)}</div>
+    </div>
   </div>`;
 }
 
@@ -1767,6 +1786,47 @@ function genU5PreAdd() {
   const a = rand(1, Math.floor(d / 2));
   const b = rand(1, d - a - 1);
   return htmlProblem('frac-row', `${fracD(a, d)} <span class="op-txt">+</span> ${fracD(b, d)} <span class="eq-txt">=</span> ${formulaResultHtml(a + b, d)}`);
+}
+
+function genU5PreAddGe1() {
+  const d = rand(3, 10);
+  let a, b;
+  do {
+    a = rand(1, d - 1);
+    b = rand(1, d - 1);
+  } while (a + b < d);
+  return htmlProblem('frac-row', `${fracD(a, d)} <span class="op-txt">+</span> ${fracD(b, d)} <span class="eq-txt">=</span> ${formulaResultHtml(a + b, d)}`);
+}
+
+function genU5PreMixedSub() {
+  const d = rand(3, 10);
+  const w = rand(1, 3);
+  const wn = rand(0, d - 1);
+  const b = rand(1, d - 1);
+  const totalNum = w * d + wn;
+  if (totalNum <= b) return genU5PreMixedSub();
+  const resultNum = totalNum - b;
+  return htmlProblem('frac-row', `${wn === 0 ? w : mixedD(w, wn, d)} <span class="op-txt">−</span> ${fracD(b, d)} <span class="eq-txt">=</span> ${formulaResultHtml(resultNum, d)}`);
+}
+
+function genU5PreMixedToImproperProcess() {
+  const d = rand(2, 8);
+  const w = rand(1, 4);
+  const n = rand(1, d - 1);
+  const imp = w * d + n;
+  return htmlProblem('concept-layout', `
+    <div class="concept-card">
+      <div class="concept-answer">${mixedD(w, n, d)} <span class="eq-txt">=</span> ${fracD(`${numBlank(w)} × ${numBlank(d)} + ${numBlank(n)}`, d)} <span class="eq-txt">=</span> ${fracBlank(imp, d)}</div>
+    </div>
+  `);
+}
+
+function genU5PreMixedToImproper() {
+  const d = rand(2, 8);
+  const w = rand(1, 4);
+  const n = rand(1, d - 1);
+  const imp = w * d + n;
+  return htmlProblem('frac-row', `${mixedD(w, n, d)} <span class="eq-txt">=</span> ${fracBlank(imp, d)}`);
 }
 
 function genU5PreSub() {
@@ -2309,7 +2369,11 @@ const WORKSHEET_CATALOG = [
   { id: 'u4_main_dec_cmp', unit: 'u4', section: '본단원', label: '분수와 소수 크기 비교', lessonRef: '6차시 분수와 소수의 크기 비교하기', kind: 'html', grid: 'concept', count: 8, generator: genU4MainDecCmp },
 
   { id: 'u5_pre_add', unit: 'u5', section: '선수학습', label: '분모 같은 분수의 덧셈', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU5PreAdd },
+  { id: 'u5_pre_add_ge1', unit: 'u5', section: '선수학습', label: '분모 같은 분수의 덧셈 (합이 1 이상)', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU5PreAddGe1 },
   { id: 'u5_pre_sub', unit: 'u5', section: '선수학습', label: '분모 같은 분수의 뺄셈', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU5PreSub },
+  { id: 'u5_pre_mixed_sub', unit: 'u5', section: '선수학습', label: '대분수 − 분수 (분모 같은)', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU5PreMixedSub },
+  { id: 'u5_pre_mixed_to_improper_process', unit: 'u5', section: '선수학습', label: '대분수 → 가분수 (과정 연습)', lessonRef: '선수학습', kind: 'html', grid: 'concept', count: 8, generator: genU5PreMixedToImproperProcess },
+  { id: 'u5_pre_mixed_to_improper', unit: 'u5', section: '선수학습', label: '대분수 → 가분수', lessonRef: '선수학습', kind: 'html', grid: 'practice', count: 15, generator: genU5PreMixedToImproper },
   { id: 'u5_main_add', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 덧셈 (합이 1 미만)', lessonRef: '1~2차시 (진분수)+(진분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainAdd },
   { id: 'u5_main_add_ge1', unit: 'u5', section: '본단원', label: '분모 다른 진분수의 덧셈 (합이 1 이상)', lessonRef: '1~2차시 (진분수)+(진분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainAddGe1 },
   { id: 'u5_main_mixed_add_improper', unit: 'u5', section: '본단원', label: '대분수 덧셈 (가분수 변환)', lessonRef: '3차시 (대분수)+(대분수) 계산하기', kind: 'html', grid: 'wide', count: 8, generator: genU5MainMixedAddImproper },
