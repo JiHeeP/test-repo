@@ -512,13 +512,53 @@
     }
 
     .div-method {
-      display: inline-block;
-      text-align: left;
       font-size: calc(16px * var(--font-scale, 1));
     }
 
+    .div-method-split {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: calc(14px * var(--font-scale, 1));
+      width: 100%;
+    }
+
+    .div-method-left {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .div-method-right {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-left: 1.5px dashed #d7dee8;
+      padding-left: calc(12px * var(--font-scale, 1));
+      min-width: calc(92px * var(--font-scale, 1));
+    }
+
+    .div-method-answer-label {
+      font-size: calc(13px * var(--font-scale, 1));
+      font-weight: 600;
+      color: #2f3640;
+      margin-bottom: 6px;
+      white-space: nowrap;
+    }
+
+    .div-method-answer-box .num-blank {
+      min-width: calc(70px * var(--font-scale, 1));
+      min-height: calc(38px * var(--font-scale, 1));
+      font-size: calc(18px * var(--font-scale, 1));
+    }
+
     .div-method-title {
-      font-size: calc(15px * var(--font-scale, 1));
+      font-size: calc(14px * var(--font-scale, 1));
       font-weight: 600;
       margin-bottom: 6px;
       text-align: center;
@@ -534,8 +574,16 @@
       min-width: calc(28px * var(--font-scale, 1));
       text-align: right;
       padding-right: 2px;
-      font-weight: 500;
-      color: #2d8a4e;
+    }
+
+    .div-method-divisor-blank {
+      display: inline-block;
+      width: calc(24px * var(--font-scale, 1));
+      height: calc(24px * var(--font-scale, 1));
+      border: 1.2px solid #666;
+      border-radius: 5px;
+      background: white;
+      vertical-align: middle;
     }
 
     .div-method-paren {
@@ -553,44 +601,18 @@
       font-weight: 600;
     }
 
-    .div-method-row:last-child .div-method-values {
+    .div-method-values-final {
       border-bottom: none;
-      background: #fef9e7;
-      border-radius: 4px;
       padding: 4px calc(10px * var(--font-scale, 1));
     }
 
-    .div-method-result {
-      margin-top: 8px;
-      font-size: calc(14px * var(--font-scale, 1));
-      text-align: center;
-    }
-
-    .div-method-result-label {
+    .div-method-val-blank {
       display: inline-block;
-      background: #d5f5e3;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: calc(13px * var(--font-scale, 1));
-      color: #1e7e34;
-    }
-
-    .div-method-note {
-      margin-top: 4px;
-      font-size: calc(12px * var(--font-scale, 1));
-      text-align: center;
-      color: #6c7890;
-    }
-
-    .div-method-coprime {
-      display: inline-block;
-      background: #fdebd0;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: calc(12px * var(--font-scale, 1));
-      color: #856404;
-      margin-top: 2px;
+      width: calc(24px * var(--font-scale, 1));
+      height: calc(24px * var(--font-scale, 1));
+      border: 1.2px solid #666;
+      border-radius: 5px;
+      background: white;
     }
 
     .relation-table {
@@ -1440,47 +1462,44 @@ function buildDivMethodHtml(a, b, mode) {
   const divisors = steps.filter(s => s.divisor !== null).map(s => s.divisor);
   const lastVals = steps[steps.length - 1].vals;
   const gcdVal = divisors.reduce((acc, d) => acc * d, 1);
+  const lcmVal = gcdVal * lastVals[0] * lastVals[1];
 
   let rowsHtml = '';
   for (let i = 0; i < steps.length; i++) {
     const s = steps[i];
-    if (s.divisor !== null) {
+    const isFirst = i === 0;
+    const isLast = s.divisor === null;
+    const valuesHtml = s.vals.map((v) => {
+      if (isFirst) return `<span>${v}</span>`;
+      return `<span class="div-method-val-blank"></span>`;
+    }).join('');
+    if (!isLast) {
       rowsHtml += `<div class="div-method-row">
-        <span class="div-method-divisor">${numBlank(s.divisor)}</span>
+        <span class="div-method-divisor"><span class="div-method-divisor-blank"></span></span>
         <span class="div-method-paren">)</span>
-        <span class="div-method-values">${s.vals.map(v => `<span data-ans="${v}">${v}</span>`).join('')}</span>
+        <span class="div-method-values">${valuesHtml}</span>
       </div>`;
     } else {
       rowsHtml += `<div class="div-method-row">
         <span class="div-method-divisor"></span>
         <span class="div-method-paren" style="visibility:hidden">)</span>
-        <span class="div-method-values">${s.vals.map(v => `<span data-ans="${v}">${v}</span>`).join('')}</span>
+        <span class="div-method-values div-method-values-final">${valuesHtml}</span>
       </div>`;
     }
   }
 
-  const divisorStr = divisors.map(String).join(' × ');
-  let resultHtml = '';
-  if (mode === 'gcd') {
-    resultHtml = `<div class="div-method-result">
-      <span class="div-method-result-label">최대공약수는 ${numBlank(divisorStr + ' = ' + gcdVal)}</span>
-    </div>`;
-    if (gcd(lastVals[0], lastVals[1]) === 1) {
-      resultHtml += `<div class="div-method-note"><span class="div-method-coprime">${lastVals[0]}와 ${lastVals[1]}는 서로소이다.</span></div>`;
-    }
-  } else {
-    const lcmVal = gcdVal * lastVals[0] * lastVals[1];
-    const allFactors = [...divisors, ...lastVals];
-    const lcmStr = allFactors.map(String).join(' × ');
-    resultHtml = `<div class="div-method-result">
-      <span class="div-method-result-label">최소공배수는 ${numBlank(lcmStr + ' = ' + lcmVal)}</span>
-    </div>`;
-  }
+  const answerLabel = mode === 'gcd' ? '최대공약수' : '최소공배수';
+  const answerVal = mode === 'gcd' ? gcdVal : lcmVal;
 
-  return `<div class="div-method">
-    <div class="div-method-title">${a}과 ${b}의 ${mode === 'gcd' ? '최대공약수' : '최소공배수'} 구하기</div>
-    ${rowsHtml}
-    ${resultHtml}
+  return `<div class="div-method div-method-split">
+    <div class="div-method-left">
+      <div class="div-method-title">${a}과 ${b}의 ${answerLabel} 구하기</div>
+      ${rowsHtml}
+    </div>
+    <div class="div-method-right">
+      <div class="div-method-answer-label">${answerLabel}</div>
+      <div class="div-method-answer-box">${numBlank(answerVal)}</div>
+    </div>
   </div>`;
 }
 
