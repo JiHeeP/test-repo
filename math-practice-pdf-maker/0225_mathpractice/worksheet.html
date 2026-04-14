@@ -532,6 +532,12 @@
       min-width: 0;
     }
 
+    .div-method-workspace {
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: calc(70px * var(--font-scale, 1));
+    }
+
     .div-method-right {
       flex: 0 0 auto;
       display: flex;
@@ -599,20 +605,6 @@
       min-width: calc(100px * var(--font-scale, 1));
       justify-content: center;
       font-weight: 600;
-    }
-
-    .div-method-values-final {
-      border-bottom: none;
-      padding: 4px calc(10px * var(--font-scale, 1));
-    }
-
-    .div-method-val-blank {
-      display: inline-block;
-      width: calc(24px * var(--font-scale, 1));
-      height: calc(24px * var(--font-scale, 1));
-      border: 1.2px solid #666;
-      border-radius: 5px;
-      background: white;
     }
 
     .relation-table {
@@ -1464,37 +1456,20 @@ function buildDivMethodHtml(a, b, mode) {
   const gcdVal = divisors.reduce((acc, d) => acc * d, 1);
   const lcmVal = gcdVal * lastVals[0] * lastVals[1];
 
-  let rowsHtml = '';
-  for (let i = 0; i < steps.length; i++) {
-    const s = steps[i];
-    const isFirst = i === 0;
-    const isLast = s.divisor === null;
-    const valuesHtml = s.vals.map((v) => {
-      if (isFirst) return `<span>${v}</span>`;
-      return `<span class="div-method-val-blank"></span>`;
-    }).join('');
-    if (!isLast) {
-      rowsHtml += `<div class="div-method-row">
-        <span class="div-method-divisor"><span class="div-method-divisor-blank"></span></span>
-        <span class="div-method-paren">)</span>
-        <span class="div-method-values">${valuesHtml}</span>
-      </div>`;
-    } else {
-      rowsHtml += `<div class="div-method-row">
-        <span class="div-method-divisor"></span>
-        <span class="div-method-paren" style="visibility:hidden">)</span>
-        <span class="div-method-values div-method-values-final">${valuesHtml}</span>
-      </div>`;
-    }
-  }
-
   const answerLabel = mode === 'gcd' ? '최대공약수' : '최소공배수';
   const answerVal = mode === 'gcd' ? gcdVal : lcmVal;
+
+  const firstRowHtml = `<div class="div-method-row">
+    <span class="div-method-divisor"><span class="div-method-divisor-blank"></span></span>
+    <span class="div-method-paren">)</span>
+    <span class="div-method-values"><span>${a}</span><span>${b}</span></span>
+  </div>`;
 
   return `<div class="div-method div-method-split">
     <div class="div-method-left">
       <div class="div-method-title">${a}과 ${b}의 ${answerLabel} 구하기</div>
-      ${rowsHtml}
+      ${firstRowHtml}
+      <div class="div-method-workspace"></div>
     </div>
     <div class="div-method-right">
       <div class="div-method-answer-label">${answerLabel}</div>
