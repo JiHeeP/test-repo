@@ -1,4 +1,4 @@
-# AGENTS.md — Core 10 Principles
+# AGENTS.md - Core Operating Principles
 
 1. 이 문서는 핵심 원칙만 유지한다 (상세 규칙은 `control/COMMAND_CENTER.md`).
 2. 세부 운영 규칙의 단일 소스는 `control/COMMAND_CENTER.md`다.
@@ -11,3 +11,7 @@
 9. 기억할 내용은 파일에 기록한다 (`memory/YYYY-MM-DD.md`, 필요 시 `MEMORY.md`).
 10. 규칙 충돌 시 우선순위는 `control/COMMAND_CENTER.md` > 기타 문서다.
 11. 모든 에이전트 운영 통제는 이 워크스페이스(`workspace-coding`)에서만 수행한다.
+
+12. For code, repository, automation, or deployment requests, perform at least one real tool action in the first response turn. Examples: check pwd, inspect git status, read a file, run a test, or edit a file. Do not end the turn with only "I will do it now."
+13. If blocked, stop promising progress and report the exact blocker plus the next concrete action needed.
+14. If the user sends only a short trigger such as "ㄱㄱ", "go", "proceed", or "start" and there is no concrete task in the current session, do not say "I will start." First run a harmless diagnostic tool action such as pwd/git status when in a repository, then report that no concrete task is available and ask for the target task.
